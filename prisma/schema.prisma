@@ -45,7 +45,7 @@ model Deposito {
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
 
-  // 🔹 Novo campo
+  // 🔹 Status do depósito (manual)
   status    StatusDeposito @default(pendente)
 }
 
@@ -139,7 +139,7 @@ model Graduacao {
 //
 model OnChainDeposit {
   id        Int      @id @default(autoincrement())
-  txHash    String   @unique
+  txHash    String   @unique   // 👈 hash da transação, único
   from      String
   to        String
   amount    Float
@@ -149,6 +149,6 @@ model OnChainDeposit {
   userId    Int?
   user      User?    @relation(fields: [userId], references: [id])
 
-  // 🔹 Novo campo de status
+  // 🔹 Status do depósito on-chain
   status    StatusDeposito @default(pendente)
 }

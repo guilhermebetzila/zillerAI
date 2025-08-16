@@ -1,84 +1,78 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import axios from "axios";
 
-const prisma = new PrismaClient();
-
-// ⚙️ Variáveis de ambiente (definiremos no PASSO 4)
-const BSCSCAN_API_KEY = process.env.BSCSCAN_API_KEY!;
-const RECEIVING_WALLET = process.env.USDT_WALLET_ADDRESS!.toLowerCase();
-
-// USDT (BEP-20) na BSC
-const USDT_CONTRACT = "0x55d398326f99059fF775485246999027B3197955";
-const DECIMALS = 18; // USDT na BSC tem 18 casas decimais
-const MIN_CONFIRMATIONS = 3; // quantidade mínima de confirmações
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY!;
+const USDT_CONTRACT = "0x55d398326f99059ff775485246999027b3197955"; // USDT BEP20
+const API_URL = "https://api.etherscan.io/v2/api"; // Multichain API
 
 export async function GET() {
   try {
-    // 1) Buscar depósitos pendentes da nossa carteira
-    const pendentes = await prisma.onChainDeposit.findMany({
-      where: { status: "pendente", to: RECEIVING_WALLET },
-      select: { id: true, amount: true, userId: true },
+    // 🔹 Pega todos os usuários com carteira vinculada
+    const users = await prisma.user.findMany({
+      where: { carteira: { not: null } },
     });
 
-    if (pendentes.length === 0) {
-      return NextResponse.json({ ok: true, msg: "Sem pendentes" });
-    }
+    for (const user of users) {
+      if (!user.carteira) continue;
 
-    // 2) Buscar últimas transferências de USDT para a carteira destino na BscScan
-    const url =
-      `https://api.bscscan.com/api` +
-      `?module=account&action=tokentx` +
-      `&contractaddress=${USDT_CONTRACT}` +
-      `&address=${RECEIVING_WALLET}` +
-      `&sort=desc&apikey=${BSCSCAN_API_KEY}`;
-
-    const resp = await fetch(url);
-    const data = await resp.json();
-
-    if (data.status !== "1" || !Array.isArray(data.result)) {
-      return NextResponse.json({ ok: false, msg: "Sem resultados da BscScan" });
-    }
-
-    const txs: any[] = data.result;
-
-    // 3) Para cada pendente, ver se há uma tx compatível (valor >= solicitado)
-    for (const dep of pendentes) {
-      const match = txs.find((t) => {
-        const toOK = String(t.to).toLowerCase() === RECEIVING_WALLET;
-        const confOK = Number(t.confirmations || "0") >= MIN_CONFIRMATIONS;
-        const amountOnChain = Number(t.value) / 10 ** DECIMALS;
-
-        // tolerância pequena por arredondamento
-        const amountOK = amountOnChain + 1e-9 >= dep.amount;
-
-        return toOK && confOK && amountOK;
+      // 🔹 Busca transações na Etherscan Multichain (BNB Smart Chain = chainid 56)
+      const { data } = await axios.get(API_URL, {
+        params: {
+          chainid: 56, // BNB Smart Chain
+          module: "account",
+          action: "tokentx",
+          address: user.carteira,
+          contractaddress: USDT_CONTRACT,
+          sort: "desc",
+          apikey: ETHERSCAN_API_KEY,
+        },
       });
 
-      if (!match) continue;
+      const txs = data?.result || [];
+      if (!txs.length) continue;
 
-      // 4) Confirmar depósito, gravar hash e creditar saldo
-      await prisma.$transaction(async (tx) => {
-        await tx.onChainDeposit.update({
-          where: { id: dep.id },
+      for (const tx of txs) {
+        // Só depósitos (to = carteira do usuário)
+        if (tx.to.toLowerCase() !== user.carteira.toLowerCase()) continue;
+
+        const txHash = tx.hash;
+
+        // 🔹 já registrado?
+        const existe = await prisma.onChainDeposit.findUnique({
+          where: { txHash },
+        });
+
+        if (existe) continue;
+
+        // 🔹 valor em USDT (18 decimais)
+        const amount = Number(tx.value) / 1e18;
+
+        // 🔹 cria registro no banco
+        await prisma.onChainDeposit.create({
           data: {
-            txHash: match.hash,
-            from: String(match.from).toLowerCase(),
-            status: "confirmado",
+            txHash,
+            from: tx.from,
+            to: tx.to,
+            amount,
+            userId: user.id,
+            status: "pendente",
           },
         });
 
-        if (dep.userId) {
-          await tx.user.update({
-            where: { id: dep.userId },
-            data: { saldo: { increment: dep.amount } },
-          });
-        }
-      });
+        // (Opcional) já credita no saldo
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { saldo: { increment: amount } },
+        });
+
+        console.log(`💰 Depósito detectado: ${amount} USDT de ${tx.from}`);
+      }
     }
 
     return NextResponse.json({ ok: true });
-  } catch (e) {
-    console.error("Erro ao verificar depósitos USDT:", e);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+  } catch (error) {
+    console.error("Erro ao verificar depósitos:", error);
+    return NextResponse.json({ error: "Erro ao verificar depósitos" }, { status: 500 });
   }
 }
