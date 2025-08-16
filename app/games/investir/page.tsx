@@ -107,6 +107,14 @@ export default function DepositarPage() {
           Verificar Transação
         </button>
       </div>
+
+      {/* Botão Voltar */}
+      <button
+        onClick={() => window.history.back()}
+        className="bg-gray-600 w-full mt-4 p-2 rounded hover:bg-gray-700"
+      >
+        ⬅ Voltar
+      </button>
     </div>
   );
 }
