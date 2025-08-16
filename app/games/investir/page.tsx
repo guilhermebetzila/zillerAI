@@ -16,7 +16,6 @@ export default function DepositarPage() {
       alert("Digite um valor válido!");
       return;
     }
-    // Aqui você chama sua rota de gerar Pix
     const res = await fetch("/api/depositos/pix", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -59,8 +58,8 @@ export default function DepositarPage() {
       </p>
 
       {/* PIX */}
-      <div className="bg-gray-800 p-4 rounded-lg">
-        <label className="block mb-2">💰 Valor do Depósito (Pix)</label>
+      <div className="bg-gray-800 p-4 rounded-lg shadow-md">
+        <h2 className="text-lg font-semibold mb-3">💰 Depósito via Pix</h2>
         <input
           type="number"
           value={valorPix || ""}
@@ -77,8 +76,8 @@ export default function DepositarPage() {
       </div>
 
       {/* USDT */}
-      <div className="bg-gray-800 p-4 rounded-lg">
-        <label className="block mb-2">💵 Valor do Depósito (USDT)</label>
+      <div className="bg-gray-800 p-4 rounded-lg shadow-md">
+        <h2 className="text-lg font-semibold mb-3">💵 Depósito via USDT</h2>
         <input
           type="number"
           value={valorUSDT || ""}
