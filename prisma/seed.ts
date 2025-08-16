@@ -1,46 +1,63 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function main() {
-  // 🔹 Criar usuários
-  const users = await prisma.user.createMany({
-    data: [   
-      { email: 'joao@email.com', nome: 'João', senha: '123456' },
-      { email: 'ana@email.com', nome: 'Ana', senha: 'abc123' },
-      { email: 'maria@email.com', nome: 'Maria', senha: 'senha123' }
+  console.log("🌱 Iniciando seed do banco...");
+
+  const senhaHash = await bcrypt.hash("123456", 10);
+
+  const joao = await prisma.user.upsert({
+    where: { email: "joao@email.com" },
+    update: {},
+    create: {
+      nome: "João Silva",
+      email: "joao@email.com",
+      senha: senhaHash, // 👈 campo obrigatório
+      saldo: 0,
+    },
+  });
+
+  const ana = await prisma.user.upsert({
+    where: { email: "ana@email.com" },
+    update: {},
+    create: {
+      nome: "Ana Souza",
+      email: "ana@email.com",
+      senha: senhaHash,
+      saldo: 0,
+    },
+  });
+
+  const maria = await prisma.user.upsert({
+    where: { email: "maria@email.com" },
+    update: {},
+    create: {
+      nome: "Maria Oliveira",
+      email: "maria@email.com",
+      senha: senhaHash,
+      saldo: 0,
+    },
+  });
+
+  await prisma.deposito.createMany({
+    data: [
+      { userId: joao.id, valor: 100, status: "confirmado" },
+      { userId: joao.id, valor: 250, status: "pendente" },
+      { userId: ana.id, valor: 75, status: "em_analise" },
+      { userId: maria.id, valor: 300, status: "cancelado" },
     ],
     skipDuplicates: true,
-  })
+  });
 
-  console.log('✅ Usuários inseridos com sucesso!')
-
-  // 🔹 Buscar usuários criados para vincular depósitos
-  const joao = await prisma.user.findUnique({ where: { email: 'joao@email.com' } })
-  const ana = await prisma.user.findUnique({ where: { email: 'ana@email.com' } })
-  const maria = await prisma.user.findUnique({ where: { email: 'maria@email.com' } })
-
-  if (joao && ana && maria) {
-    // 🔹 Criar depósitos Pix de exemplo
-    await prisma.deposito.createMany({
-      data: [
-        { userId: joao.id, valor: 100, status: 'confirmado' },
-        { userId: joao.id, valor: 250, status: 'pendente' },
-        { userId: ana.id, valor: 500, status: 'aguardando' },
-        { userId: ana.id, valor: 75, status: 'em_analise' },
-        { userId: maria.id, valor: 300, status: 'cancelado' },
-      ],
-    })
-
-    console.log('✅ Depósitos de exemplo inseridos com sucesso!')
-  }
+  console.log("✅ Seed concluído com sucesso!");
 }
 
 main()
-  .catch((e) => {
-    console.error('Erro ao inserir dados:', e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+  .then(async () => await prisma.$disconnect())
+  .catch(async (e) => {
+    console.error("❌ Erro no seed:", e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
