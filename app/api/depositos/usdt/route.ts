@@ -1,50 +1,105 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
-import { PrismaClient } from "@prisma/client";
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import axios from "axios";
 
-const prisma = new PrismaClient();
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+const USDT_CONTRACT = "0x55d398326f99059ff775485246999027b3197955"; // USDT BEP20
+const API_URL = "https://api.etherscan.io/v2/api"; // Multichain API
+const DECIMALS = 18; // melhor deixar configurável via .env
 
-// endereço fixo da carteira da sua plataforma
-const RECEIVING_WALLET = process.env.USDT_WALLET_ADDRESS || "0xSuaCarteiraAqui";
+export async function GET() {
+  if (!ETHERSCAN_API_KEY) {
+    console.error("❌ ETHERSCAN_API_KEY não configurada no .env");
+    return NextResponse.json(
+      { error: "Configuração ausente (ETHERSCAN_API_KEY)" },
+      { status: 500 }
+    );
+  }
 
-export async function POST(req: NextRequest) {
   try {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    if (!token?.email) {
-      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    const users = await prisma.user.findMany({
+      where: { carteira: { not: null } },
+    });
+
+    for (const user of users) {
+      if (!user.carteira) continue;
+
+      let data: any;
+      try {
+        const res = await axios.get(API_URL, {
+          params: {
+            chainid: 56,
+            module: "account",
+            action: "tokentx",
+            address: user.carteira,
+            contractaddress: USDT_CONTRACT,
+            sort: "desc",
+            apikey: ETHERSCAN_API_KEY,
+          },
+          timeout: 10000,
+        });
+        data = res.data;
+      } catch (err) {
+        console.error(`⚠️ Erro API para user ${user.id}:`, err);
+        continue;
+      }
+
+      // Valida retorno
+      if (!data || data.status === "0" || !Array.isArray(data.result)) {
+        console.warn(`⚠️ Nenhuma transação válida para carteira ${user.carteira}`);
+        continue;
+      }
+
+      for (const tx of data.result) {
+        try {
+          if (!tx?.to || !tx?.hash) continue;
+
+          if (tx.to.toLowerCase() !== user.carteira.toLowerCase()) continue;
+
+          const txHash = tx.hash;
+
+          // Já existe?
+          const existe = await prisma.onChainDeposit.findUnique({ where: { txHash } });
+          if (existe) continue;
+
+          const rawValue = Number(tx.value);
+          if (isNaN(rawValue)) {
+            console.warn(`⚠️ Valor inválido em tx ${txHash}`);
+            continue;
+          }
+          const amount = rawValue / Math.pow(10, DECIMALS);
+
+          // Cria registro + credita saldo de forma atômica
+          await prisma.$transaction([
+            prisma.onChainDeposit.create({
+              data: {
+                txHash,
+                from: tx.from || "desconhecido",
+                to: tx.to,
+                amount,
+                userId: user.id,
+                status: "pendente",
+              },
+            }),
+            prisma.user.update({
+              where: { id: user.id },
+              data: { saldo: { increment: amount } },
+            }),
+          ]);
+
+          console.log(`💰 Depósito detectado: ${amount} USDT para user ${user.id}`);
+        } catch (err) {
+          console.error(`❌ Erro tx ${tx?.hash || "??"} user ${user.id}:`, err);
+        }
+      }
     }
 
-    const { valor } = await req.json();
-
-    const user = await prisma.user.findUnique({
-      where: { email: token.email },
-      select: { id: true },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
-    }
-
-    // cria o registro do depósito pendente
-    const deposito = await prisma.onChainDeposit.create({
-      data: {
-        from: "", // vamos preencher depois quando a txHash chegar
-        to: RECEIVING_WALLET,
-        amount: valor,
-        status: "pendente",
-        userId: user.id,
-        txHash: "aguardando", // placeholder até confirmar
-      },
-    });
-
-    return NextResponse.json({
-      depositoId: deposito.id,
-      carteiraDestino: RECEIVING_WALLET,
-      valor: valor,
-      mensagem: "Envie o valor para a carteira e aguarde a confirmação",
-    });
+    return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error("Erro ao criar depósito USDT:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    console.error("❌ Erro geral ao verificar depósitos:", error);
+    return NextResponse.json(
+      { error: "Erro ao verificar depósitos" },
+      { status: 500 }
+    );
   }
 }

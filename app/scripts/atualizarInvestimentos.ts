@@ -15,27 +15,37 @@ async function aplicarRendimentos() {
       usuarios.map(async (usuario) => {
         let totalRendimento = 0;
 
+        // Converter saldo Decimal para number
+        const saldoAtual = usuario.saldo instanceof Object ? usuario.saldo.toNumber() : usuario.saldo;
+
         // Processa todos os investimentos do usuário
         const atualizacoesInvestimentos = usuario.investimentos.map(async (inv) => {
           if (!inv.ativo) return 0;
 
+          // Converter valores Decimal para number
+          const valor = inv.valor instanceof Object ? inv.valor.toNumber() : inv.valor;
+          const rendimentoAcumulado = inv.rendimentoAcumulado instanceof Object
+            ? inv.rendimentoAcumulado.toNumber()
+            : inv.rendimentoAcumulado;
+          const limite = inv.limite instanceof Object ? inv.limite.toNumber() : inv.limite;
+
           // Percentual diário variável por faixa
           let percentualDiario: number;
-          if (inv.valor <= 5000) {
+          if (valor <= 5000) {
             percentualDiario = 1.5;
-          } else if (inv.valor <= 10000) {
+          } else if (valor <= 10000) {
             percentualDiario = parseFloat((Math.random() * (1.8 - 1.6) + 1.6).toFixed(2));
           } else {
             percentualDiario = parseFloat((Math.random() * (2.5 - 2.0) + 2.0).toFixed(2));
           }
 
-          const rendimento = inv.valor * (percentualDiario / 100);
-          let novoAcumulado = inv.rendimentoAcumulado + rendimento;
+          const rendimento = valor * (percentualDiario / 100);
+          let novoAcumulado = rendimentoAcumulado + rendimento;
 
           // Desativa investimento se atingir limite
           let ativo = true;
-          if (novoAcumulado >= inv.limite) {
-            novoAcumulado = inv.limite;
+          if (novoAcumulado >= limite) {
+            novoAcumulado = limite;
             ativo = false;
           }
 
@@ -57,7 +67,7 @@ async function aplicarRendimentos() {
           await prisma.user.update({
             where: { id: usuario.id },
             data: {
-              saldo: usuario.saldo + totalRendimento,
+              saldo: saldoAtual + totalRendimento,
             },
           });
 

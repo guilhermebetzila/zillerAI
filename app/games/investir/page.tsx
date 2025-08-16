@@ -3,8 +3,8 @@
 import { useState } from "react";
 
 export default function DepositarPage() {
-  const [valorPix, setValorPix] = useState<number>(0);
-  const [valorUSDT, setValorUSDT] = useState<number>(0);
+  const [valorPix, setValorPix] = useState<string>("");
+  const [valorUSDT, setValorUSDT] = useState<string>("");
   const [txHash, setTxHash] = useState<string>("");
 
   const carteiraUSDT =
@@ -12,41 +12,51 @@ export default function DepositarPage() {
     "0xc243Ab40A1FA5A48b2512930Fd647640844Cc216";
 
   const handleGerarPix = async () => {
-    if (!valorPix || valorPix <= 0) {
+    const valor = parseFloat(valorPix);
+    if (!valor || valor <= 0) {
       alert("Digite um valor válido!");
       return;
     }
-    const res = await fetch("/api/depositos/pix", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ valor: valorPix }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      alert("Pix gerado com sucesso!");
-    } else {
-      alert(data.error || "Erro ao gerar Pix.");
+    try {
+      const res = await fetch("/api/depositos/pix", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ valor }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        alert("✅ Pix gerado com sucesso!");
+      } else {
+        alert(data.error || "Erro ao gerar Pix.");
+      }
+    } catch (err) {
+      alert("❌ Erro de conexão. Tente novamente.");
     }
   };
 
   const handleVerificarTx = async () => {
-    if (!txHash) {
-      alert("Cole a hash da transação!");
+    const valor = parseFloat(valorUSDT);
+    if (!txHash || !valor || valor <= 0) {
+      alert("Preencha os campos corretamente!");
       return;
     }
 
-    const res = await fetch("/api/depositos/usdt/verificar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ hash: txHash, valor: valorUSDT }),
-    });
+    try {
+      const res = await fetch("/api/depositos/usdt/verificar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ hash: txHash, valor }),
+      });
 
-    const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
-    if (res.ok) {
-      alert("Depósito confirmado com sucesso!");
-    } else {
-      alert(data.error || "Erro ao verificar transação.");
+      if (res.ok) {
+        alert("✅ Depósito confirmado com sucesso!");
+      } else {
+        alert(data.error || "Erro ao verificar transação.");
+      }
+    } catch (err) {
+      alert("❌ Erro de conexão. Tente novamente.");
     }
   };
 
@@ -60,10 +70,11 @@ export default function DepositarPage() {
       {/* PIX */}
       <div className="bg-gray-800 p-4 rounded-lg shadow-md">
         <h2 className="text-lg font-semibold mb-3">💰 Depósito via Pix</h2>
+        <label className="block mb-2">Valor em R$</label>
         <input
           type="number"
-          value={valorPix || ""}
-          onChange={(e) => setValorPix(parseFloat(e.target.value))}
+          value={valorPix}
+          onChange={(e) => setValorPix(e.target.value)}
           placeholder="Ex: 50.00"
           className="w-full p-2 rounded text-black"
         />
@@ -78,10 +89,11 @@ export default function DepositarPage() {
       {/* USDT */}
       <div className="bg-gray-800 p-4 rounded-lg shadow-md">
         <h2 className="text-lg font-semibold mb-3">💵 Depósito via USDT</h2>
+        <label className="block mb-2">Valor em USDT</label>
         <input
           type="number"
-          value={valorUSDT || ""}
-          onChange={(e) => setValorUSDT(parseFloat(e.target.value))}
+          value={valorUSDT}
+          onChange={(e) => setValorUSDT(e.target.value)}
           placeholder="Ex: 10 USDT"
           className="w-full p-2 rounded text-black"
         />
@@ -113,7 +125,7 @@ export default function DepositarPage() {
         onClick={() => window.history.back()}
         className="bg-gray-600 w-full mt-4 p-2 rounded hover:bg-gray-700"
       >
-        ⬅ Voltarr
+        ⬅ Voltar
       </button>
     </div>
   );

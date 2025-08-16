@@ -14,8 +14,8 @@ async function main() {
     create: {
       nome: "João Silva",
       email: "joao@email.com",
-      senha: senhaHash, // 👈 campo obrigatório
-      saldo: 0,
+      senha: senhaHash,
+      saldo: 0, // ✅ number simples
     },
   });
 
@@ -43,12 +43,11 @@ async function main() {
 
   await prisma.deposito.createMany({
     data: [
-      { userId: joao.id, valor: 100, status: "confirmado" },
+      { userId: joao.id, valor: 100, status: "confirmado" }, // ✅ number simples
       { userId: joao.id, valor: 250, status: "pendente" },
       { userId: ana.id, valor: 75, status: "em_analise" },
       { userId: maria.id, valor: 300, status: "cancelado" },
     ],
-    skipDuplicates: true,
   });
 
   console.log("✅ Seed concluído com sucesso!");

@@ -11,6 +11,12 @@ async function atualizarPontos() {
         where: { userId: usuario.id },
       });
 
+      // Converter Decimals para number
+      const totalInvestidoProprio = investimentosProprios.reduce(
+        (acc, i) => acc + (i.valor instanceof Object ? i.valor.toNumber() : i.valor),
+        0
+      );
+
       // 2️⃣ Buscar investimentos dos indicados diretos
       const indicadosDiretos = await prisma.user.findMany({
         where: { indicadoPorId: usuario.id },
@@ -21,13 +27,15 @@ async function atualizarPontos() {
         const inv = await prisma.investimento.findMany({
           where: { userId: indicado.id },
         });
-        totalInvestidoIndicados += inv.reduce((acc, i) => acc + i.valor, 0);
+
+        totalInvestidoIndicados += inv.reduce(
+          (acc, i) => acc + (i.valor instanceof Object ? i.valor.toNumber() : i.valor),
+          0
+        );
       }
 
       // 3️⃣ Somar total de investimentos próprios + indicados
-      const totalInvestido =
-        investimentosProprios.reduce((acc, i) => acc + i.valor, 0) +
-        totalInvestidoIndicados;
+      const totalInvestido = totalInvestidoProprio + totalInvestidoIndicados;
 
       // 4️⃣ Calcular pontos (1 ponto a cada R$2)
       const pontos = Math.floor(totalInvestido / 2);

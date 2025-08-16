@@ -14,39 +14,37 @@ model User {
   nome           String
   senha          String
   cpf            String?   @unique
-  saldo          Float     @default(0)
-  valorInvestido Float     @default(0)
+  saldo          Decimal   @default(0)
+  valorInvestido Decimal   @default(0)
   pontos         Int       @default(0)
   indicador      String?
   lastLogin      DateTime?
 
   // 👇 Carteira vinculada ao usuário
-  carteira       String?   @unique
+  carteira String? @unique
 
-  indicadoPorId  Int?
-  indicadoPor    User?     @relation("Indicacoes", fields: [indicadoPorId], references: [id])
-  indicados      User[]    @relation("Indicacoes")
+  indicadoPorId Int?
+  indicadoPor   User?  @relation("Indicacoes", fields: [indicadoPorId], references: [id])
+  indicados     User[] @relation("Indicacoes")
 
-  graduacaoId    Int? 
-  graduacao      Graduacao? @relation(fields: [graduacaoId], references: [id])
+  graduacaoId Int?
+  graduacao   Graduacao? @relation(fields: [graduacaoId], references: [id])
 
-  cartelas        Cartela[]
   investimentos   Investimento[]
   depositos       Deposito[]
   rendimentos     RendimentoDiario[]
-  onChainDeposits OnChainDeposit[]   // 👈 Relacionamento com depósitos on-chain
+  onChainDeposits OnChainDeposit[]
 }
 
 model Deposito {
-  id        Int      @id @default(autoincrement())
-  valor     Float
-  criadoEm  DateTime @default(now())
+  id       Int      @id @default(autoincrement())
+  valor    Decimal
+  criadoEm DateTime @default(now())
 
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
 
-  // 🔹 Status do depósito (manual)
-  status    StatusDeposito @default(pendente)
+  status StatusDeposito @default(pendente)
 }
 
 enum StatusDeposito {
@@ -59,15 +57,15 @@ enum StatusDeposito {
 
 model Investimento {
   id                  Int      @id @default(autoincrement())
-  valor               Float
-  percentualDiario    Float    @default(0.025)
-  rendimentoAcumulado Float    @default(0)
+  valor               Decimal
+  percentualDiario    Decimal  @default(0.025)
+  rendimentoAcumulado Decimal  @default(0)
   criadoEm            DateTime @default(now())
-  limite              Float    @default(0)
+  limite              Decimal  @default(0)
   ativo               Boolean  @default(true)
 
-  userId              Int
-  user                User     @relation(fields: [userId], references: [id])
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
 }
 
 model RendimentoDiario {
@@ -75,56 +73,13 @@ model RendimentoDiario {
   user       User     @relation(fields: [userId], references: [id])
   userId     Int
   dateKey    String
-  base       Float
-  rate       Float
-  amount     Float
+  base       Decimal
+  rate       Decimal
+  amount     Decimal
   creditedAt DateTime @default(now())
 
   @@unique([userId, dateKey])
   @@index([userId, dateKey])
-}
-
-model Partida {
-  id          Int       @id @default(autoincrement())
-  inicio      DateTime  @default(now())
-  fim         DateTime?
-  finalizada  Boolean   @default(false)
-  aberta      Boolean   @default(true)
-  encerrada   Boolean   @default(false)
-
-  vencedoraId Int?      @unique
-  vencedora   Cartela?  @relation("VencedoraDaPartida", fields: [vencedoraId], references: [id])
-
-  cartelas    Cartela[]
-  bolas       Bola[]
-}
-
-model Cartela {
-  id               Int             @id @default(autoincrement())
-  criadaEm         DateTime        @default(now())
-  venceu           Boolean         @default(false)
-  userId           Int?
-  user             User?           @relation(fields: [userId], references: [id])
-  partidaId        Int
-  partida          Partida         @relation(fields: [partidaId], references: [id])
-  numeros          NumeroCartela[]
-
-  partidasVencidas Partida[]       @relation("VencedoraDaPartida")
-}
-
-model NumeroCartela {
-  id        Int     @id @default(autoincrement())
-  numero    Int
-  cartelaId Int
-  cartela   Cartela @relation(fields: [cartelaId], references: [id])
-}
-
-model Bola {
-  id        Int     @id @default(autoincrement())
-  numero    Int
-  ordem     Int
-  partidaId Int
-  partida   Partida @relation(fields: [partidaId], references: [id])
 }
 
 model Graduacao {
@@ -139,16 +94,14 @@ model Graduacao {
 //
 model OnChainDeposit {
   id        Int      @id @default(autoincrement())
-  txHash    String   @unique   // 👈 hash da transação, único
+  txHash    String   @unique
   from      String
   to        String
-  amount    Float
+  amount    Decimal
   createdAt DateTime @default(now())
 
-  // 👇 Relacionamento com User (opcional, mas ideal)
-  userId    Int?
-  user      User?    @relation(fields: [userId], references: [id])
+  userId Int?
+  user   User? @relation(fields: [userId], references: [id])
 
-  // 🔹 Status do depósito on-chain
-  status    StatusDeposito @default(pendente)
+  status StatusDeposito @default(pendente)
 }

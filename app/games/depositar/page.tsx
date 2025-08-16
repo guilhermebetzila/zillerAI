@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
 
-// 🔹 Componente de Badge de Status
 function StatusBadge({ status }: { status: string }) {
   const cores: Record<string, string> = {
     confirmado: 'bg-green-500 text-black',
@@ -26,7 +26,9 @@ function StatusBadge({ status }: { status: string }) {
 
   return (
     <span
-      className={`ml-2 px-2 py-1 text-xs rounded ${cores[status] || 'bg-gray-600 text-white'}`}
+      className={`ml-2 px-2 py-1 text-xs rounded ${
+        cores[status] || 'bg-gray-600 text-white'
+      }`}
     >
       {labels[status] || status}
     </span>
@@ -52,18 +54,28 @@ export default function Depositar() {
 
   async function buscarHistorico() {
     try {
+      if (!API_BASE_URL) {
+        console.warn('⚠️ API_BASE_URL não configurada');
+        return;
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/depositos`, {
         credentials: 'include',
       });
-      if (res.ok) {
-        const dados = await res.json();
-        setHistoricoPix(dados.pix || []);
-        setOnchainConfirmados(dados.onchainConfirmados || []);
-        setOnchainPendentes(dados.onchainPendentes || []);
-        setUsuario(dados.usuario || null);
+
+      if (!res.ok) {
+        console.error('Erro ao buscar histórico:', res.status);
+        return;
       }
+
+      const dados = await res.json();
+      setHistoricoPix(dados.pix || []);
+      setOnchainConfirmados(dados.onchainConfirmados || []);
+      setOnchainPendentes(dados.onchainPendentes || []);
+      setUsuario(dados.usuario || null);
     } catch (error) {
       console.error('Erro ao buscar histórico:', error);
+      setErro('Erro ao carregar histórico de depósitos.');
     }
   }
 
@@ -73,17 +85,22 @@ export default function Depositar() {
     setLoading(true);
 
     try {
+      if (!session?.user?.email) {
+        setErro('Você precisa estar logado para gerar um Pix.');
+        return;
+      }
+
       const response = await axios.post('/api/pix', {
         amount: Number(valor),
-        email: session?.user?.email,
+        email: session.user.email,
       });
 
-      setCopiacola(response.data.copia_e_cola);
+      setCopiacola(response.data.copia_e_cola || '');
       setValor('');
       await buscarHistorico();
     } catch (error) {
       console.error('Erro ao criar pagamento:', error);
-      setErro('Erro ao criar pagamento');
+      setErro('Erro ao criar pagamento.');
     } finally {
       setLoading(false);
     }
@@ -91,10 +108,13 @@ export default function Depositar() {
 
   const copiarCodigo = async () => {
     try {
+      if (!copiacola) return;
+
       await navigator.clipboard.writeText(copiacola);
       alert('Código copiado com sucesso!');
     } catch {
-      alert('Erro ao copiar o código.');
+      // fallback para ambientes sem HTTPS
+      prompt('Copie o código Pix manualmente:', copiacola);
     }
   };
 
@@ -163,8 +183,14 @@ export default function Depositar() {
                   className="text-sm text-gray-200 border-b border-gray-600 pb-2 flex justify-between items-center"
                 >
                   <span>
-                    💵 R$ {item.valor.toFixed(2)} –{' '}
-                    {new Date(item.criadoEm).toLocaleString('pt-BR')}
+                    💵 R${' '}
+                    {typeof item.valor === 'number'
+                      ? item.valor.toFixed(2)
+                      : '0.00'}{' '}
+                    –{' '}
+                    {item.criadoEm
+                      ? new Date(item.criadoEm).toLocaleString('pt-BR')
+                      : '-'}
                   </span>
                   <StatusBadge status={item.status || 'pendente'} />
                 </li>
@@ -188,17 +214,24 @@ export default function Depositar() {
                   className="text-sm text-gray-200 border-b border-gray-600 pb-2 flex justify-between items-center"
                 >
                   <span>
-                    💰 {item.amount} USDT –{' '}
-                    {new Date(item.createdAt).toLocaleString('pt-BR')} <br />
-                    🔗{' '}
-                    <a
-                      href={`https://bscscan.com/tx/${item.txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 underline"
-                    >
-                      Ver no BscScan
-                    </a>
+                    💰 {item.amount || 0} USDT –{' '}
+                    {item.createdAt
+                      ? new Date(item.createdAt).toLocaleString('pt-BR')
+                      : '-'}{' '}
+                    <br />
+                    {item.txHash && (
+                      <>
+                        🔗{' '}
+                        <a
+                          href={`https://bscscan.com/tx/${item.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 underline"
+                        >
+                          Ver no BscScan
+                        </a>
+                      </>
+                    )}
                   </span>
                   <StatusBadge status={item.status || 'confirmado'} />
                 </li>
@@ -222,17 +255,24 @@ export default function Depositar() {
                   className="text-sm text-gray-200 border-b border-gray-600 pb-2 flex justify-between items-center"
                 >
                   <span>
-                    ⚠️ {item.amount} USDT –{' '}
-                    {new Date(item.createdAt).toLocaleString('pt-BR')} <br />
-                    🔗{' '}
-                    <a
-                      href={`https://bscscan.com/tx/${item.txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-400 underline"
-                    >
-                      Ver no BscScan
-                    </a>
+                    ⚠️ {item.amount || 0} USDT –{' '}
+                    {item.createdAt
+                      ? new Date(item.createdAt).toLocaleString('pt-BR')
+                      : '-'}{' '}
+                    <br />
+                    {item.txHash && (
+                      <>
+                        🔗{' '}
+                        <a
+                          href={`https://bscscan.com/tx/${item.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 underline"
+                        >
+                          Ver no BscScan
+                        </a>
+                      </>
+                    )}
                   </span>
                   <StatusBadge status={item.status || 'pendente'} />
                 </li>

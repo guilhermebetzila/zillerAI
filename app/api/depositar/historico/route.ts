@@ -1,8 +1,7 @@
+// app/api/depositar/historico/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,7 +10,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    // Busca usuário pelo email para obter id
+    // Busca usuário logado
     const user = await prisma.user.findUnique({
       where: { email: token.email },
       select: { id: true },
@@ -21,11 +20,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
-    // Busca depósitos do usuário pelo userId
+    // Busca depósitos internos (Pix)
     const depositos = await prisma.deposito.findMany({
       where: { userId: user.id },
       orderBy: { criadoEm: "desc" },
-      select: { id: true, valor: true, criadoEm: true },
+      select: { id: true, valor: true, criadoEm: true, status: true }, // agora com status
     });
 
     return NextResponse.json(depositos);

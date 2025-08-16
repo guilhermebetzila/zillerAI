@@ -7,50 +7,57 @@ async function calcularRendimentosDiarios() {
   const hoje = new Date();
   const dateKey = hoje.toISOString().split("T")[0]; // YYYY-MM-DD
 
-  // Criar pasta de logs se não existir
+  // Criar pasta de logs se não existir (⚠️ só funciona localmente, não na Vercel)
   const logPath = "./logs";
   if (!fs.existsSync(logPath)) fs.mkdirSync(logPath);
 
-  // Registrar início da execução
-  fs.appendFileSync(`${logPath}/rendimentos.log`, `\n=== Execução: ${new Date()} ===\n`);
+  const log = (msg: string) => {
+    console.log(msg); // sempre loga no console (Vercel usa isso)
+    fs.appendFileSync(`${logPath}/rendimentos.log`, msg + "\n");
+  };
+
+  log(`\n=== Execução: ${new Date()} ===`);
 
   try {
     // Buscar todos os investimentos
     const investimentos = await prisma.investimento.findMany();
-    fs.appendFileSync(`${logPath}/rendimentos.log`, `Encontrados ${investimentos.length} investimentos.\n`);
+    log(`Encontrados ${investimentos.length} investimentos.`);
 
     for (const investimento of investimentos) {
-      const lucro = investimento.valor * investimento.percentualDiario;
+      // Converter Decimals para number
+      const valor = investimento.valor instanceof Object ? investimento.valor.toNumber() : investimento.valor;
+      const percentual = investimento.percentualDiario instanceof Object ? investimento.percentualDiario.toNumber() : investimento.percentualDiario;
+
+      const lucro = valor * percentual;
 
       // Verificar se já existe rendimento para este usuário e data
       const existe = await prisma.rendimentoDiario.findFirst({
         where: {
           userId: investimento.userId,
-          dateKey: dateKey
-        }
+          dateKey,
+        },
       });
 
       if (!existe) {
-        // Criar registro na tabela RendimentoDiario
         await prisma.rendimentoDiario.create({
           data: {
             userId: investimento.userId,
-            dateKey: dateKey,
-            base: investimento.valor,
-            rate: investimento.percentualDiario,
+            dateKey,
+            base: valor,
+            rate: percentual,
             amount: lucro,
           },
         });
 
-        fs.appendFileSync(`${logPath}/rendimentos.log`, `✅ Rendimento de R$ ${lucro.toFixed(2)} registrado para usuário ID ${investimento.userId}\n`);
+        log(`✅ Rendimento de R$ ${lucro.toFixed(2)} registrado para usuário ID ${investimento.userId}`);
       } else {
-        fs.appendFileSync(`${logPath}/rendimentos.log`, `⚠️ Rendimento para usuário ID ${investimento.userId} e data ${dateKey} já existe. Pulando...\n`);
+        log(`⚠️ Rendimento para usuário ID ${investimento.userId} e data ${dateKey} já existe. Pulando...`);
       }
     }
 
-    fs.appendFileSync(`${logPath}/rendimentos.log`, "✅ Cálculo e registro de rendimentos concluído!\n");
+    log("✅ Cálculo e registro de rendimentos concluído!");
   } catch (error) {
-    fs.appendFileSync(`${logPath}/rendimentos.log`, `❌ Erro ao calcular rendimentos: ${error}\n`);
+    log(`❌ Erro ao calcular rendimentos: ${error}`);
   } finally {
     await prisma.$disconnect();
   }

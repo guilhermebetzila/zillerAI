@@ -1,6 +1,7 @@
 // lib/usdtListener.ts
 import { ethers } from "ethers";
 import { PrismaClient } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
 
 const prisma = new PrismaClient();
 
@@ -29,8 +30,13 @@ export function startUSDTListener() {
   contract.on("Transfer", async (from, to, value, event) => {
     try {
       // USDT na BSC tem 18 casas decimais
-      const amount = Number(ethers.formatUnits(value, 18));
+      const amount = new Decimal(ethers.formatUnits(value, 18));
       const txHash = event.log?.transactionHash;
+
+      if (!txHash) {
+        console.warn("⚠️ Evento sem txHash, ignorado.");
+        return;
+      }
 
       console.log(
         `💰 Depósito detectado: ${amount} USDT | de ${from} → ${to} | tx: ${txHash}`
@@ -45,12 +51,12 @@ export function startUSDTListener() {
         return;
       }
 
-      // 👉 Buscar usuário pela carteira
+      // 👉 Buscar usuário pela carteira (precisa ser UNIQUE no schema)
       const user = await prisma.user.findUnique({
         where: { carteira: to.toLowerCase() },
       });
 
-      // Registrar OnChainDeposit (mesmo sem user)
+      // Registrar OnChainDeposit
       await prisma.onChainDeposit.create({
         data: {
           txHash,
