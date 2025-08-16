@@ -113,7 +113,7 @@ export default function DepositarPage() {
         onClick={() => window.history.back()}
         className="bg-gray-600 w-full mt-4 p-2 rounded hover:bg-gray-700"
       >
-        ⬅ Voltarr
+        ⬅ Voltar
       </button>
     </div>
   );
