@@ -1,131 +1,112 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from "react";
 
-type Investimento = {
-  id: number;
-  valor: number;
-  criadoEm: string;
-};
+export default function DepositarPage() {
+  const [valorPix, setValorPix] = useState<number>(0);
+  const [valorUSDT, setValorUSDT] = useState<number>(0);
+  const [txHash, setTxHash] = useState<string>("");
 
-export default function InvestirPage() {
-  const [valor, setValor] = useState<number>(0);
-  const [historico, setHistorico] = useState<Investimento[]>([]);
-  const [saldo, setSaldo] = useState<number>(0);
-  const [valorInvestido, setValorInvestido] = useState<number>(0);
-  const [pontos, setPontos] = useState<number>(0);
-  const [loading, setLoading] = useState(false);
+  const carteiraUSDT =
+    process.env.NEXT_PUBLIC_USDT_WALLET_ADDRESS ||
+    "0xc243Ab40A1FA5A48b2512930Fd647640844Cc216";
 
-  useEffect(() => {
-    carregarHistorico();
-    carregarDadosUsuario();
-  }, []);
-
-  const carregarHistorico = async () => {
-    const res = await fetch('/api/investir/historico');
+  const handleGerarPix = async () => {
+    if (!valorPix || valorPix <= 0) {
+      alert("Digite um valor válido!");
+      return;
+    }
+    // Aqui você chama sua rota de gerar Pix
+    const res = await fetch("/api/depositos/pix", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ valor: valorPix }),
+    });
+    const data = await res.json();
     if (res.ok) {
-      const data = await res.json();
-      setHistorico(data);
+      alert("Pix gerado com sucesso!");
+    } else {
+      alert(data.error || "Erro ao gerar Pix.");
     }
   };
 
-  const carregarDadosUsuario = async () => {
-    const res = await fetch('/api/user/me');
-    if (res.ok) {
-      const data = await res.json();
-      setSaldo(data.saldo || 0);
-      setValorInvestido(data.valorInvestido || 0);
-      setPontos(data.pontos || 0);
-    }
-  };
-
-  const handleInvestir = async () => {
-    if (!valor || valor <= 0) {
-      alert('Digite um valor válido!');
-      return;
-    }
-    if (valor > saldo) {
-      alert('Saldo insuficiente!');
+  const handleVerificarTx = async () => {
+    if (!txHash) {
+      alert("Cole a hash da transação!");
       return;
     }
 
-    setLoading(true);
-
-    const res = await fetch('/api/investir', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ valor }),
+    const res = await fetch("/api/depositos/usdt/verificar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hash: txHash, valor: valorUSDT }),
     });
 
     const data = await res.json();
 
     if (res.ok) {
-      alert('Investimento realizado com sucesso!');
-      setSaldo(data.user.saldo);
-      setValorInvestido(data.user.valorInvestido);
-      setPontos(data.user.pontos);
-      setValor(0);
-      carregarHistorico();
+      alert("Depósito confirmado com sucesso!");
     } else {
-      alert(data.error || 'Erro ao investir.');
+      alert(data.error || "Erro ao verificar transação.");
     }
-
-    setLoading(false);
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-bold">💸 Investir</h1>
+    <div className="max-w-md mx-auto p-6 space-y-6 text-white">
+      <h1 className="text-2xl font-bold text-center">🎮 Tela de Depósito</h1>
+      <p className="text-center text-gray-400">
+        Adicione saldo via <b>Pix</b> ou <b>USDT (on-chain)</b>
+      </p>
 
-      <div className="bg-gray-800 text-white p-4 rounded">
-        <p>Saldo disponível: <strong>R$ {saldo.toFixed(2)}</strong></p>
-        <p>Total investido: <strong>R$ {valorInvestido.toFixed(2)}</strong></p>
-        <p>Pontos: <strong>{pontos}</strong></p>
-      </div>
-
-      <div className="flex gap-2">
+      {/* PIX */}
+      <div className="bg-gray-800 p-4 rounded-lg">
+        <label className="block mb-2">💰 Valor do Depósito (Pix)</label>
         <input
           type="number"
-          value={valor || ''}
-          onChange={(e) => setValor(parseFloat(e.target.value))}
-          placeholder="Valor a investir"
-          className="border px-3 py-2 rounded w-full"
+          value={valorPix || ""}
+          onChange={(e) => setValorPix(parseFloat(e.target.value))}
+          placeholder="Ex: 50.00"
+          className="w-full p-2 rounded text-black"
         />
         <button
-          onClick={handleInvestir}
-          disabled={loading}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+          onClick={handleGerarPix}
+          className="bg-green-600 w-full mt-3 p-2 rounded hover:bg-green-700"
         >
-          {loading ? 'Processando...' : 'Investir'}
+          Gerar Pix
         </button>
       </div>
 
-      <div>
-        <p className="mb-1">Progresso do Investimento</p>
-        <div className="w-full bg-gray-200 rounded h-4">
-          <div
-            className="bg-green-500 h-4 rounded"
-            style={{ width: `${Math.min(valorInvestido, 1000) / 10}%` }}
-          ></div>
-        </div>
-      </div>
+      {/* USDT */}
+      <div className="bg-gray-800 p-4 rounded-lg">
+        <label className="block mb-2">💵 Valor do Depósito (USDT)</label>
+        <input
+          type="number"
+          value={valorUSDT || ""}
+          onChange={(e) => setValorUSDT(parseFloat(e.target.value))}
+          placeholder="Ex: 10 USDT"
+          className="w-full p-2 rounded text-black"
+        />
 
-      <div>
-        <h2 className="text-lg font-semibold mt-4">Histórico de investimentos</h2>
-        {historico.length === 0 ? (
-          <p className="text-gray-500">Nenhum investimento realizado ainda.</p>
-        ) : (
-          <ul className="divide-y divide-gray-300 mt-2">
-            {historico.map((inv) => (
-              <li key={inv.id} className="py-2 flex justify-between">
-                <span>R$ {inv.valor.toFixed(2)}</span>
-                <span className="text-gray-500 text-sm">
-                  {new Date(inv.criadoEm).toLocaleString()}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <p className="mt-3 text-sm">
+          Envie para esta carteira:{" "}
+          <span className="font-mono text-green-400">{carteiraUSDT}</span>
+        </p>
+
+        <label className="block mt-4 mb-2">📌 Hash da Transação</label>
+        <input
+          type="text"
+          value={txHash}
+          onChange={(e) => setTxHash(e.target.value)}
+          placeholder="Cole a hash da transação"
+          className="w-full p-2 rounded text-black"
+        />
+
+        <button
+          onClick={handleVerificarTx}
+          className="bg-blue-600 w-full mt-3 p-2 rounded hover:bg-blue-700"
+        >
+          Verificar Transação
+        </button>
       </div>
     </div>
   );
