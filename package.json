@@ -10,7 +10,8 @@
     "build:android": "npm run build && npx cap copy android",
     "sync:android": "npx cap sync android",
     "socket": "ts-node app/socket/server.ts",
-    "atualizar": "node --loader ts-node/esm app/scripts/atualizarInvestimentos.ts"
+    "atualizar": "node --loader ts-node/esm app/scripts/atualizarInvestimentos.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",
