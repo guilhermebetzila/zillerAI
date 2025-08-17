@@ -111,7 +111,7 @@ export default function Home() {
           <li>Comunidade exclusiva dE investidores.</li>
         </ul>
         <p className="text-center font-semibold text-xl">
-          💡 Nossa IA observa, decide, ajusta e gera lucro para você — mesmo enquanto você dorme.
+          💡 Nossa IA Ziller observa, decide, ajusta e gera lucro para você — mesmo enquanto você dorme.
         </p>
       </section>
 
