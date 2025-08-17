@@ -1,14 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Removi o output: 'export' para que o Next.js rode em modo SSR normal, permitindo rotas API
-  // output: 'export',
-
-  distDir: '.next', // padrão
+  distDir: '.next', // diretório padrão de build
 
   trailingSlash: true,
 
   images: {
     domains: ['blob.v0.dev'],
+  },
+
+  env: {
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
+    NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL,
+    NEXT_PUBLIC_USDT_WALLET: process.env.NEXT_PUBLIC_USDT_WALLET,
   },
 };
 
