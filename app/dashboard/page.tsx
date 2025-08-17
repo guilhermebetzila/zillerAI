@@ -120,10 +120,12 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold flex items-center gap-4">
             Olá, {user?.nome || user?.email}
             <span className="bg-black text-white px-3 py-1 text-sm rounded shadow-sm font-semibold">
-              Saldo: R$ {Number(saldo || 0).toFixed(2)}
+              Saldo: {Number(saldo || 0).toFixed(2)} USDT
             </span>
           </h1>
-          <p className="text-white text-sm mt-1">Valor investido: R$ {Number(valorInvestido || 0).toFixed(2)}</p>
+          <p className="text-white text-sm mt-1">
+            Valor investido: {Number(valorInvestido || 0).toFixed(2)} USDT
+          </p>
           <p className="text-white mt-2">
             Você já indicou <strong>{totalIndicados}</strong> pessoa(s)!
           </p>

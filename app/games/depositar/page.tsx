@@ -43,13 +43,14 @@ export default function Depositar() {
 
   const [valor, setValor] = useState('');
   const [valorUSDT, setValorUSDT] = useState('');
-  const [txHashUSDT, setTxHashUSDT] = useState(''); // 👈 novo: hash informado pelo cliente
+  const [txHashUSDT, setTxHashUSDT] = useState('');
+  const [depositoId, setDepositoId] = useState<string | null>(null);
 
   const [copiacola, setCopiacola] = useState('');
   const [erro, setErro] = useState('');
-  const [msg, setMsg] = useState(''); // 👈 novo: mensagem de sucesso/info
+  const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loadingUSDT, setLoadingUSDT] = useState(false); // 👈 novo
+  const [loadingUSDT, setLoadingUSDT] = useState(false);
 
   const [historicoPix, setHistoricoPix] = useState<any[]>([]);
   const [onchainConfirmados, setOnchainConfirmados] = useState<any[]>([]);
@@ -63,23 +64,16 @@ export default function Depositar() {
 
   async function buscarHistorico() {
     try {
-      if (!API_BASE_URL) {
-        console.warn('⚠️ API_BASE_URL não configurada');
-        return;
-      }
+      if (!API_BASE_URL) return;
       const res = await fetch(`${API_BASE_URL}/api/depositos`, {
         credentials: 'include',
       });
-      if (!res.ok) {
-        console.error('Erro ao buscar histórico:', res.status);
-        return;
-      }
+      if (!res.ok) return;
       const dados = await res.json();
       setHistoricoPix(dados.pix || []);
       setOnchainConfirmados(dados.onchainConfirmados || []);
       setOnchainPendentes(dados.onchainPendentes || []);
     } catch (error) {
-      console.error('Erro ao buscar histórico:', error);
       setErro('Erro ao carregar histórico de depósitos.');
     }
   }
@@ -105,10 +99,43 @@ export default function Depositar() {
       setValor('');
       await buscarHistorico();
     } catch (error) {
-      console.error('Erro ao criar pagamento:', error);
       setErro('Erro ao criar pagamento.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const solicitarUSDT = async () => {
+    setErro('');
+    setMsg('');
+    setLoadingUSDT(true);
+    try {
+      if (!session?.user?.email) {
+        setErro('Você precisa estar logado para solicitar depósito.');
+        return;
+      }
+      if (!valorUSDT) {
+        setErro('Informe o valor do depósito em USDT.');
+        return;
+      }
+
+      const res = await fetch('/api/depositos/usdt/solicitar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ valor: Number(valorUSDT) }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErro(data?.error || 'Falha ao solicitar depósito.');
+      } else {
+        setDepositoId(data.depositoId);
+        setMsg('Depósito USDT solicitado. Agora envie o USDT e cole o hash abaixo.');
+      }
+    } catch (e) {
+      setErro('Erro ao solicitar depósito USDT.');
+    } finally {
+      setLoadingUSDT(false);
     }
   };
 
@@ -121,14 +148,16 @@ export default function Depositar() {
         setErro('Informe o hash da transação.');
         return;
       }
-      // valorUSDT é opcional; o backend já lê o valor real on-chain
-      const body: any = { hash: txHashUSDT };
-      if (valorUSDT) body.valor = Number(valorUSDT);
+      if (!depositoId) {
+        setErro('Solicite o depósito antes de confirmar.');
+        return;
+      }
+
       const res = await fetch('/api/depositos/usdt/verificar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(body),
+        body: JSON.stringify({ depositoId, hash: txHashUSDT }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -137,10 +166,10 @@ export default function Depositar() {
         setMsg(data?.message || 'Depósito USDT confirmado.');
         setTxHashUSDT('');
         setValorUSDT('');
+        setDepositoId(null);
         await buscarHistorico();
       }
     } catch (e) {
-      console.error('Erro ao confirmar USDT:', e);
       setErro('Erro ao confirmar depósito USDT.');
     } finally {
       setLoadingUSDT(false);
@@ -202,7 +231,6 @@ export default function Depositar() {
           {loading ? 'Gerando Pix...' : '🔒 Gerar Pix'}
         </button>
 
-        {/* feedback */}
         {erro && <p className="text-red-500 mt-3 text-sm">❌ {erro}</p>}
         {msg && <p className="text-green-400 mt-3 text-sm">✅ {msg}</p>}
 
@@ -226,7 +254,7 @@ export default function Depositar() {
           </div>
         )}
 
-        {/* --- USDT On-Chain (envio) --- */}
+        {/* --- USDT On-Chain --- */}
         <div className="mt-10">
           <h2 className="text-xl font-semibold text-yellow-400 mb-4">
             💸 Depósito em USDT (On-Chain)
@@ -246,11 +274,11 @@ export default function Depositar() {
             </button>
           </div>
 
-          {/* --- Confirmação por hash --- */}
           <div className="mt-6 bg-zinc-800 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">✅ Confirmar pagamento USDT</h3>
+            <h3 className="font-semibold mb-2">✅ Solicitar e confirmar depósito USDT</h3>
+
             <label className="text-white text-xs mb-1 block">
-              Valor (USDT) — opcional (o sistema usa o valor real da blockchain)
+              Valor (USDT)
             </label>
             <input
               className="w-full p-2 rounded bg-black border border-zinc-700 text-white mb-3"
@@ -260,31 +288,35 @@ export default function Depositar() {
               onChange={(e) => setValorUSDT(e.target.value)}
             />
 
-            <label className="text-white text-xs mb-1 block">Hash da transação (BscScan)</label>
-            <input
-              className="w-full p-2 rounded bg-black border border-zinc-700 text-white mb-3 font-mono"
-              placeholder="0x..."
-              value={txHashUSDT}
-              onChange={(e) => setTxHashUSDT(e.target.value.trim())}
-            />
-
-            <button
-              onClick={confirmarUSDT}
-              disabled={loadingUSDT || !txHashUSDT}
-              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-2 rounded transition"
-            >
-              {loadingUSDT ? 'Verificando...' : 'Confirmar depósito USDT'}
-            </button>
-
-            <p className="text-xs text-gray-400 mt-2">
-              Dica: copie o hash no seu app de carteira ou no BscScan após enviar o USDT.
-            </p>
+            {!depositoId ? (
+              <button
+                onClick={solicitarUSDT}
+                disabled={loadingUSDT || !valorUSDT}
+                className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-2 rounded transition"
+              >
+                {loadingUSDT ? 'Solicitando...' : 'Solicitar depósito USDT'}
+              </button>
+            ) : (
+              <>
+                <label className="text-white text-xs mb-1 block mt-3">
+                  Hash da transação (BscScan)
+                </label>
+                <input
+                  className="w-full p-2 rounded bg-black border border-zinc-700 text-white mb-3 font-mono"
+                  placeholder="0x..."
+                  value={txHashUSDT}
+                  onChange={(e) => setTxHashUSDT(e.target.value.trim())}
+                />
+                <button
+                  onClick={confirmarUSDT}
+                  disabled={loadingUSDT || !txHashUSDT}
+                  className="w-full bg-green-500 hover:bg-green-600 text-black font-semibold py-2 rounded transition"
+                >
+                  {loadingUSDT ? 'Verificando...' : 'Confirmar depósito USDT'}
+                </button>
+              </>
+            )}
           </div>
-
-          <p className="mt-3 text-xs text-gray-400">
-            Após a confirmação, o depósito aparecerá em{' '}
-            <strong>"On-Chain Confirmados"</strong>.
-          </p>
         </div>
 
         {/* Histórico Pix */}
@@ -323,7 +355,7 @@ export default function Depositar() {
           <h2 className="text-xl font-semibold text-yellow-400 mb-4">
             ✅ On-Chain Confirmados
           </h2>
-        {onchainConfirmados.length === 0 ? (
+          {onchainConfirmados.length === 0 ? (
             <p className="text-gray-400">Nenhum depósito confirmado ainda.</p>
           ) : (
             <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">

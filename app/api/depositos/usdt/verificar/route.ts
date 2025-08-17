@@ -2,17 +2,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ethers } from "ethers";
-import { getServerSession } from "next-auth"; // 👈 pegar usuário logado no servidor
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions"; // ajuste o path se o seu for diferente
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 
 const RPC_URL = process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org/";
-// USDT (BEP-20) na BNB Smart Chain
 const USDT_BEP20 = "0x55d398326f99059fF775485246999027B3197955";
-// ATENÇÃO: na BSC, USDT tem 18 decimais no contrato acima.
-// (Se o seu contrato oficial usar 18, mantenha. Se usar 6, mude aqui.)
 const DECIMALS = 18;
-
-// carteira da EMPRESA (destino)
 const MAIN_WALLET = (process.env.MAIN_WALLET || "").toLowerCase();
 
 const ERC20_ABI = [
@@ -50,18 +45,18 @@ export async function POST(req: Request) {
       );
     }
 
-    // Filtra logs do contrato do USDT
+    // Logs do contrato USDT
     const usdtLogs = receipt.logs.filter(
       (l) => (l.address || "").toLowerCase() === USDT_BEP20.toLowerCase()
     );
     if (usdtLogs.length === 0) {
       return NextResponse.json(
-        { error: "Transação não é uma transferência de USDT (contrato inválido)." },
+        { error: "Transação não é de USDT (contrato inválido)." },
         { status: 400 }
       );
     }
 
-    // Decodifica o primeiro Transfer
+    // Decodifica Transfer
     let decoded: { from: string; to: string; value: bigint } | undefined;
     for (const log of usdtLogs) {
       try {
@@ -70,17 +65,18 @@ export async function POST(req: Request) {
           data: log.data as string,
         });
         if (parsed?.name === "Transfer") {
-          const from = (parsed.args.from as string) || "";
-          const to = (parsed.args.to as string) || "";
-          const value = parsed.args.value as bigint;
-          decoded = { from, to, value };
+          decoded = {
+            from: (parsed.args.from as string) || "",
+            to: (parsed.args.to as string) || "",
+            value: parsed.args.value as bigint,
+          };
           break;
         }
       } catch {}
     }
     if (!decoded) {
       return NextResponse.json(
-        { error: "Não foi possível decodificar evento Transfer de USDT." },
+        { error: "Não foi possível decodificar evento Transfer." },
         { status: 400 }
       );
     }
@@ -89,7 +85,7 @@ export async function POST(req: Request) {
     const amount = Number(ethers.formatUnits(decoded.value, DECIMALS));
     const amountStr = amount.toString();
 
-    // evitar duplicidade
+    // Evitar duplicidade
     const jaExiste = await prisma.onChainDeposit.findUnique({
       where: { txHash: hash },
     });
@@ -101,12 +97,11 @@ export async function POST(req: Request) {
       });
     }
 
-    // 1) Caso "endereço do usuário" (se você tiver usuários com carteira própria salva)
-    const userByWallet =
-      await prisma.user.findUnique({
-        where: { carteira: toAddr },
-        select: { id: true, email: true },
-      });
+    // Caso 1: depósito direto na carteira do usuário
+    const userByWallet = await prisma.user.findUnique({
+      where: { carteira: toAddr },
+      select: { id: true },
+    });
 
     if (userByWallet) {
       const [onchain] = await prisma.$transaction([
@@ -129,28 +124,23 @@ export async function POST(req: Request) {
         }),
         prisma.user.update({
           where: { id: userByWallet.id },
-          data: { saldo: { increment: amountStr } },
+          data: { saldo: { increment: amount } },
         }),
       ]);
 
       return NextResponse.json({
         ok: true,
-        message: "Depósito USDT confirmado e creditado (carteira do usuário).",
+        message: "Depósito confirmado e creditado (carteira do usuário).",
         amount,
         txHash: hash,
         userId: userByWallet.id,
         onchainId: onchain.id,
-        observacao:
-          typeof valor === "number" && Math.abs(valor - amount) > 0.000001
-            ? "Valor informado difere do valor on-chain; foi usado o valor real."
-            : undefined,
       });
     }
 
-    // 2) Caso "carteira da EMPRESA": creditar o usuário logado
+    // Caso 2: depósito na carteira da empresa → credita usuário logado
     if (MAIN_WALLET && toAddr === MAIN_WALLET) {
       if (!currentUserId) {
-        // sem sessão → salva pendente para posterior vinculação manual
         const onchain = await prisma.onChainDeposit.create({
           data: {
             txHash: hash,
@@ -164,7 +154,7 @@ export async function POST(req: Request) {
         return NextResponse.json({
           ok: true,
           message:
-            "Pagamento recebido na carteira da empresa, mas sem usuário logado. Registro pendente.",
+            "Pagamento recebido na carteira da empresa, mas sem usuário logado (pendente).",
           amount,
           txHash: hash,
           onchainId: onchain.id,
@@ -191,14 +181,14 @@ export async function POST(req: Request) {
         }),
         prisma.user.update({
           where: { id: currentUserId },
-          data: { saldo: { increment: amountStr } },
+          data: { saldo: { increment: amount } },
         }),
       ]);
 
       return NextResponse.json({
         ok: true,
         message:
-          "Depósito USDT confirmado e creditado (carteira da empresa + usuário logado).",
+          "Depósito confirmado e creditado (empresa + usuário logado).",
         amount,
         txHash: hash,
         userId: currentUserId,
@@ -206,7 +196,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // 3) Outro destino → pendente (para investigação)
+    // Caso 3: outro endereço → pendente
     const onchain = await prisma.onChainDeposit.create({
       data: {
         txHash: hash,
@@ -220,8 +210,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ok: true,
-      message:
-        "Transação registrada como pendente (destinatário não corresponde).",
+      message: "Transação registrada como pendente (endereço estranho).",
       amount,
       txHash: hash,
       onchainId: onchain.id,

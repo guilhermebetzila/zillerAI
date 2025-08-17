@@ -1,48 +1,56 @@
 // app/api/depositos/usdt/solicitar/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 
-// Endereço fixo da carteira do sistema (vem do .env)
-const USDT_WALLET = process.env.NEXT_PUBLIC_USDT_WALLET || "";
+const MAIN_WALLET = (process.env.MAIN_WALLET || "").toLowerCase();
 
 export async function POST(req: Request) {
   try {
-    const { userId, valor } = await req.json();
+    const session = await getServerSession(authOptions);
+    const currentUserId = (session?.user as any)?.id || null;
 
-    if (!userId || !valor) {
+    if (!currentUserId) {
       return NextResponse.json(
-        { error: "Parâmetros inválidos: userId e valor são obrigatórios." },
+        { error: "Usuário não autenticado." },
+        { status: 401 }
+      );
+    }
+
+    const { valor } = await req.json().catch(() => ({} as any));
+    if (!valor || typeof valor !== "number" || valor <= 0) {
+      return NextResponse.json(
+        { error: "Parâmetro inválido: 'valor' deve ser número > 0." },
         { status: 400 }
       );
     }
 
-    if (!USDT_WALLET) {
+    if (!MAIN_WALLET) {
       return NextResponse.json(
-        { error: "Carteira USDT não configurada no servidor." },
+        { error: "Carteira principal (MAIN_WALLET) não configurada." },
         { status: 500 }
       );
     }
 
-    // Cria solicitação no banco (depósito aguardando pagamento)
+    // Cria um registro de solicitação de depósito
     const deposito = await prisma.deposito.create({
       data: {
-        userId,
-        valor: valor.toString(), // Prisma Decimal espera string
-        status: "pendente",
-        metodo: "usdt",
+        userId: currentUserId,
+        valor: valor.toString(),
+        status: "aguardando", // ainda não creditado
       },
     });
 
     return NextResponse.json({
       ok: true,
-      message: "Solicitação de depósito criada.",
+      message: "Depósito solicitado com sucesso. Envie USDT para a carteira.",
       depositoId: deposito.id,
       valor,
-      carteira: USDT_WALLET,
-      observacao: "Envie exatamente esse valor para a carteira informada.",
+      carteiraDestino: MAIN_WALLET,
     });
   } catch (err) {
-    console.error("❌ Erro ao solicitar depósito:", err);
+    console.error("❌ Erro em solicitar depósito USDT:", err);
     return NextResponse.json(
       { error: "Erro interno ao solicitar depósito." },
       { status: 500 }
