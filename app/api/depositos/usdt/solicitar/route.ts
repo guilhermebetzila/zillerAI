@@ -11,6 +11,11 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
     const currentUserId = (session?.user as any)?.id || null;
 
+    // 🔎 Logs para debug
+    console.log("🔎 MAIN_WALLET:", MAIN_WALLET);
+    console.log("🔎 SESSION:", session);
+    console.log("🔎 currentUserId:", currentUserId);
+
     if (!currentUserId) {
       return NextResponse.json(
         { error: "Usuário não autenticado." },
@@ -20,6 +25,8 @@ export async function POST(req: Request) {
 
     // 📥 Pega valor do body
     const { valor } = await req.json().catch(() => ({} as any));
+    console.log("🔎 Valor recebido:", valor);
+
     if (!valor || typeof valor !== "number" || valor <= 0) {
       return NextResponse.json(
         { error: "Parâmetro inválido: 'valor' deve ser número > 0." },
@@ -43,6 +50,8 @@ export async function POST(req: Request) {
         status: "aguardando", // ainda não creditado
       },
     });
+
+    console.log("✅ Depósito criado:", deposito);
 
     return NextResponse.json({
       ok: true,
