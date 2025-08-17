@@ -1,4 +1,3 @@
-// app/api/depositos/usdt/solicitar/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
@@ -8,6 +7,7 @@ const MAIN_WALLET = (process.env.MAIN_WALLET || "").toLowerCase();
 
 export async function POST(req: Request) {
   try {
+    // 🔑 Pega usuário logado
     const session = await getServerSession(authOptions);
     const currentUserId = (session?.user as any)?.id || null;
 
@@ -18,6 +18,7 @@ export async function POST(req: Request) {
       );
     }
 
+    // 📥 Pega valor do body
     const { valor } = await req.json().catch(() => ({} as any));
     if (!valor || typeof valor !== "number" || valor <= 0) {
       return NextResponse.json(
@@ -33,11 +34,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Cria um registro de solicitação de depósito
+    // 💾 Cria registro de solicitação de depósito
     const deposito = await prisma.deposito.create({
       data: {
         userId: currentUserId,
-        valor: valor.toString(),
+        valor, // Prisma aceita number e converte para Decimal
+        metodo: "usdt", // 👈 identifica que é depósito via USDT
         status: "aguardando", // ainda não creditado
       },
     });
