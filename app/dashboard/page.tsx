@@ -35,8 +35,8 @@ export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [saldo, setSaldo] = useState<number>(0);
-  const [valorInvestido, setValorInvestido] = useState<number>(0);
+  const [saldo, setSaldo] = useState<number | string>(0);
+  const [valorInvestido, setValorInvestido] = useState<number | string>(0);
   const [totalIndicados, setTotalIndicados] = useState<number>(0);
   const [pontos, setPontos] = useState<number>(0);
   const [pontosDiretos, setPontosDiretos] = useState<number>(0);
@@ -52,10 +52,8 @@ export default function DashboardPage() {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            // Enviar token se necessário:
-            // 'Authorization': `Bearer ${session?.token}`
           },
-          credentials: 'include', // importante se o cookie HttpOnly estiver sendo usado
+          credentials: 'include',
         });
         const data = await res.json();
         if (res.ok) {
@@ -122,10 +120,10 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold flex items-center gap-4">
             Olá, {user?.nome || user?.email}
             <span className="bg-black text-white px-3 py-1 text-sm rounded shadow-sm font-semibold">
-              Saldo: R$ {saldo.toFixed(2)}
+              Saldo: R$ {Number(saldo || 0).toFixed(2)}
             </span>
           </h1>
-          <p className="text-white text-sm mt-1">Valor investido: R$ {valorInvestido.toFixed(2)}</p>
+          <p className="text-white text-sm mt-1">Valor investido: R$ {Number(valorInvestido || 0).toFixed(2)}</p>
           <p className="text-white mt-2">
             Você já indicou <strong>{totalIndicados}</strong> pessoa(s)!
           </p>
@@ -194,7 +192,6 @@ export default function DashboardPage() {
             Investir Agora
           </button>
         </div>
-
       </div>
 
       {/* Footer */}
