@@ -7,6 +7,9 @@ import { useSession } from 'next-auth/react';
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
 
+// 🟡 Endereço da carteira do sistema (fixo no .env)
+const USDT_WALLET = process.env.NEXT_PUBLIC_USDT_WALLET || '';
+
 function StatusBadge({ status }: { status: string }) {
   const cores: Record<string, string> = {
     confirmado: 'bg-green-500 text-black',
@@ -45,7 +48,6 @@ export default function Depositar() {
   const [historicoPix, setHistoricoPix] = useState<any[]>([]);
   const [onchainConfirmados, setOnchainConfirmados] = useState<any[]>([]);
   const [onchainPendentes, setOnchainPendentes] = useState<any[]>([]);
-  const [usuario, setUsuario] = useState<any>(null);
 
   const { data: session } = useSession();
 
@@ -73,7 +75,6 @@ export default function Depositar() {
       setHistoricoPix(dados.pix || []);
       setOnchainConfirmados(dados.onchainConfirmados || []);
       setOnchainPendentes(dados.onchainPendentes || []);
-      setUsuario(dados.usuario || null);
     } catch (error) {
       console.error('Erro ao buscar histórico:', error);
       setErro('Erro ao carregar histórico de depósitos.');
@@ -119,11 +120,11 @@ export default function Depositar() {
 
   const copiarCarteira = async () => {
     try {
-      if (!usuario?.carteira) return;
-      await navigator.clipboard.writeText(usuario.carteira);
+      if (!USDT_WALLET) return;
+      await navigator.clipboard.writeText(USDT_WALLET);
       alert('Endereço da carteira copiado com sucesso!');
     } catch {
-      prompt('Copie manualmente o endereço da carteira:', usuario?.carteira);
+      prompt('Copie manualmente o endereço da carteira:', USDT_WALLET);
     }
   };
 
@@ -197,11 +198,11 @@ export default function Depositar() {
           <div className="bg-zinc-800 p-4 rounded-lg text-sm">
             <p className="mb-2">🚨 Envie este valor para a carteira abaixo:</p>
             <p className="font-mono break-all text-green-400">
-              {usuario?.carteira || 'Carteira não vinculada'}
+              {USDT_WALLET || 'Carteira não configurada'}
             </p>
             <button
               onClick={copiarCarteira}
-              disabled={!usuario?.carteira}
+              disabled={!USDT_WALLET}
               className="mt-2 bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded"
             >
               📋 Copiar Carteira
@@ -210,7 +211,7 @@ export default function Depositar() {
 
           <p className="mt-3 text-xs text-gray-400">
             Após enviar, aguarde a confirmação da rede. O depósito aparecerá em
-            "On-Chain Pendentes" até ser validado pelo sistema.
+            <strong> "On-Chain Pendentes"</strong> até ser validado pelo sistema.
           </p>
         </div>
 
@@ -326,14 +327,6 @@ export default function Depositar() {
             </ul>
           )}
         </div>
-
-        {/* Info da Carteira */}
-        {usuario?.carteira && (
-          <div className="mt-6 text-sm text-gray-400">
-            📌 Sua carteira vinculada:
-            <span className="text-white ml-1">{usuario.carteira}</span>
-          </div>
-        )}
       </div>
     </div>
   );
