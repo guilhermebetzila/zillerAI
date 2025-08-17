@@ -17,19 +17,31 @@ export async function POST(req: NextRequest) {
     const valor = parseFloat(body.valor);
 
     if (isNaN(valor) || valor < 1) {
-      return NextResponse.json({ error: "Valor inválido para investir (mínimo R$1)" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Valor inválido para investir (mínimo R$1)" },
+        { status: 400 }
+      );
     }
 
     const usuario = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, saldo: true, valorInvestido: true, pontos: true, graduacaoId: true }
+      select: {
+        id: true,
+        saldo: true,
+        valorInvestido: true,
+        pontos: true,
+        graduacaoId: true,
+      },
     });
 
     if (!usuario) {
       return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
-    if (usuario.saldo < valor) {
+    const saldoAtual = Number(usuario.saldo);
+    const investidoAtual = Number(usuario.valorInvestido);
+
+    if (saldoAtual < valor) {
       return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
     }
 
@@ -37,8 +49,8 @@ export async function POST(req: NextRequest) {
     await prisma.user.update({
       where: { id: userId },
       data: {
-        saldo: usuario.saldo - valor,
-        valorInvestido: usuario.valorInvestido + valor,
+        saldo: saldoAtual - valor,
+        valorInvestido: investidoAtual + valor,
       },
     });
 
@@ -47,7 +59,12 @@ export async function POST(req: NextRequest) {
       data: {
         userId,
         valor,
-        percentualDiario: valor <= 5000 ? 1.5 : valor <= 10000 ? parseFloat((Math.random() * (1.8 - 1.6) + 1.6).toFixed(2)) : parseFloat((Math.random() * (2.5 - 2.0) + 2.0).toFixed(2)),
+        percentualDiario:
+          valor <= 5000
+            ? 1.5
+            : valor <= 10000
+            ? parseFloat((Math.random() * (1.8 - 1.6) + 1.6).toFixed(2))
+            : parseFloat((Math.random() * (2.5 - 2.0) + 2.0).toFixed(2)),
         rendimentoAcumulado: 0,
         limite: valor * 2,
         ativo: true,
@@ -65,7 +82,6 @@ export async function POST(req: NextRequest) {
       pontos: pontosTotais,
       graduacao: graduacao?.nome || null,
     });
-
   } catch (error) {
     console.error("Erro ao investir:", error);
     return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
@@ -78,14 +94,14 @@ async function calcularPontos(userId: number): Promise<number> {
   if (!usuario) return 0;
 
   const investimentosProprios = await prisma.investimento.findMany({ where: { userId } });
-  let totalInvestido = investimentosProprios.reduce((acc, i) => acc + i.valor, 0);
+  let totalInvestido = investimentosProprios.reduce((acc, i) => acc + Number(i.valor), 0);
 
   async function somarRede(id: number): Promise<number> {
     const indicados = await prisma.user.findMany({ where: { indicadoPorId: id } });
     let total = 0;
     for (const ind of indicados) {
       const inv = await prisma.investimento.findMany({ where: { userId: ind.id } });
-      total += inv.reduce((acc, i) => acc + i.valor, 0);
+      total += inv.reduce((acc, i) => acc + Number(i.valor), 0);
       total += await somarRede(ind.id);
     }
     return total;
@@ -109,9 +125,7 @@ async function atualizarGraduacao(userId: number, pontos: number) {
     orderBy: { pontos: "asc" },
   });
 
-  const novaGraduacao = graduacoes
-    .filter(g => pontos >= g.pontos)
-    .pop();
+  const novaGraduacao = graduacoes.filter((g) => pontos >= g.pontos).pop();
 
   if (novaGraduacao) {
     await prisma.user.update({
