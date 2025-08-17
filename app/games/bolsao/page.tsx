@@ -64,7 +64,7 @@ export default function BolsaoPage() {
       <div className="rounded-lg p-6 w-full max-w-xl text-center border-2 border-white">
         <h2 className="text-xl font-semibold mb-2">Lucros Distribuídos</h2>
         <p className="text-4xl font-bold">{formatBRL(lucrosDistribuidos)}</p>
-        <span className="text-sm">Lucros distribuídos aos Zilers</span>
+        <span className="text-sm">Lucros distribuídoss aos Zilers</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
