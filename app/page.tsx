@@ -108,7 +108,7 @@ export default function Home() {
         <ul className="list-disc list-inside space-y-2">
           <li>Transparência total com relatórios diários.</li>
           <li>Segurança de dados com criptografia avançada.</li>
-          <li>Comunidade exclusiva de investidores.</li>
+          <li>Comunidade exclusiva dE investidores.</li>
         </ul>
         <p className="text-center font-semibold text-xl">
           💡 Nossa IA observa, decide, ajusta e gera lucro para você — mesmo enquanto você dorme.
