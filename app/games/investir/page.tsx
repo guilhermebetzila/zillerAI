@@ -123,9 +123,9 @@ export default function DepositarPage() {
       {/* Botão Voltar */}
       <button
         onClick={() => window.history.back()}
-        className="bg-gray-600 w-full mt-4 p-2 rounded hover:bg-gray-700"
+        className="bg-gray-700 w-full mt-6 p-2 rounded-lg font-semibold hover:bg-gray-600 transition"
       >
-        ⬅ Voltar Ao Perfil
+        ⬅ Voltar ao Perfil
       </button>
     </div>
   );
