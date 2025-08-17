@@ -11,6 +11,8 @@ const API_BASE_URL =
 // 🟡 Endereço da carteira do sistema (fixo no .env)
 const USDT_WALLET = process.env.NEXT_PUBLIC_USDT_WALLET || '';
 
+console.log("🔑 Wallet carregada no build:", process.env.NEXT_PUBLIC_USDT_WALLET);
+
 function StatusBadge({ status }: { status: string }) {
   const cores: Record<string, string> = {
     confirmado: 'bg-green-500 text-black',
