@@ -3,15 +3,12 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation'; // 👈 importei o hook do Next
+import { useRouter } from 'next/navigation';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
 
-// 🟡 Endereço da carteira do sistema (fixo no .env)
 const USDT_WALLET = process.env.NEXT_PUBLIC_USDT_WALLET || '';
-
-console.log("🔑 Wallet carregada no build:", process.env.NEXT_PUBLIC_USDT_WALLET);
 
 function StatusBadge({ status }: { status: string }) {
   const cores: Record<string, string> = {
@@ -42,13 +39,17 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function Depositar() {
-  const router = useRouter(); // 👈 hook para voltar ou navegar
+  const router = useRouter();
 
   const [valor, setValor] = useState('');
   const [valorUSDT, setValorUSDT] = useState('');
+  const [txHashUSDT, setTxHashUSDT] = useState(''); // 👈 novo: hash informado pelo cliente
+
   const [copiacola, setCopiacola] = useState('');
   const [erro, setErro] = useState('');
+  const [msg, setMsg] = useState(''); // 👈 novo: mensagem de sucesso/info
   const [loading, setLoading] = useState(false);
+  const [loadingUSDT, setLoadingUSDT] = useState(false); // 👈 novo
 
   const [historicoPix, setHistoricoPix] = useState<any[]>([]);
   const [onchainConfirmados, setOnchainConfirmados] = useState<any[]>([]);
@@ -66,16 +67,13 @@ export default function Depositar() {
         console.warn('⚠️ API_BASE_URL não configurada');
         return;
       }
-
       const res = await fetch(`${API_BASE_URL}/api/depositos`, {
         credentials: 'include',
       });
-
       if (!res.ok) {
         console.error('Erro ao buscar histórico:', res.status);
         return;
       }
-
       const dados = await res.json();
       setHistoricoPix(dados.pix || []);
       setOnchainConfirmados(dados.onchainConfirmados || []);
@@ -88,6 +86,7 @@ export default function Depositar() {
 
   const gerarPix = async () => {
     setErro('');
+    setMsg('');
     setCopiacola('');
     setLoading(true);
 
@@ -113,6 +112,41 @@ export default function Depositar() {
     }
   };
 
+  const confirmarUSDT = async () => {
+    setErro('');
+    setMsg('');
+    setLoadingUSDT(true);
+    try {
+      if (!txHashUSDT) {
+        setErro('Informe o hash da transação.');
+        return;
+      }
+      // valorUSDT é opcional; o backend já lê o valor real on-chain
+      const body: any = { hash: txHashUSDT };
+      if (valorUSDT) body.valor = Number(valorUSDT);
+      const res = await fetch('/api/depositos/usdt/verificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErro(data?.error || 'Falha ao verificar transação.');
+      } else {
+        setMsg(data?.message || 'Depósito USDT confirmado.');
+        setTxHashUSDT('');
+        setValorUSDT('');
+        await buscarHistorico();
+      }
+    } catch (e) {
+      console.error('Erro ao confirmar USDT:', e);
+      setErro('Erro ao confirmar depósito USDT.');
+    } finally {
+      setLoadingUSDT(false);
+    }
+  };
+
   const copiarCodigo = async () => {
     try {
       if (!copiacola) return;
@@ -135,9 +169,8 @@ export default function Depositar() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-4 py-10">
-      {/* 🔙 Botão de voltar */}
       <button
-        onClick={() => router.back()} // 👈 volta pra página anterior
+        onClick={() => router.back()}
         className="mb-6 bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg"
       >
         ⬅️ Voltar
@@ -149,7 +182,7 @@ export default function Depositar() {
       </p>
 
       <div className="bg-zinc-900 p-6 rounded-xl w-full max-w-md">
-        {/* Input Pix */}
+        {/* --- Pix --- */}
         <label className="text-white text-sm mb-2 flex items-center gap-1">
           🪙 Valor do Depósito (Pix)
         </label>
@@ -169,7 +202,9 @@ export default function Depositar() {
           {loading ? 'Gerando Pix...' : '🔒 Gerar Pix'}
         </button>
 
+        {/* feedback */}
         {erro && <p className="text-red-500 mt-3 text-sm">❌ {erro}</p>}
+        {msg && <p className="text-green-400 mt-3 text-sm">✅ {msg}</p>}
 
         {copiacola && (
           <div className="mt-4">
@@ -191,25 +226,14 @@ export default function Depositar() {
           </div>
         )}
 
-        {/* On-Chain USDT */}
+        {/* --- USDT On-Chain (envio) --- */}
         <div className="mt-10">
           <h2 className="text-xl font-semibold text-yellow-400 mb-4">
             💸 Depósito em USDT (On-Chain)
           </h2>
 
-          <label className="text-white text-sm mb-2 block">
-            Valor do Depósito (USDT)
-          </label>
-          <input
-            className="w-full p-2 rounded bg-black border border-zinc-700 text-white mb-4"
-            type="number"
-            placeholder="Ex: 50"
-            value={valorUSDT}
-            onChange={(e) => setValorUSDT(e.target.value)}
-          />
-
           <div className="bg-zinc-800 p-4 rounded-lg text-sm">
-            <p className="mb-2">🚨 Envie este valor para a carteira abaixo:</p>
+            <p className="mb-2">🚨 Envie USDT para a carteira abaixo (BEP-20 / BSC):</p>
             <p className="font-mono break-all text-green-400">
               {USDT_WALLET || 'Carteira não configurada'}
             </p>
@@ -222,9 +246,44 @@ export default function Depositar() {
             </button>
           </div>
 
+          {/* --- Confirmação por hash --- */}
+          <div className="mt-6 bg-zinc-800 p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">✅ Confirmar pagamento USDT</h3>
+            <label className="text-white text-xs mb-1 block">
+              Valor (USDT) — opcional (o sistema usa o valor real da blockchain)
+            </label>
+            <input
+              className="w-full p-2 rounded bg-black border border-zinc-700 text-white mb-3"
+              type="number"
+              placeholder="Ex: 50"
+              value={valorUSDT}
+              onChange={(e) => setValorUSDT(e.target.value)}
+            />
+
+            <label className="text-white text-xs mb-1 block">Hash da transação (BscScan)</label>
+            <input
+              className="w-full p-2 rounded bg-black border border-zinc-700 text-white mb-3 font-mono"
+              placeholder="0x..."
+              value={txHashUSDT}
+              onChange={(e) => setTxHashUSDT(e.target.value.trim())}
+            />
+
+            <button
+              onClick={confirmarUSDT}
+              disabled={loadingUSDT || !txHashUSDT}
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-2 rounded transition"
+            >
+              {loadingUSDT ? 'Verificando...' : 'Confirmar depósito USDT'}
+            </button>
+
+            <p className="text-xs text-gray-400 mt-2">
+              Dica: copie o hash no seu app de carteira ou no BscScan após enviar o USDT.
+            </p>
+          </div>
+
           <p className="mt-3 text-xs text-gray-400">
-            Após enviar, aguarde a confirmação da rede. O depósito aparecerá em
-            <strong> "On-Chain Pendentes"</strong> até ser validado pelo sistema.
+            Após a confirmação, o depósito aparecerá em{' '}
+            <strong>"On-Chain Confirmados"</strong>.
           </p>
         </div>
 
@@ -243,7 +302,7 @@ export default function Depositar() {
                   className="text-sm text-gray-200 border-b border-gray-600 pb-2 flex justify-between items-center"
                 >
                   <span>
-                    💵 R${' '}
+                    💵 R{'$ '}
                     {typeof item.valor === 'number'
                       ? item.valor.toFixed(2)
                       : '0.00'}{' '}
@@ -264,7 +323,7 @@ export default function Depositar() {
           <h2 className="text-xl font-semibold text-yellow-400 mb-4">
             ✅ On-Chain Confirmados
           </h2>
-          {onchainConfirmados.length === 0 ? (
+        {onchainConfirmados.length === 0 ? (
             <p className="text-gray-400">Nenhum depósito confirmado ainda.</p>
           ) : (
             <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">

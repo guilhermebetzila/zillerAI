@@ -44,7 +44,8 @@ model Deposito {
   userId Int
   user   User @relation(fields: [userId], references: [id])
 
-  status StatusDeposito @default(pendente)
+  status  StatusDeposito @default(pendente)
+  metodo  String         @default("manual") // 👈 novo campo
 }
 
 enum StatusDeposito {
