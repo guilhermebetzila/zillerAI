@@ -37,6 +37,7 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function Depositar() {
   const [valor, setValor] = useState('');
+  const [valorUSDT, setValorUSDT] = useState('');
   const [copiacola, setCopiacola] = useState('');
   const [erro, setErro] = useState('');
   const [loading, setLoading] = useState(false);
@@ -109,12 +110,20 @@ export default function Depositar() {
   const copiarCodigo = async () => {
     try {
       if (!copiacola) return;
-
       await navigator.clipboard.writeText(copiacola);
       alert('Código copiado com sucesso!');
     } catch {
-      // fallback para ambientes sem HTTPS
       prompt('Copie o código Pix manualmente:', copiacola);
+    }
+  };
+
+  const copiarCarteira = async () => {
+    try {
+      if (!usuario?.carteira) return;
+      await navigator.clipboard.writeText(usuario.carteira);
+      alert('Endereço da carteira copiado com sucesso!');
+    } catch {
+      prompt('Copie manualmente o endereço da carteira:', usuario?.carteira);
     }
   };
 
@@ -167,6 +176,43 @@ export default function Depositar() {
             </button>
           </div>
         )}
+
+        {/* On-Chain USDT */}
+        <div className="mt-10">
+          <h2 className="text-xl font-semibold text-yellow-400 mb-4">
+            💸 Depósito em USDT (On-Chain)
+          </h2>
+
+          <label className="text-white text-sm mb-2 block">
+            Valor do Depósito (USDT)
+          </label>
+          <input
+            className="w-full p-2 rounded bg-black border border-zinc-700 text-white mb-4"
+            type="number"
+            placeholder="Ex: 50"
+            value={valorUSDT}
+            onChange={(e) => setValorUSDT(e.target.value)}
+          />
+
+          <div className="bg-zinc-800 p-4 rounded-lg text-sm">
+            <p className="mb-2">🚨 Envie este valor para a carteira abaixo:</p>
+            <p className="font-mono break-all text-green-400">
+              {usuario?.carteira || 'Carteira não vinculada'}
+            </p>
+            <button
+              onClick={copiarCarteira}
+              disabled={!usuario?.carteira}
+              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded"
+            >
+              📋 Copiar Carteira
+            </button>
+          </div>
+
+          <p className="mt-3 text-xs text-gray-400">
+            Após enviar, aguarde a confirmação da rede. O depósito aparecerá em
+            "On-Chain Pendentes" até ser validado pelo sistema.
+          </p>
+        </div>
 
         {/* Histórico Pix */}
         <div className="mt-8">
