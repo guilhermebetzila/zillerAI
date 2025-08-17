@@ -53,6 +53,9 @@ export async function POST(req: Request) {
       );
     }
 
+    const userId = Number(deposito.userId); // ✅ garante Int
+    const amount = Number(deposito.amount); // ✅ garante number
+
     // Atualiza status e credita saldo
     const updated = await prisma.$transaction(async (tx) => {
       await tx.onChainDeposit.update({
@@ -61,8 +64,8 @@ export async function POST(req: Request) {
       });
 
       await tx.user.update({
-        where: { id: deposito.userId! },
-        data: { saldo: { increment: deposito.amount } },
+        where: { id: userId }, // ✅ Int garantido
+        data: { saldo: { increment: amount } },
       });
 
       return deposito;
@@ -72,8 +75,8 @@ export async function POST(req: Request) {
       ok: true,
       message: "Depósito confirmado e saldo creditado.",
       depositoId: deposito.id,
-      userId: deposito.userId,
-      valor: deposito.amount,
+      userId,
+      valor: amount,
     });
   } catch (err) {
     console.error("❌ Erro ao confirmar depósito:", err);

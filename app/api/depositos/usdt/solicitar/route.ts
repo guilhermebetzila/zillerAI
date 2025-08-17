@@ -9,12 +9,14 @@ export async function POST(req: Request) {
   try {
     // 🔑 Pega usuário logado
     const session = await getServerSession(authOptions);
-    const currentUserId = (session?.user as any)?.id || null;
+    const currentUserIdRaw = (session?.user as any)?.id || null;
+    const currentUserId = currentUserIdRaw ? Number(currentUserIdRaw) : null;
 
     // 🔎 Logs para debug
     console.log("🔎 MAIN_WALLET:", MAIN_WALLET);
     console.log("🔎 SESSION:", session);
-    console.log("🔎 currentUserId:", currentUserId);
+    console.log("🔎 currentUserId (raw):", currentUserIdRaw);
+    console.log("🔎 currentUserId (number):", currentUserId);
 
     if (!currentUserId) {
       return NextResponse.json(
@@ -44,10 +46,10 @@ export async function POST(req: Request) {
     // 💾 Cria registro de solicitação de depósito
     const deposito = await prisma.deposito.create({
       data: {
-        userId: currentUserId,
-        valor, // Prisma aceita number e converte para Decimal
-        metodo: "usdt", // 👈 identifica que é depósito via USDT
-        status: "aguardando", // ainda não creditado
+        userId: currentUserId, // ✅ Agora sempre é Int
+        valor: Number(valor),  // garante número válido
+        metodo: "usdt",
+        status: "aguardando",
       },
     });
 
