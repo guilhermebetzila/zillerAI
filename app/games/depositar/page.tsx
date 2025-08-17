@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation'; // 👈 importei o hook do Next
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
@@ -39,6 +40,8 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function Depositar() {
+  const router = useRouter(); // 👈 hook para voltar ou navegar
+
   const [valor, setValor] = useState('');
   const [valorUSDT, setValorUSDT] = useState('');
   const [copiacola, setCopiacola] = useState('');
@@ -130,6 +133,14 @@ export default function Depositar() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-4 py-10">
+      {/* 🔙 Botão de voltar */}
+      <button
+        onClick={() => router.back()} // 👈 volta pra página anterior
+        className="mb-6 bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg"
+      >
+        ⬅️ Voltar
+      </button>
+
       <h1 className="text-2xl font-bold mb-2">🕹️ Tela de Depósito</h1>
       <p className="mb-6 text-sm">
         Adicione saldo à sua conta via Pix ou USDT (on-chain).
