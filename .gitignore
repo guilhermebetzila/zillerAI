@@ -29,3 +29,5 @@ next-env.d.ts
 
 # prisma client gerado pelo node_modules (ignorar)
 node_modules/.prisma
+
+.vercel
