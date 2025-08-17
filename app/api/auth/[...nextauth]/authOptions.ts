@@ -31,11 +31,12 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Senha incorreta");
         }
 
+        // ✅ Corrigido: garante que saldo seja number (ou 0)
         return {
           id: String(user.id),
           nome: user.nome,
           email: user.email,
-          saldo: user.saldo ?? 0,
+          saldo: user.saldo ? Number(user.saldo) : 0,
         };
       },
     }),
@@ -43,7 +44,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.id = (user as any).id;
         token.nome = (user as any).nome;
         token.email = user.email;
         token.saldo = (user as any).saldo;
