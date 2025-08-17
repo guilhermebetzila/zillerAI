@@ -111,7 +111,7 @@ export default function Depositar() {
     try {
       if (!copiacola) return;
       await navigator.clipboard.writeText(copiacola);
-      alert('Código copiado com sucesso!');
+      alert('Código Pix copiado com sucesso!');
     } catch {
       prompt('Copie o código Pix manualmente:', copiacola);
     }
