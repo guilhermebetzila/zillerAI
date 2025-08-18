@@ -3,12 +3,19 @@ import { NextResponse } from 'next/server'
 
 export default withAuth(
   function middleware(req: NextRequestWithAuth) {
-    const { pathname } = req.nextUrl
+    const { pathname, searchParams } = req.nextUrl
     const token = req.nextauth.token
 
-    // Se já estiver logado, não deixa voltar pro login
-    if (token && pathname.startsWith('/login')) {
+    // Se já estiver logado, não deixa acessar login/register
+    if (token && (pathname === '/login' || pathname === '/register')) {
       return NextResponse.redirect(new URL('/dashboard', req.url))
+    }
+
+    // Evita callbackUrl infinito para /login (loop ERR_TOO_MANY_REDIRECTS)
+    if (searchParams.get('callbackUrl')?.includes('/login')) {
+      const url = new URL(req.url)
+      url.searchParams.delete('callbackUrl')
+      return NextResponse.redirect(url)
     }
 
     return NextResponse.next()
@@ -32,7 +39,7 @@ export const config = {
     '/minha-conta/:path*',
     '/investimentos/:path*',
     '/indicacoes/:path*',
-    '/login', // Mantém o login
-    // ❌ Não intercepta mais o /register
+    '/login',
+    '/register',
   ],
 }
