@@ -25,7 +25,10 @@ export default function RedePage() {
   useEffect(() => {
     async function carregarRede() {
       try {
-        const res = await fetch('/api/rede');
+        const res = await fetch('/api/rede', {
+          method: 'GET',
+          credentials: 'include', // 🔑 manda cookies da sessão
+        });
         if (!res.ok) throw new Error('Erro ao buscar rede');
         const data: UsuarioComIndicados = await res.json();
 
