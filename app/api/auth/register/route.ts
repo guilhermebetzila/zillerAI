@@ -2,7 +2,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { hash } from 'bcryptjs'
-import { sign } from 'jsonwebtoken'
 import { prisma } from '@/lib/prisma'
 import { sendWelcomeEmail } from '@/lib/mailer'
 
@@ -75,25 +74,11 @@ export async function POST(req: NextRequest) {
       console.error('Erro ao enviar email:', err)
     }
 
-    // Cria JWT + cookie
-    const token = sign(
-      { id: newUser.id, nome: newUser.nome, email: newUser.email },
-      process.env.JWT_SECRET!,
-      { expiresIn: '7d' }
-    )
-
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       userId: newUser.id,
       message: 'Cadastro realizado com sucesso',
     })
-
-    response.headers.set(
-      'Set-Cookie',
-      `token=${token}; Path=/; HttpOnly; Max-Age=${60 * 60 * 24 * 7}; SameSite=Lax`
-    )
-
-    return response
   } catch (error: any) {
     console.error('[REGISTER] Erro inesperado:', error)
     return NextResponse.json(
