@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
   try {
     const { name, email, cpf, password, indicador } = await req.json()
 
+    // Agora CPF é obrigatório
     if (!name || !email || !cpf || !password) {
       return NextResponse.json(
         { message: 'Todos os campos são obrigatórios.' },
@@ -82,7 +83,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('[REGISTER] Erro inesperado:', error)
     return NextResponse.json(
-      { message: `Erro interno: ${error.message || 'Erro desconhecido'}` },
+      { message: `Erro interno: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}` },
       { status: 500 }
     )
   }

@@ -13,14 +13,13 @@ model User {
   email          String    @unique
   nome           String
   senha          String
-  cpf            String?   @unique
+  cpf            String    @unique      // 🔥 Agora é obrigatório
   saldo          Decimal   @default(0)
   valorInvestido Decimal   @default(0)
   pontos         Int       @default(0)
   indicador      String?
   lastLogin      DateTime?
 
-  // 👇 Carteira vinculada ao usuário
   carteira String? @unique
 
   indicadoPorId Int?
@@ -45,7 +44,7 @@ model Deposito {
   user   User @relation(fields: [userId], references: [id])
 
   status  StatusDeposito @default(pendente)
-  metodo  String         @default("manual") // 👈 novo campo
+  metodo  String         @default("manual")
 }
 
 enum StatusDeposito {
@@ -90,9 +89,6 @@ model Graduacao {
   users  User[]
 }
 
-//
-// === Modelo para depósitos on-chain (USDT na BSC) ===
-//
 model OnChainDeposit {
   id        Int      @id @default(autoincrement())
   txHash    String   @unique
