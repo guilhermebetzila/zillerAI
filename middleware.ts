@@ -6,8 +6,8 @@ export default withAuth(
     const { pathname } = req.nextUrl
     const token = req.nextauth.token
 
-    // Se já estiver logado, não deixa voltar pro login/register
-    if (token && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
+    // Se já estiver logado, não deixa voltar pro login
+    if (token && pathname.startsWith('/login')) {
       return NextResponse.redirect(new URL('/dashboard', req.url))
     }
 
@@ -32,7 +32,7 @@ export const config = {
     '/minha-conta/:path*',
     '/investimentos/:path*',
     '/indicacoes/:path*',
-    '/login',
-    '/register',
+    '/login', // Mantém o login
+    // ❌ Não intercepta mais o /register
   ],
 }

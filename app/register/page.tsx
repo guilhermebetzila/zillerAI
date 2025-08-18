@@ -21,6 +21,7 @@ function FormularioRegistro() {
   const [hasNumber, setHasNumber] = useState(false)
   const [hasSpecial, setHasSpecial] = useState(false)
 
+  // Carregar indicador da URL ou localStorage
   useEffect(() => {
     const indicacaoURL = searchParams.get('indicador')
     if (indicacaoURL) {
