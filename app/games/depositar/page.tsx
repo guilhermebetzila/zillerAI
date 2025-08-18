@@ -218,7 +218,7 @@ export default function Depositar() {
         <input
           className="w-full p-2 rounded bg-black border border-zinc-700 text-white mb-4"
           type="number"
-          placeholder="10"
+          placeholder="1"
           value={valor}
           onChange={(e) => setValor(e.target.value)}
         />
@@ -283,7 +283,7 @@ export default function Depositar() {
             <input
               className="w-full p-2 rounded bg-black border border-zinc-700 text-white mb-3"
               type="number"
-              placeholder="Ex: 50"
+              placeholder="Ex: 1"
               value={valorUSDT}
               onChange={(e) => setValorUSDT(e.target.value)}
             />
