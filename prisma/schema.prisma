@@ -9,74 +9,59 @@ datasource db {
 }
 
 model User {
-  id             Int       @id @default(autoincrement())
-  email          String    @unique
-  nome           String
-  senha          String
-  cpf            String    @unique      // 🔥 Agora é obrigatório
-  saldo          Decimal   @default(0)
-  valorInvestido Decimal   @default(0)
-  pontos         Int       @default(0)
-  indicador      String?
-  lastLogin      DateTime?
-
-  carteira String? @unique
-
-  indicadoPorId Int?
-  indicadoPor   User?  @relation("Indicacoes", fields: [indicadoPorId], references: [id])
-  indicados     User[] @relation("Indicacoes")
-
-  graduacaoId Int?
-  graduacao   Graduacao? @relation(fields: [graduacaoId], references: [id])
-
-  investimentos   Investimento[]
+  id              Int                @id @default(autoincrement())
+  email           String             @unique
+  nome            String
+  senha           String
+  saldo           Decimal            @default(0)
+  valorInvestido  Decimal            @default(0)
+  indicador       String?
+  indicadoPorId   Int?
+  cpf             String             @unique
+  pontos          Int                @default(0)
+  graduacaoId     Int?
+  lastLogin       DateTime?
+  carteira        String?            @unique
   depositos       Deposito[]
-  rendimentos     RendimentoDiario[]
+  investimentos   Investimento[]
   onChainDeposits OnChainDeposit[]
+  rendimentos     RendimentoDiario[]
+  graduacao       Graduacao?         @relation(fields: [graduacaoId], references: [id])
+  indicadoPor     User?              @relation("Indicacoes", fields: [indicadoPorId], references: [id])
+  indicados       User[]             @relation("Indicacoes")
 }
 
 model Deposito {
-  id       Int      @id @default(autoincrement())
+  id       Int            @id @default(autoincrement())
   valor    Decimal
-  criadoEm DateTime @default(now())
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
-
-  status  StatusDeposito @default(pendente)
-  metodo  String         @default("manual")
-}
-
-enum StatusDeposito {
-  pendente
-  confirmado
-  aguardando
-  cancelado
-  em_analise
+  criadoEm DateTime       @default(now())
+  userId   Int
+  status   StatusDeposito @default(pendente)
+  metodo   String         @default("manual")
+  user     User           @relation(fields: [userId], references: [id])
 }
 
 model Investimento {
   id                  Int      @id @default(autoincrement())
   valor               Decimal
+  criadoEm            DateTime @default(now())
+  userId              Int
   percentualDiario    Decimal  @default(0.025)
   rendimentoAcumulado Decimal  @default(0)
-  criadoEm            DateTime @default(now())
-  limite              Decimal  @default(0)
   ativo               Boolean  @default(true)
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
+  limite              Decimal  @default(0)
+  user                User     @relation(fields: [userId], references: [id])
 }
 
 model RendimentoDiario {
   id         Int      @id @default(autoincrement())
-  user       User     @relation(fields: [userId], references: [id])
   userId     Int
   dateKey    String
   base       Decimal
   rate       Decimal
   amount     Decimal
   creditedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, dateKey])
   @@index([userId, dateKey])
@@ -90,15 +75,21 @@ model Graduacao {
 }
 
 model OnChainDeposit {
-  id        Int      @id @default(autoincrement())
-  txHash    String   @unique
+  id        Int            @id @default(autoincrement())
+  txHash    String         @unique
   from      String
   to        String
   amount    Decimal
-  createdAt DateTime @default(now())
+  createdAt DateTime       @default(now())
+  userId    Int?
+  status    StatusDeposito @default(pendente)
+  user      User?          @relation(fields: [userId], references: [id])
+}
 
-  userId Int?
-  user   User? @relation(fields: [userId], references: [id])
-
-  status StatusDeposito @default(pendente)
+enum StatusDeposito {
+  pendente
+  confirmado
+  cancelado
+  aguardando
+  em_analise
 }
