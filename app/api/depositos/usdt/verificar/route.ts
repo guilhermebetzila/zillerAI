@@ -2,13 +2,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ethers } from "ethers";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 
 const RPC_URL = process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org/";
 const USDT_BEP20 = "0x55d398326f99059fF775485246999027B3197955";
 const DECIMALS = 18;
-const MAIN_WALLET = (process.env.MAIN_WALLET || "").toLowerCase();
 
 const ERC20_ABI = [
   "event Transfer(address indexed from, address indexed to, uint256 value)",
@@ -19,10 +16,7 @@ const iface = new ethers.Interface(ERC20_ABI);
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    const currentUserId = (session?.user as any)?.id || null;
-
-    const { hash, valor } = await req.json().catch(() => ({} as any));
+    const { hash } = await req.json().catch(() => ({} as any));
 
     if (!hash || typeof hash !== "string") {
       return NextResponse.json(
@@ -45,7 +39,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Logs do contrato USDT
+    // Filtra logs do contrato USDT
     const usdtLogs = receipt.logs.filter(
       (l) => (l.address || "").toLowerCase() === USDT_BEP20.toLowerCase()
     );
@@ -83,9 +77,8 @@ export async function POST(req: Request) {
 
     const toAddr = decoded.to.toLowerCase();
     const amount = Number(ethers.formatUnits(decoded.value, DECIMALS));
-    const amountStr = amount.toString();
 
-    // Evitar duplicidade
+    // Verifica duplicidade
     const jaExiste = await prisma.onChainDeposit.findUnique({
       where: { txHash: hash },
     });
@@ -97,120 +90,21 @@ export async function POST(req: Request) {
       });
     }
 
-    // Caso 1: depósito direto na carteira do usuário
-    const userByWallet = await prisma.user.findUnique({
-      where: { carteira: toAddr },
-      select: { id: true },
-    });
-
-    if (userByWallet) {
-      const [onchain] = await prisma.$transaction([
-        prisma.onChainDeposit.create({
-          data: {
-            txHash: hash,
-            from: decoded.from.toLowerCase(),
-            to: toAddr,
-            amount: amountStr,
-            userId: userByWallet.id,
-            status: "confirmado",
-          },
-        }),
-        prisma.deposito.create({
-          data: {
-            userId: userByWallet.id,
-            valor: amountStr,
-            status: "confirmado",
-          },
-        }),
-        prisma.user.update({
-          where: { id: userByWallet.id },
-          data: { saldo: { increment: amount } },
-        }),
-      ]);
-
-      return NextResponse.json({
-        ok: true,
-        message: "Depósito confirmado e creditado (carteira do usuário).",
-        amount,
-        txHash: hash,
-        userId: userByWallet.id,
-        onchainId: onchain.id,
-      });
-    }
-
-    // Caso 2: depósito na carteira da empresa → credita usuário logado
-    if (MAIN_WALLET && toAddr === MAIN_WALLET) {
-      if (!currentUserId) {
-        const onchain = await prisma.onChainDeposit.create({
-          data: {
-            txHash: hash,
-            from: decoded.from.toLowerCase(),
-            to: toAddr,
-            amount: amountStr,
-            userId: null,
-            status: "pendente",
-          },
-        });
-        return NextResponse.json({
-          ok: true,
-          message:
-            "Pagamento recebido na carteira da empresa, mas sem usuário logado (pendente).",
-          amount,
-          txHash: hash,
-          onchainId: onchain.id,
-        });
-      }
-
-      const [onchain] = await prisma.$transaction([
-        prisma.onChainDeposit.create({
-          data: {
-            txHash: hash,
-            from: decoded.from.toLowerCase(),
-            to: toAddr,
-            amount: amountStr,
-            userId: currentUserId,
-            status: "confirmado",
-          },
-        }),
-        prisma.deposito.create({
-          data: {
-            userId: currentUserId,
-            valor: amountStr,
-            status: "confirmado",
-          },
-        }),
-        prisma.user.update({
-          where: { id: currentUserId },
-          data: { saldo: { increment: amount } },
-        }),
-      ]);
-
-      return NextResponse.json({
-        ok: true,
-        message:
-          "Depósito confirmado e creditado (empresa + usuário logado).",
-        amount,
-        txHash: hash,
-        userId: currentUserId,
-        onchainId: onchain.id,
-      });
-    }
-
-    // Caso 3: outro endereço → pendente
+    // Sempre registrar como pendente (manual)
     const onchain = await prisma.onChainDeposit.create({
       data: {
         txHash: hash,
         from: decoded.from.toLowerCase(),
         to: toAddr,
-        amount: amountStr,
-        userId: null,
+        amount: amount.toString(),
+        userId: null, // associação será feita no /confirmar
         status: "pendente",
       },
     });
 
     return NextResponse.json({
       ok: true,
-      message: "Transação registrada como pendente (endereço estranho).",
+      message: "Transação registrada como pendente. Aguardando confirmação manual.",
       amount,
       txHash: hash,
       onchainId: onchain.id,

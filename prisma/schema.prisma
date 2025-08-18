@@ -75,15 +75,16 @@ model Graduacao {
 }
 
 model OnChainDeposit {
-  id        Int            @id @default(autoincrement())
-  txHash    String         @unique
-  from      String
-  to        String
-  amount    Decimal
-  createdAt DateTime       @default(now())
-  userId    Int?
-  status    StatusDeposito @default(pendente)
-  user      User?          @relation(fields: [userId], references: [id])
+  id           Int            @id @default(autoincrement())
+  txHash       String         @unique
+  from         String
+  to           String
+  amount       Decimal
+  createdAt    DateTime       @default(now())
+  confirmadoEm DateTime?      // ✅ campo novo
+  userId       Int?
+  status       StatusDeposito @default(pendente)
+  user         User?          @relation(fields: [userId], references: [id])
 }
 
 enum StatusDeposito {

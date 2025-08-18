@@ -7,16 +7,10 @@ const MAIN_WALLET = (process.env.MAIN_WALLET || "").toLowerCase();
 
 export async function POST(req: Request) {
   try {
-    // 🔑 Pega usuário logado
+    // 🔑 Usuário logado
     const session = await getServerSession(authOptions);
     const currentUserIdRaw = (session?.user as any)?.id || null;
     const currentUserId = currentUserIdRaw ? Number(currentUserIdRaw) : null;
-
-    // 🔎 Logs para debug
-    console.log("🔎 MAIN_WALLET:", MAIN_WALLET);
-    console.log("🔎 SESSION:", session);
-    console.log("🔎 currentUserId (raw):", currentUserIdRaw);
-    console.log("🔎 currentUserId (number):", currentUserId);
 
     if (!currentUserId) {
       return NextResponse.json(
@@ -25,10 +19,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // 📥 Pega valor do body
+    // 📥 Body
     const { valor } = await req.json().catch(() => ({} as any));
-    console.log("🔎 Valor recebido:", valor);
-
     if (!valor || typeof valor !== "number" || valor <= 0) {
       return NextResponse.json(
         { error: "Parâmetro inválido: 'valor' deve ser número > 0." },
@@ -43,17 +35,19 @@ export async function POST(req: Request) {
       );
     }
 
-    // 💾 Cria registro de solicitação de depósito
-    const deposito = await prisma.deposito.create({
+    // 💾 Cria registro em onChainDeposit
+    const deposito = await prisma.onChainDeposit.create({
       data: {
-        userId: currentUserId, // ✅ Agora sempre é Int
-        valor: Number(valor),  // garante número válido
-        metodo: "usdt",
+        userId: currentUserId,
+        amount: Number(valor),
+        from: "aguardando-envio",
+        to: MAIN_WALLET,
+        txHash: `manual-${Date.now()}`, // placeholder até detectar hash real
         status: "aguardando",
       },
     });
 
-    console.log("✅ Depósito criado:", deposito);
+    console.log("✅ Depósito solicitado:", deposito);
 
     return NextResponse.json({
       ok: true,
