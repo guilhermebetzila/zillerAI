@@ -1,30 +1,37 @@
-import { withAuth } from 'next-auth/middleware'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { withAuth, NextRequestWithAuth } from "next-auth/middleware"
+import { NextResponse } from "next/server"
 
-// Configura o middleware com proteção via NextAuth
 export default withAuth(
-  function middleware(req: NextRequest) {
-    // Aqui você pode adicionar verificações adicionais se quiser
+  function middleware(req: NextRequestWithAuth) {
+    const { pathname } = req.nextUrl
+    const token = req.nextauth.token // agora tipado ✅
+
+    if (token && (pathname.startsWith("/login") || pathname.startsWith("/register"))) {
+      return NextResponse.redirect(new URL("/dashboard", req.url))
+    }
+
     return NextResponse.next()
   },
   {
     callbacks: {
-      // Redireciona se o usuário não estiver autenticado
       authorized({ token }) {
         return !!token
       },
     },
+    pages: {
+      signIn: "/login",
+    },
   }
 )
 
-// Define quais rotas serão protegidas
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/painel/:path*',
-    '/minha-conta/:path*',
-    '/investimentos/:path*',
-    '/indicacoes/:path*',
+    "/dashboard/:path*",
+    "/painel/:path*",
+    "/minha-conta/:path*",
+    "/investimentos/:path*",
+    "/indicacoes/:path*",
+    "/login",
+    "/register",
   ],
 }

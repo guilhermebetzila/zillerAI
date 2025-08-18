@@ -59,7 +59,8 @@ function FormularioRegistro() {
       });
 
       if (res.ok) {
-        router.push('/login');
+        // ✅ Cadastro feito com sucesso → já tem cookie JWT
+        router.push('/dashboard');
       } else {
         const data = await res.json();
         setErro(data?.message || 'Erro ao registrar');

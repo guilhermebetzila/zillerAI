@@ -31,36 +31,45 @@ export async function POST(req: NextRequest) {
         transaction_amount: valor,
         description,
         payment_method_id: 'pix',
-        payer: { email: token.email },
+        payer: {
+          email: token.email,
+          first_name: 'Cliente', // 👈 campo adicionado para evitar erro no Mercado Pago
+        },
         external_reference: token.email,
       },
     })
 
     console.log('✅ PIX gerado:', paymentData.id)
 
-    const copia_e_cola = paymentData.point_of_interaction?.transaction_data?.qr_code
+    const copia_e_cola =
+      paymentData.point_of_interaction?.transaction_data?.qr_code
 
     if (!copia_e_cola) {
       console.log('❌ Erro: Código PIX não gerado.')
-      return NextResponse.json({ error: 'Erro ao gerar código PIX' }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Erro ao gerar código PIX' },
+        { status: 500 }
+      )
     }
 
-    // Retorna só o código para copiar e colar, sem o QR code em imagem/base64
+    // Retorna só o código para copiar e colar
     return NextResponse.json({
       id: paymentData.id,
       status: paymentData.status,
       copia_e_cola,
     })
-
   } catch (error: any) {
     // Logs detalhados para entender o erro completo
     console.error('❌ Erro ao criar PIX completo:', error)
     console.error('❌ Erro ao criar PIX response.data:', error.response?.data)
     console.error('❌ Erro ao criar PIX message:', error.message)
 
-    return NextResponse.json({
-      error: 'Erro interno ao criar pagamento PIX',
-      detalhes: error.response?.data || error.message || error,
-    }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Erro interno ao criar pagamento PIX',
+        detalhes: error.response?.data || error.message || error,
+      },
+      { status: 500 }
+    )
   }
 }
