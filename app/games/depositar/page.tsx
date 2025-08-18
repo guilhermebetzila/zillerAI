@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
 
-const USDT_WALLET = process.env.NEXT_PUBLIC_USDT_WALLET || '';
+const USDT_WALLET = process.env.NEXT_PUBLIC_USDT_WALLET_ADDRESS || '';
 
 function StatusBadge({ status }: { status: string }) {
   const cores: Record<string, string> = {
