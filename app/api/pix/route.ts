@@ -17,12 +17,15 @@ export async function POST(req: NextRequest) {
     }
 
     const { amount, description = 'Depósito via PIX' } = await req.json()
-    const valor = Number(amount)
+    let valor = Number(amount)
 
     if (!valor || valor <= 0) {
       console.log('⚠️ Valor inválido:', valor)
       return NextResponse.json({ error: 'Valor inválido' }, { status: 400 })
     }
+
+    // 🔥 Garante que seja sempre decimal com 2 casas (ex: 1 -> 1.00)
+    valor = parseFloat(valor.toFixed(2))
 
     console.log('📤 Criando pagamento para:', token.email, 'Valor:', valor)
 
@@ -33,7 +36,7 @@ export async function POST(req: NextRequest) {
         payment_method_id: 'pix',
         payer: {
           email: token.email,
-          first_name: 'Cliente', // 👈 campo adicionado para evitar erro no Mercado Pago
+          first_name: 'Cliente', // 👈 obrigatório
         },
         external_reference: token.email,
       },
@@ -52,14 +55,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Retorna só o código para copiar e colar
     return NextResponse.json({
       id: paymentData.id,
       status: paymentData.status,
       copia_e_cola,
     })
   } catch (error: any) {
-    // Logs detalhados para entender o erro completo
     console.error('❌ Erro ao criar PIX completo:', error)
     console.error('❌ Erro ao criar PIX response.data:', error.response?.data)
     console.error('❌ Erro ao criar PIX message:', error.message)

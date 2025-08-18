@@ -1,47 +1,47 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || ''
 
 function FormularioRegistro() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [cpf, setCpf] = useState('');
-  const [password, setPassword] = useState('');
-  const [indicador, setIndicador] = useState('');
-  const [erro, setErro] = useState('');
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [cpf, setCpf] = useState('')
+  const [password, setPassword] = useState('')
+  const [indicador, setIndicador] = useState('')
+  const [erro, setErro] = useState('')
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
-  // Regras de senha
-  const [hasUpper, setHasUpper] = useState(false);
-  const [hasLower, setHasLower] = useState(false);
-  const [hasNumber, setHasNumber] = useState(false);
-  const [hasSpecial, setHasSpecial] = useState(false);
+  // Validação senha
+  const [hasUpper, setHasUpper] = useState(false)
+  const [hasLower, setHasLower] = useState(false)
+  const [hasNumber, setHasNumber] = useState(false)
+  const [hasSpecial, setHasSpecial] = useState(false)
 
   useEffect(() => {
-    const indicacaoURL = searchParams.get('indicador');
+    const indicacaoURL = searchParams.get('indicador')
     if (indicacaoURL) {
-      localStorage.setItem('indicador', indicacaoURL);
-      setIndicador(indicacaoURL);
+      localStorage.setItem('indicador', indicacaoURL)
+      setIndicador(indicacaoURL)
     } else {
-      const indicacaoLocal = localStorage.getItem('indicador');
-      if (indicacaoLocal) setIndicador(indicacaoLocal);
+      const local = localStorage.getItem('indicador')
+      if (local) setIndicador(local)
     }
-  }, [searchParams]);
+  }, [searchParams])
 
-  // Atualiza validação da senha
   useEffect(() => {
-    setHasUpper(/[A-Z]/.test(password));
-    setHasLower(/(?:.*[a-z]){2,}/.test(password));
-    setHasNumber(/\d/.test(password));
-    setHasSpecial(/[!@#$%^&*()_+\[\]{};:'",.<>\/?\\|-]/.test(password));
-  }, [password]);
+    setHasUpper(/[A-Z]/.test(password))
+    setHasLower(/(?:.*[a-z]){2,}/.test(password))
+    setHasNumber(/\d/.test(password))
+    setHasSpecial(/[!@#$%^&*()_+\[\]{};:'",.<>\/?\\|-]/.test(password))
+  }, [password])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
+    setErro('')
 
     const payload = {
       name: name.trim(),
@@ -49,26 +49,25 @@ function FormularioRegistro() {
       cpf: cpf.trim(),
       password: password.trim(),
       indicador: indicador.trim() || null,
-    };
+    }
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      });
+      })
 
       if (res.ok) {
-        // ✅ Cadastro feito com sucesso → já tem cookie JWT
-        router.push('/dashboard');
+        router.push('/dashboard')
       } else {
-        const data = await res.json();
-        setErro(data?.message || 'Erro ao registrar');
+        const data = await res.json()
+        setErro(data?.message || 'Erro ao registrar')
       }
-    } catch (err) {
-      setErro('Erro de conexão com o servidor');
+    } catch {
+      setErro('Erro de conexão com o servidor')
     }
-  };
+  }
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
@@ -114,7 +113,7 @@ function FormularioRegistro() {
           required
         />
 
-        {/* Validação visual da senha */}
+        {/* Regras visuais */}
         <div className="text-sm space-y-1">
           <p className={hasUpper ? 'text-green-600' : 'text-red-500'}>
             • Pelo menos 1 letra maiúscula
@@ -139,6 +138,7 @@ function FormularioRegistro() {
           readOnly={!!searchParams.get('indicador')}
         />
         {erro && <p className="text-red-500 text-sm">{erro}</p>}
+
         <button
           type="submit"
           className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded"
@@ -147,7 +147,7 @@ function FormularioRegistro() {
         </button>
       </form>
     </div>
-  );
+  )
 }
 
 export default function RegistroPage() {
@@ -155,5 +155,5 @@ export default function RegistroPage() {
     <Suspense fallback={<p className="text-center">Carregando...</p>}>
       <FormularioRegistro />
     </Suspense>
-  );
+  )
 }
