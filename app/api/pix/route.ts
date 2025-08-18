@@ -2,17 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import MercadoPagoConfig, { Payment } from 'mercadopago'
 
+// ⚡ Loga o token no servidor (NUNCA no cliente)
+console.log("🔑 MERCADO_PAGO_ACCESS_TOKEN carregado:", process.env.MERCADO_PAGO_ACCESS_TOKEN?.slice(0,10) + "...")
+
 const mp = new MercadoPagoConfig({
-  accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN || '',
+  accessToken: (process.env.MERCADO_PAGO_ACCESS_TOKEN || '').trim(), // 👈 remove espaços/quebras
 })
 
 const payments = new Payment(mp)
 
 export async function POST(req: NextRequest) {
   try {
-    // 🔒 Se quiser testar sem login, comente o bloco abaixo
+    // 🔒 Autenticação opcional (remova se não precisar testar com usuário logado)
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-    let userEmail = token?.email || 'teste@exemplo.com' // fallback para teste
+    let userEmail = token?.email || 'teste@exemplo.com'
 
     if (!userEmail) {
       console.log('🔒 Usuário não autenticado.')
@@ -27,7 +30,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Valor inválido' }, { status: 400 })
     }
 
-    // 🔥 Garante que seja sempre decimal com 2 casas
     valor = parseFloat(valor.toFixed(2))
 
     console.log('📤 Criando pagamento para:', userEmail, 'Valor:', valor)
@@ -39,7 +41,7 @@ export async function POST(req: NextRequest) {
         payment_method_id: 'pix',
         payer: {
           email: userEmail,
-          first_name: 'Cliente', // 👈 obrigatório
+          first_name: 'Cliente',
         },
         external_reference: userEmail,
       },
