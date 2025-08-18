@@ -8,8 +8,15 @@ const mp = new MercadoPagoConfig({
 
 const payments = new Payment(mp)
 
+// ✅ GET para testes/pings do Mercado Pago
+export async function GET() {
+  console.log('📡 Webhook GET recebido (teste do Mercado Pago)')
+  return NextResponse.json({ status: 'ok', message: 'Webhook ativo' }, { status: 200 })
+}
+
+// ✅ POST para eventos reais de pagamento
 export async function POST(req: Request) {
-  console.log('🚨 Webhook recebido!')
+  console.log('🚨 Webhook POST recebido!')
 
   try {
     const body = await req.json()
@@ -36,7 +43,7 @@ export async function POST(req: Request) {
       paymentData = await payments.get({ id: String(paymentId) })
     } catch (error) {
       console.error('❌ Erro ao buscar detalhes do pagamento:', error)
-      return NextResponse.json({ error: 'Erro ao buscar pagamento' }, { status: 200 }) // não quebrar
+      return NextResponse.json({ error: 'Erro ao buscar pagamento' }, { status: 200 }) // não quebrar o fluxo
     }
 
     const status = (paymentData.status ?? '').toString().trim().toLowerCase()
@@ -76,7 +83,6 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ status: 'aguardando aprovação ou tipo inválido' }, { status: 200 })
-
   } catch (error) {
     console.error('❌ Erro geral no webhook:', error)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })

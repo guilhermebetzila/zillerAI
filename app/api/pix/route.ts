@@ -10,8 +10,11 @@ const payments = new Payment(mp)
 
 export async function POST(req: NextRequest) {
   try {
+    // 🔒 Se quiser testar sem login, comente o bloco abaixo
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-    if (!token?.email) {
+    let userEmail = token?.email || 'teste@exemplo.com' // fallback para teste
+
+    if (!userEmail) {
       console.log('🔒 Usuário não autenticado.')
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
@@ -24,10 +27,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Valor inválido' }, { status: 400 })
     }
 
-    // 🔥 Garante que seja sempre decimal com 2 casas (ex: 1 -> 1.00)
+    // 🔥 Garante que seja sempre decimal com 2 casas
     valor = parseFloat(valor.toFixed(2))
 
-    console.log('📤 Criando pagamento para:', token.email, 'Valor:', valor)
+    console.log('📤 Criando pagamento para:', userEmail, 'Valor:', valor)
 
     const paymentData = await payments.create({
       body: {
@@ -35,10 +38,10 @@ export async function POST(req: NextRequest) {
         description,
         payment_method_id: 'pix',
         payer: {
-          email: token.email,
+          email: userEmail,
           first_name: 'Cliente', // 👈 obrigatório
         },
-        external_reference: token.email,
+        external_reference: userEmail,
       },
     })
 

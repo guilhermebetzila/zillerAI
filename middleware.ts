@@ -22,6 +22,6 @@ export const config = {
     '/minha-conta/:path*',
     '/investimentos/:path*',
     '/indicacoes/:path*',
-    // ❌ não adicionamos /login nem /register
+    // ❌ NÃO inclui /login, /register e nem /api/webhook
   ],
 }
