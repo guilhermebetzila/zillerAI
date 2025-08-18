@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 
 interface UsuarioComIndicados {
@@ -9,8 +8,6 @@ interface UsuarioComIndicados {
   email: string;
   indicados: UsuarioComIndicados[];
 }
-
-const JWT_SECRET = process.env.JWT_SECRET || 'seu_segredo_aqui';
 
 // Função recursiva para buscar toda a rede
 async function buscarRede(usuarioId: number): Promise<UsuarioComIndicados> {
@@ -45,20 +42,19 @@ async function buscarRede(usuarioId: number): Promise<UsuarioComIndicados> {
 
 export async function GET() {
   try {
-    // Lê o token JWT do cookie
+    // Lê o ID salvo no cookie
     const token = (await cookies()).get('token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
-    // Decodifica o token
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
-    if (!decoded?.id) {
+    const userId = Number(token);
+    if (isNaN(userId)) {
       return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
     }
 
     // Busca a rede do usuário logado
-    const rede = await buscarRede(decoded.id);
+    const rede = await buscarRede(userId);
 
     return NextResponse.json(rede);
   } catch (error: any) {
