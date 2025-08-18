@@ -20,7 +20,9 @@ async function buscarRede(usuarioId: number): Promise<UsuarioComIndicados> {
       id: true,
       nome: true,
       email: true,
-      indicados: { select: { id: true } },
+      indicados: { 
+        select: { id: true, nome: true, email: true } 
+      },
     },
   });
 
