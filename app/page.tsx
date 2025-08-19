@@ -121,9 +121,18 @@ export default function Home() {
           <div>
             <h3 className="font-extrabold mb-6 uppercase tracking-wide">🔹 SOBRE NÓS</h3>
             <ul className="space-y-3 leading-relaxed">
-              <li className="hover:text-yellow-500 cursor-pointer transition-colors">O que é a Ziller.Ia</li>
-              <li className="hover:text-yellow-500 cursor-pointer transition-colors">Inteligência Artificial e Estratégias</li>
-              <li className="hover:text-yellow-500 cursor-pointer transition-colors">Transparência e Tecnologia</li>
+              <li
+                onClick={() => router.push('/zilleria')}
+                className="hover:text-yellow-500 cursor-pointer transition-colors"
+              >
+                O que é a Ziller.Ia
+              </li>
+              <li className="hover:text-yellow-500 cursor-pointer transition-colors">
+                Inteligência Artificial e Estratégias
+              </li>
+              <li className="hover:text-yellow-500 cursor-pointer transition-colors">
+                Transparência e Tecnologia
+              </li>
               <li className="hover:text-yellow-500 cursor-pointer transition-colors">Nossa Missão</li>
             </ul>
           </div>
