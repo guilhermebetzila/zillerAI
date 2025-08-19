@@ -133,7 +133,10 @@ export default function Home() {
               >
                 Inteligência Artificial e Estratégias
               </li>
-              <li className="hover:text-yellow-500 cursor-pointer transition-colors">
+              <li
+                onClick={() => router.push('/transparencia')}
+                className="hover:text-yellow-500 cursor-pointer transition-colors"
+              >
                 Transparência e Tecnologia
               </li>
               <li className="hover:text-yellow-500 cursor-pointer transition-colors">Nossa Missão</li>
