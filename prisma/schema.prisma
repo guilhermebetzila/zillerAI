@@ -15,7 +15,6 @@ model User {
   senha           String
   saldo           Decimal            @default(0)
   valorInvestido  Decimal            @default(0)
-  indicador       String?
   indicadoPorId   Int?
   cpf             String             @unique
   pontos          Int                @default(0)
@@ -26,8 +25,10 @@ model User {
   investimentos   Investimento[]
   onChainDeposits OnChainDeposit[]
   rendimentos     RendimentoDiario[]
-  saques          Saque[]            // 🔹 Relacionamento com Saques
+  saques          Saque[]
   graduacao       Graduacao?         @relation(fields: [graduacaoId], references: [id])
+
+  // Relações de indicação
   indicadoPor     User?              @relation("Indicacoes", fields: [indicadoPorId], references: [id])
   indicados       User[]             @relation("Indicacoes")
 }
@@ -97,7 +98,7 @@ model Saque {
   status       StatusSaque @default(pendente)
   criadoEm     DateTime    @default(now())
   processadoEm DateTime?
-  txHash       String?     @unique // 🔹 hash da transação na blockchain
+  txHash       String?     @unique
 }
 
 enum StatusDeposito {
