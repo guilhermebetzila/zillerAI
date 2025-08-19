@@ -25,7 +25,7 @@ export default function LoginPage() {
     const result = await signIn('credentials', {
       redirect: false,
       email,
-      senha,
+      password: senha, // 🔥 importante: agora é "password"
     });
 
     if (result?.error) {
@@ -69,6 +69,7 @@ export default function LoginPage() {
           {carregando ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
+
       {mensagem && (
         <p className="mt-4 text-sm text-red-400 text-center">{mensagem}</p>
       )}

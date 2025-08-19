@@ -1,3 +1,4 @@
+// app/api/auth/[...nextauth]/authOptions.ts
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcrypt";
@@ -11,10 +12,10 @@ export const authOptions: NextAuthOptions = {
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "text" },
-        senha: { label: "Senha", type: "password" },
+        password: { label: "Senha", type: "password" }, // 🔥 Corrigido aqui
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.senha) {
+        if (!credentials?.email || !credentials?.password) {
           throw new Error("Preencha todos os campos");
         }
 
@@ -26,12 +27,11 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email não encontrado");
         }
 
-        const senhaCorreta = await compare(credentials.senha, user.senha);
+        const senhaCorreta = await compare(credentials.password, user.senha);
         if (!senhaCorreta) {
           throw new Error("Senha incorreta");
         }
 
-        // ✅ Corrigido: garante que saldo seja number (ou 0)
         return {
           id: String(user.id),
           nome: user.nome,
@@ -63,13 +63,14 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 dias de sessão
+    maxAge: 30 * 24 * 60 * 60,
   },
   jwt: {
-    maxAge: 30 * 24 * 60 * 60, // 30 dias para o token JWT
+    maxAge: 30 * 24 * 60 * 60,
   },
   pages: {
     signIn: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
+
