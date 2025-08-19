@@ -44,9 +44,9 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Calcular pontos: 10 por direto, 5 por indireto
-    const pontosDiretos = indicadosDiretos * 10;
-    const pontosIndiretos = indicadosIndiretos * 5;
+    // Calcular pontos: 1 por direto, 1 por indireto
+    const pontosDiretos = indicadosDiretos * 1;
+    const pontosIndiretos = indicadosIndiretos * 1;
     const pontosTotais = user.pontos + pontosDiretos + pontosIndiretos;
 
     return NextResponse.json({
