@@ -1,59 +1,92 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { cookies } from 'next/headers'
-import jwt from 'jsonwebtoken'
-import { Prisma } from '@prisma/client'
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { ethers } from "ethers";
 
-export async function POST(req: Request) {
+// ABI mínima do ERC20 para transferências
+const USDT_ABI = [
+  "function transfer(address to, uint amount) public returns (bool)"
+];
+
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const { valor } = body
+    const session = await getServerSession(authOptions);
 
-    if (!valor || valor <= 0) {
-      return NextResponse.json({ error: 'Valor inválido' }, { status: 400 })
+    if (!session || !session.user?.email) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    const cookieStore = await cookies()
-    const token = cookieStore.get('token')?.value
+    const { valor, carteira } = await req.json();
 
-    if (!token) {
-      return NextResponse.json({ error: 'Usuário não autenticado' }, { status: 401 })
+    if (!valor || !carteira) {
+      return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     }
 
-    const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!)
-    const userId = decoded.id
-
+    // Busca usuário
     const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { saldo: true },
-    })
+      where: { email: session.user.email },
+    });
 
     if (!user) {
-      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
+      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
-    // 🔹 Converter saldo (Decimal) para number
-    const saldoAtual = new Prisma.Decimal(user.saldo).toNumber()
-    const valorNum = Number(valor)
-
-    if (saldoAtual < valorNum) {
-      return NextResponse.json({ error: 'Saldo insuficiente' }, { status: 400 })
+    // Verifica saldo suficiente (Decimal -> Number)
+    if (Number(user.saldo) < Number(valor)) {
+      return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
     }
 
-    const novoSaldo = saldoAtual - valorNum
+    // --- 🔗 Blockchain Config ---
+    const provider = new ethers.JsonRpcProvider(process.env.BSC_RPC_URL);
+    const wallet = new ethers.Wallet(process.env.MAIN_PRIVATE_KEY!, provider);
 
-    // 🔹 Atualizar saldo como Decimal novamente
+    // Contrato oficial do USDT BEP20
+    const USDT_CONTRACT = process.env.USDT_CONTRACT || "0x55d398326f99059fF775485246999027B3197955";
+    const contract = new ethers.Contract(USDT_CONTRACT, USDT_ABI, wallet);
+
+    // Convertendo valor para 6 casas decimais (USDT BEP20 usa 6)
+    const amount = ethers.parseUnits(String(valor), 6);
+
+    // 🔹 Cria registro do saque como "processando"
+    const saque = await prisma.saque.create({
+      data: {
+        userId: user.id,
+        valor,
+        carteira,
+        status: "processando",
+      },
+    });
+
+    // Envia transação
+    const tx = await contract.transfer(carteira, amount);
+    await tx.wait();
+
+    // 🔹 Atualiza saque para "concluido" com hash
+    await prisma.saque.update({
+      where: { id: saque.id },
+      data: {
+        status: "concluido",
+        processadoEm: new Date(),
+        // 🔥 importante: salva hash da tx
+        // (precisa adicionar `txHash String?` no modelo Saque do prisma)
+        // txHash: tx.hash,
+      },
+    });
+
+    // Atualiza saldo do usuário
     await prisma.user.update({
-      where: { id: userId },
-      data: { saldo: new Prisma.Decimal(novoSaldo) },
-    })
+      where: { id: user.id },
+      data: { saldo: { decrement: valor } },
+    });
 
     return NextResponse.json({
-      message: 'Saque realizado com sucesso',
-      saldo: novoSaldo,
-    })
+      message: "✅ Saque realizado automaticamente na blockchain!",
+      txHash: tx.hash,
+    });
+
   } catch (error) {
-    console.error(error)
-    return NextResponse.json({ error: 'Erro interno no servidor' }, { status: 500 })
+    console.error("Erro no saque automático:", error);
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
