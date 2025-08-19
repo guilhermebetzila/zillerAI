@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useEffect, useState } from 'react';
 import LayoutWrapper from '@/components/LayoutWrapper';
 import { useRouter } from 'next/navigation';
@@ -45,13 +43,13 @@ export default function DashboardPage() {
         });
         const data = await res.json();
         if (res.ok) {
-          setSaldo(data.saldo || 0);
-          setValorInvestido(data.valorInvestido || 0);
-          setRendimentoDiario(data.rendimentoDiario || 0);
-          setTotalIndicados(data.totalIndicados || 0);
-          setPontos(data.pontos || 0);
-          setPontosDiretos(data.pontosDiretos || 0);
-          setPontosIndiretos(data.pontosIndiretos || 0);
+          setSaldo(Number(data.saldo) || 0);
+          setValorInvestido(Number(data.valorInvestido) || 0);
+          setRendimentoDiario(Number(data.rendimentoDiario) || 0);
+          setTotalIndicados(Number(data.totalIndicados) || 0);
+          setPontos(Number(data.pontos) || 0);
+          setPontosDiretos(Number(data.pontosDiretos) || 0);
+          setPontosIndiretos(Number(data.pontosIndiretos) || 0);
         }
       } catch (error) {
         console.error('Erro ao buscar dados do usuário:', error);
@@ -121,14 +119,14 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold flex items-center gap-4">
             Olá, {user?.nome || user?.email}
             <span className="bg-black text-white px-3 py-1 text-sm rounded shadow-sm font-semibold">
-              Saldo: {saldo.toFixed(2)} USDT
+              Saldo: {Number(saldo).toFixed(2)} USDT
             </span>
           </h1>
           <p className="text-white text-sm mt-1">
-            Valor investido: {valorInvestido.toFixed(2)} USDT
+            Valor investido: {Number(valorInvestido).toFixed(2)} USDT
           </p>
           <p className="text-green-400 text-sm mt-1">
-            Rendimento diário: {rendimentoDiario.toFixed(2)} USDT
+            Rendimento diário: {Number(rendimentoDiario).toFixed(2)} USDT
             <span className="text-xs text-white ml-2">(Atualizado às 10h)</span>
           </p>
           <p className="text-white mt-2">
