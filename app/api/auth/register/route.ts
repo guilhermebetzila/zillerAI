@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Validação da senha
     const senhaRegex =
       /^(?=.*[A-Z])(?=(?:.*[a-z]){2,})(?=.*\d)(?=.*[!@#$%^&*()_+\-[\]{};:'",.<>\/?\\|]).{6,}$/
     if (!senhaRegex.test(password)) {
@@ -30,18 +31,21 @@ export async function POST(req: NextRequest) {
     }
 
     // Evitar duplicados
-    if (await prisma.user.findUnique({ where: { email } }))
+    if (await prisma.user.findUnique({ where: { email } })) {
       return NextResponse.json(
         { message: 'E-mail já cadastrado.' },
         { status: 400 }
       )
+    }
 
-    if (await prisma.user.findUnique({ where: { cpf } }))
+    if (await prisma.user.findUnique({ where: { cpf } })) {
       return NextResponse.json(
         { message: 'CPF já cadastrado.' },
         { status: 400 }
       )
+    }
 
+    // Verifica se existe indicador válido
     let indicadoPorId: number | null = null
     if (indicador) {
       const userIndicador = await prisma.user.findFirst({
@@ -58,14 +62,14 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await hash(password, 10)
 
+    // Cria usuário sem "indicador" extra
     const newUser = await prisma.user.create({
       data: {
         nome: name,
         email,
         cpf,
         senha: hashedPassword,
-        indicadoPorId,
-        indicador: indicador || null,
+        indicadoPorId, // ✅ esse é o campo certo
       },
     })
 
