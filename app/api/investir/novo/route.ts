@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { Prisma } from "@prisma/client";
 
 export async function POST(req: Request) {
   try {
@@ -14,8 +15,10 @@ export async function POST(req: Request) {
 
     // 📥 Lê body
     const { valor } = await req.json();
+    const valorNumber = Number(valor);
+    const valorDecimal = new Prisma.Decimal(valorNumber);
 
-    if (!valor || isNaN(valor) || Number(valor) <= 0) {
+    if (!valorNumber || isNaN(valorNumber) || valorNumber <= 0) {
       return NextResponse.json({ error: "Valor inválido." }, { status: 400 });
     }
 
@@ -25,30 +28,40 @@ export async function POST(req: Request) {
     });
 
     if (!usuario) {
-      return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Usuário não encontrado." },
+        { status: 404 }
+      );
     }
 
+    const saldoAtual = usuario.saldo ?? new Prisma.Decimal(0);
+    const valorInvestidoAtual = usuario.valorInvestido ?? new Prisma.Decimal(0);
+
     // ❌ Verifica saldo
-    if (Number(usuario.saldo) < Number(valor)) {
-      return NextResponse.json({ error: "Saldo insuficiente." }, { status: 400 });
+    if (saldoAtual.lessThan(valorDecimal)) {
+      return NextResponse.json(
+        {
+          error: "Saldo insuficiente.",
+          saldoDisponivel: saldoAtual.toString(),
+        },
+        { status: 400 }
+      );
     }
 
     // 💸 Cria investimento e atualiza saldo + valorInvestido em transação
     const investimento = await prisma.$transaction(async (tx) => {
-      // Cria o investimento
       const novoInvestimento = await tx.investimento.create({
         data: {
-          valor,
+          valor: valorDecimal,
           userId: usuario.id,
         },
       });
 
-      // Atualiza saldo e valorInvestido
       await tx.user.update({
         where: { id: usuario.id },
         data: {
-          saldo: usuario.saldo.minus(valor),
-          valorInvestido: usuario.valorInvestido.plus(valor),
+          saldo: saldoAtual.minus(valorDecimal),
+          valorInvestido: valorInvestidoAtual.plus(valorDecimal),
         },
       });
 
@@ -56,11 +69,20 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(
-      { message: "✅ Investimento realizado com sucesso!", investimento },
+      {
+        message: "✅ Investimento realizado com sucesso!",
+        investimento: {
+          ...investimento,
+          valor: investimento.valor.toString(),
+        },
+      },
       { status: 201 }
     );
   } catch (error) {
     console.error("❌ Erro em /api/investir/novo:", error);
-    return NextResponse.json({ error: "Erro interno do servidor." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro interno do servidor." },
+      { status: 500 }
+    );
   }
 }
