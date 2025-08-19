@@ -6,16 +6,40 @@ const prisma = new PrismaClient()
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json()
+    const { emailOrCpf, password } = await req.json()
 
-    const user = await prisma.user.findUnique({ where: { email } })
+    if (!emailOrCpf || !password) {
+      return NextResponse.json({ message: 'Preencha todos os campos' }, { status: 400 })
+    }
 
-    if (!user || !user.senha || !(await compare(password, user.senha))) {
+    // Permite login tanto por email quanto por CPF
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: emailOrCpf },
+          { cpf: emailOrCpf }
+        ]
+      }
+    })
+
+    if (!user) {
+      return NextResponse.json({ message: 'Usuário não encontrado' }, { status: 404 })
+    }
+
+    // Confere senha
+    const senhaCorreta = await compare(password, user.senha)
+    if (!senhaCorreta) {
       return NextResponse.json({ message: 'Credenciais inválidas' }, { status: 401 })
     }
 
+    // Atualiza último login
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() }
+    })
+
     return NextResponse.json({
-      message: 'Credenciais válidas',
+      message: 'Login realizado com sucesso',
       user: {
         id: user.id,
         nome: user.nome,

@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   try {
     const { name, email, cpf, password, indicador } = await req.json()
 
-    // Agora CPF é obrigatório
+    // Campos obrigatórios
     if (!name || !email || !cpf || !password) {
       return NextResponse.json(
         { message: 'Todos os campos são obrigatórios.' },
@@ -53,23 +53,30 @@ export async function POST(req: NextRequest) {
           OR: [
             { email: indicador },
             { nome: indicador },
-            { id: isNaN(Number(indicador)) ? -1 : Number(indicador) },
+            { id: Number.isInteger(Number(indicador)) ? Number(indicador) : -1 },
           ],
         },
       })
-      if (userIndicador) indicadoPorId = userIndicador.id
+      if (!userIndicador) {
+        return NextResponse.json(
+          { message: 'Indicador não encontrado.' },
+          { status: 400 }
+        )
+      }
+      indicadoPorId = userIndicador.id
     }
 
     const hashedPassword = await hash(password, 10)
 
-    // Cria usuário sem "indicador" extra
+    // Cria usuário já com lastLogin = agora
     const newUser = await prisma.user.create({
       data: {
         nome: name,
         email,
         cpf,
         senha: hashedPassword,
-        indicadoPorId, // ✅ esse é o campo certo
+        indicadoPorId,
+        lastLogin: new Date(), // ✅ salva último login como data de cadastro
       },
     })
 
