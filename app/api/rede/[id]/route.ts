@@ -19,17 +19,15 @@ type UsuarioComFilhos = {
 function construirArvore(lista: LinhaRede[]): UsuarioComFilhos {
   const mapa = new Map<number, UsuarioComFilhos>();
 
-  // Cria cada nó vazio de filhos
   lista.forEach((u) => {
     mapa.set(u.id, { ...u, filhos: [] });
   });
 
   let raiz: UsuarioComFilhos | null = null;
 
-  // Conecta cada nó ao seu pai
   lista.forEach((u) => {
     if (u.indicadoPorId === null) {
-      raiz = mapa.get(u.id)!; // raiz encontrada
+      raiz = mapa.get(u.id)!;
     } else {
       const pai = mapa.get(u.indicadoPorId);
       if (pai) {
@@ -41,17 +39,17 @@ function construirArvore(lista: LinhaRede[]): UsuarioComFilhos {
   return raiz!;
 }
 
-export async function GET(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
-  const usuarioId = Number(context.params.id);
+export async function GET(req: NextRequest) {
+  // extrair o id da URL: /api/rede/[id]
+  const { pathname } = new URL(req.url);
+  const parts = pathname.split("/");
+  const usuarioId = Number(parts[parts.length - 1]);
+
   if (!Number.isInteger(usuarioId)) {
     return NextResponse.json({ error: "ID inválido" }, { status: 400 });
   }
 
   try {
-    // 🔹 Consulta recursiva no Postgres
     const rede = await prisma.$queryRaw<LinhaRede[]>`
       WITH RECURSIVE rede AS (
         SELECT id, nome, "indicadoPorId", 0 AS nivel
@@ -68,7 +66,6 @@ export async function GET(
       ORDER BY nivel, id;
     `;
 
-    // 🔹 Transforma lista em árvore
     const arvore = construirArvore(rede);
 
     return NextResponse.json(arvore);
