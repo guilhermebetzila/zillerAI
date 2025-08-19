@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "text" },
-        password: { label: "Senha", type: "password" }, // 🔥 Corrigido aqui
+        password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -37,6 +37,7 @@ export const authOptions: NextAuthOptions = {
           nome: user.nome,
           email: user.email,
           saldo: user.saldo ? Number(user.saldo) : 0,
+          valorInvestido: user.valorInvestido ? Number(user.valorInvestido) : 0,
         };
       },
     }),
@@ -44,10 +45,11 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = (user as any).id;
-        token.nome = (user as any).nome;
-        token.email = user.email;
-        token.saldo = (user as any).saldo;
+        token.id = user.id as string;
+        token.nome = user.nome as string;
+        token.email = user.email as string;
+        token.saldo = user.saldo as number;
+        token.valorInvestido = user.valorInvestido as number;
       }
       return token;
     },
@@ -57,20 +59,20 @@ export const authOptions: NextAuthOptions = {
         session.user.nome = token.nome as string;
         session.user.email = token.email as string;
         session.user.saldo = token.saldo as number;
+        session.user.valorInvestido = token.valorInvestido as number;
       }
       return session;
     },
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 30 * 24 * 60 * 60, // 30 dias
   },
   jwt: {
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 30 * 24 * 60 * 60, // 30 dias
   },
   pages: {
     signIn: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
-
