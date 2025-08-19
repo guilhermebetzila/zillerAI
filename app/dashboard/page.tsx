@@ -18,25 +18,13 @@ const menuItems = [
   { label: '🚪 Sair', action: 'logout', img: '/img/7.png' },
 ];
 
-const comentariosEsteira = [
-  '"Agora posso viajar com minha esposa. A Ziller.Ia me deu asas!" — Paulo, MG',
-  '"Consegui pagar a escola das minhas filhas. Obrigado, Ziller.Ia!" — Juliana, SP',
-  '"Investi R$ 200 e hoje vivo de renda com a IA." — Carlos, BA',
-  '"Não acreditava em mim até ver meus resultados. A IA me fez acreditar!" — Amanda, DF',
-  '"Montei minha loja virtual com os lucros da Ziller.Ia." — Tiago, RJ',
-  '"Minha primeira reforma da casa foi com os rendimentos diários." — Larissa, CE',
-  '"Não é só dinheiro. É liberdade. É escolha." — Rafael, SC',
-  '"Pude voltar a estudar graças ao lucro diário." — Bianca, PR',
-  '"A Ziller.Ia virou meu sócio invisível. A IA trabalha por mim!" — Victor, RS',
-  '"Dei orgulho pros meus pais. Finalmente ajudo em casa." — Camila, AM',
-];
-
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [saldo, setSaldo] = useState<number | string>(0);
-  const [valorInvestido, setValorInvestido] = useState<number | string>(0);
+  const [saldo, setSaldo] = useState<number>(0);
+  const [valorInvestido, setValorInvestido] = useState<number>(0);
+  const [rendimentoDiario, setRendimentoDiario] = useState<number>(0);
   const [totalIndicados, setTotalIndicados] = useState<number>(0);
   const [pontos, setPontos] = useState<number>(0);
   const [pontosDiretos, setPontosDiretos] = useState<number>(0);
@@ -59,6 +47,7 @@ export default function DashboardPage() {
         if (res.ok) {
           setSaldo(data.saldo || 0);
           setValorInvestido(data.valorInvestido || 0);
+          setRendimentoDiario(data.rendimentoDiario || 0);
           setTotalIndicados(data.totalIndicados || 0);
           setPontos(data.pontos || 0);
           setPontosDiretos(data.pontosDiretos || 0);
@@ -82,10 +71,18 @@ export default function DashboardPage() {
 
   const progresso = Math.min((pontos / 1000) * 100, 100);
   const codigoIndicacao = user?.id || user?.email || '';
-  const linkIndicacao = `https://www.ziller.club/register?indicador=${encodeURIComponent(codigoIndicacao)}`;
+  const linkIndicacao = `https://www.ziller.club/register?indicador=${encodeURIComponent(
+    codigoIndicacao
+  )}`;
 
-  if (status === 'loading') return <p className="text-center mt-10 text-white">Carregando...</p>;
-  if (status === 'unauthenticated') return <p className="text-center mt-10 text-red-500">Acesso negado. Faça login para continuar.</p>;
+  if (status === 'loading')
+    return <p className="text-center mt-10 text-white">Carregando...</p>;
+  if (status === 'unauthenticated')
+    return (
+      <p className="text-center mt-10 text-red-500">
+        Acesso negado. Faça login para continuar.
+      </p>
+    );
 
   return (
     <LayoutWrapper>
@@ -109,7 +106,11 @@ export default function DashboardPage() {
                 onClick={() => handleMenuClick(item)}
                 className="flex-shrink-0 w-20 h-20 rounded-full border-2 border-white overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200"
               >
-                <img src={item.img} alt={item.label} className="w-full h-full object-cover" />
+                <img
+                  src={item.img}
+                  alt={item.label}
+                  className="w-full h-full object-cover"
+                />
               </div>
             ))}
           </div>
@@ -120,11 +121,15 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold flex items-center gap-4">
             Olá, {user?.nome || user?.email}
             <span className="bg-black text-white px-3 py-1 text-sm rounded shadow-sm font-semibold">
-              Saldo: {Number(saldo || 0).toFixed(2)} USDT
+              Saldo: {saldo.toFixed(2)} USDT
             </span>
           </h1>
           <p className="text-white text-sm mt-1">
-            Valor investido: {Number(valorInvestido || 0).toFixed(2)} USDT
+            Valor investido: {valorInvestido.toFixed(2)} USDT
+          </p>
+          <p className="text-green-400 text-sm mt-1">
+            Rendimento diário: {rendimentoDiario.toFixed(2)} USDT
+            <span className="text-xs text-white ml-2">(Atualizado às 10h)</span>
           </p>
           <p className="text-white mt-2">
             Você já indicou <strong>{totalIndicados}</strong> pessoa(s)!
@@ -132,12 +137,17 @@ export default function DashboardPage() {
 
           {/* Barra de pontos */}
           <div className="mt-4">
-            <p className="text-white text-sm mb-1">Pontos Acumulados: {pontos} pontos</p>
+            <p className="text-white text-sm mb-1">
+              Pontos Acumulados: {pontos} pontos
+            </p>
             <p className="text-white text-xs mb-1">
               Diretos: {pontosDiretos} | Indiretos: {pontosIndiretos}
             </p>
             <div className="w-full bg-white/20 rounded-full h-4">
-              <div className="bg-white h-4 rounded-full" style={{ width: `${progresso}%` }}></div>
+              <div
+                className="bg-white h-4 rounded-full"
+                style={{ width: `${progresso}%` }}
+              ></div>
             </div>
             <p className="text-white text-xs mt-1">
               Você precisa de 1000 pontos para desbloquear o próximo prêmio
@@ -146,7 +156,9 @@ export default function DashboardPage() {
 
           {/* Código de indicação */}
           <div className="mt-6 bg-black/20 rounded-lg p-4 border border-white shadow-md">
-            <h3 className="text-white text-sm font-semibold mb-2">Seu Código de Indicação:</h3>
+            <h3 className="text-white text-sm font-semibold mb-2">
+              Seu Código de Indicação:
+            </h3>
             <div className="flex items-center justify-between bg-black/10 text-white px-3 py-2 rounded-md font-mono text-sm border border-white">
               <a
                 href={linkIndicacao}
@@ -164,25 +176,23 @@ export default function DashboardPage() {
               </button>
             </div>
             <p className="text-white text-xs mt-1">
-              Compartilhe este link com amigos e ganhe bônus por cada novo Ziler indicado.
+              Compartilhe este link com amigos e ganhe bônus por cada novo Ziler
+              indicado.
             </p>
           </div>
         </div>
 
-        {/* Esteira de comentários */}
+        {/* Bloco de informações profissionais da empresa */}
         <div className="mb-8">
           <h3 className="text-lg text-center text-white font-semibold mb-3">
-            Transformações Reais com a Ziller.Ia
+            Informações da Empresa
           </h3>
-          <div className="flex flex-col gap-2 px-2 py-4 border-t border-b border-white/20">
-            {comentariosEsteira.map((comentario, index) => (
-              <div
-                key={index}
-                className="bg-white/10 text-white text-sm px-4 py-2 rounded shadow-sm border border-white/20"
-              >
-                {comentario}
-              </div>
-            ))}
+          <div className="flex flex-col gap-2 px-2 py-4 border-t border-b border-white/20 text-sm text-white">
+            <p>📌 CNPJ: 12.345.678/0001-99</p>
+            <p>📧 E-mail: contato@ziller.club</p>
+            <p>📱 WhatsApp: (11) 99999-9999</p>
+            <p>🌐 Site Oficial: www.ziller.club</p>
+            <p>📸 Instagram: @ziller.club</p>
           </div>
         </div>
 
@@ -200,22 +210,46 @@ export default function DashboardPage() {
       <footer className="w-full mt-20 text-white py-12 px-6 border-t border-white/20">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-white text-lg font-bold mb-4">Segurança & Confiança</h3>
-            <p className="text-white text-sm mb-2">Auditoria independente concluída com sucesso.</p>
-            <p className="text-white text-sm mb-2">IA operando com precisão validada de 87,9%.</p>
-            <p className="text-white text-sm">Certificados e parcerias disponíveis no painel.</p>
+            <h3 className="text-white text-lg font-bold mb-4">
+              Segurança & Confiança
+            </h3>
+            <p className="text-white text-sm mb-2">
+              Auditoria independente concluída com sucesso.
+            </p>
+            <p className="text-white text-sm mb-2">
+              IA operando com precisão validada de 87,9%.
+            </p>
+            <p className="text-white text-sm">
+              Certificados e parcerias disponíveis no painel.
+            </p>
           </div>
           <div>
-            <h3 className="text-white text-lg font-bold mb-4">Transparência Total</h3>
-            <p className="text-white text-sm mb-2">Painel de controle com histórico completo.</p>
-            <p className="text-white text-sm mb-2">Saque e depósito via Pix 100% transparente.</p>
-            <p className="text-white text-sm">Controle total do seu investimento, em tempo real.</p>
+            <h3 className="text-white text-lg font-bold mb-4">
+              Transparência Total
+            </h3>
+            <p className="text-white text-sm mb-2">
+              Painel de controle com histórico completo.
+            </p>
+            <p className="text-white text-sm mb-2">
+              Saque e depósito via Pix 100% transparente.
+            </p>
+            <p className="text-white text-sm">
+              Controle total do seu investimento, em tempo real.
+            </p>
           </div>
           <div>
-            <h3 className="text-white text-lg font-bold mb-4">Comunidade Ziler</h3>
-            <p className="text-white text-sm mb-2">Top 10 Zilers com maiores ganhos do mês.</p>
-            <p className="text-white text-sm mb-2">Missão: Pagar dívidas, viver de renda, transformar vidas.</p>
-            <p className="text-white text-sm">Você é o protagonista dessa revolução financeira.</p>
+            <h3 className="text-white text-lg font-bold mb-4">
+              Comunidade Ziler
+            </h3>
+            <p className="text-white text-sm mb-2">
+              Top 10 Zilers com maiores ganhos do mês.
+            </p>
+            <p className="text-white text-sm mb-2">
+              Missão: Pagar dívidas, viver de renda, transformar vidas.
+            </p>
+            <p className="text-white text-sm">
+              Você é o protagonista dessa revolução financeira.
+            </p>
           </div>
         </div>
         <div className="text-center mt-12 text-white text-sm">

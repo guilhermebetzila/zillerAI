@@ -16,13 +16,20 @@ export async function GET(req: NextRequest) {
         id: true,
         saldo: true,
         valorInvestido: true,
-        pontos: true, // pontos base do usuário
+        pontos: true,
       },
     });
 
     if (!user) {
       return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
     }
+
+    // 🔹 Pega o último rendimento diário do usuário
+    const ultimoRendimento = await prisma.rendimentoDiario.findFirst({
+      where: { userId: user.id },
+      orderBy: { creditedAt: 'desc' }, // pega o mais recente
+      select: { amount: true },
+    });
 
     // Indicados diretos (1º nível)
     const indicadosDiretos = await prisma.user.count({
@@ -52,6 +59,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       saldo: user.saldo,
       valorInvestido: user.valorInvestido,
+      rendimentoDiario: ultimoRendimento?.amount ?? 0, // ✅ envia o último rendimento
       pontos: pontosTotais,
       pontosDiretos,
       pontosIndiretos,
