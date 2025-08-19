@@ -24,7 +24,7 @@ export default function SaquePage() {
     }
 
     if (!carteiraSalva) {
-      setMensagem('⚠️ Cadastre uma carteira USDT antes de sacar.')
+      setMensagem('⚠️ Cadastre uma carteira USDT (BEP20) antes de sacar.')
       return
     }
 
@@ -44,7 +44,7 @@ export default function SaquePage() {
         return
       }
 
-      setMensagem(`✅ Pedido de saque de ${valor} USDT enviado para a carteira: ${carteiraSalva}`)
+      setMensagem(`✅ Pedido de saque de ${valor} USDT enviado para a carteira (BEP20): ${carteiraSalva}`)
       setValor('')
     } catch (error) {
       setMensagem('❌ Erro de conexão com servidor.')
@@ -54,20 +54,20 @@ export default function SaquePage() {
   // Salvar carteira USDT local
   const salvarCarteira = () => {
     if (!carteira) {
-      setMensagem('❌ Digite uma carteira USDT válida.')
+      setMensagem('❌ Digite uma carteira USDT BEP20 válida.')
       return
     }
 
     localStorage.setItem('usdt_wallet', carteira)
     setCarteiraSalva(carteira)
     setCarteira('')
-    setMensagem('✅ Carteira USDT salva com sucesso!')
+    setMensagem('✅ Carteira USDT (BEP20) salva com sucesso!')
   }
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4">
       <h1 className="text-3xl font-bold mb-4">📤 Tela de Saque</h1>
-      <p className="mb-6 text-gray-400">Solicite saques em USDT para sua carteira.</p>
+      <p className="mb-6 text-gray-400">Solicite saques em USDT (BEP20 - Binance Smart Chain) para sua carteira.</p>
 
       {/* Formulário de saque */}
       <div className="bg-gray-900 p-6 rounded-lg shadow-md w-full max-w-md">
@@ -90,12 +90,12 @@ export default function SaquePage() {
 
       {/* Cadastro da carteira */}
       <div className="bg-gray-800 mt-6 p-6 rounded-lg shadow-md w-full max-w-md">
-        <label className="block mb-2 font-semibold">🔐 Cadastrar Carteira USDT (TRC20)</label>
+        <label className="block mb-2 font-semibold">🔐 Cadastrar Carteira USDT (BEP20 - BSC)</label>
         <input
           type="text"
           value={carteira}
           onChange={(e) => setCarteira(e.target.value)}
-          placeholder="Endereço da carteira USDT (TRC20)"
+          placeholder="Endereço da carteira USDT (BEP20 - BSC)"
           className="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
         />
         <button
@@ -107,7 +107,7 @@ export default function SaquePage() {
 
         {carteiraSalva && (
           <p className="mt-4 text-sm text-gray-300 text-center">
-            ✅ Carteira cadastrada: <strong>{carteiraSalva}</strong>
+            ✅ Carteira cadastrada (BEP20): <strong>{carteiraSalva}</strong>
           </p>
         )}
       </div>
