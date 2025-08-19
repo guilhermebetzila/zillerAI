@@ -25,10 +25,17 @@ async function calcularRendimentosDiarios() {
 
     for (const investimento of investimentos) {
       // Converter Decimals para number
-      const valor = investimento.valor instanceof Object ? investimento.valor.toNumber() : investimento.valor;
-      const percentual = investimento.percentualDiario instanceof Object ? investimento.percentualDiario.toNumber() : investimento.percentualDiario;
+      const valor =
+        investimento.valor instanceof Object
+          ? investimento.valor.toNumber()
+          : investimento.valor;
+      const percentual =
+        investimento.percentualDiario instanceof Object
+          ? investimento.percentualDiario.toNumber()
+          : investimento.percentualDiario;
 
-      const lucro = valor * percentual;
+      const lucro = Number(valor) * Number(percentual);
+      const lucroFormatado = isNaN(lucro) ? "0.00" : lucro.toFixed(2);
 
       // Verificar se já existe rendimento para este usuário e data
       const existe = await prisma.rendimentoDiario.findFirst({
@@ -49,9 +56,13 @@ async function calcularRendimentosDiarios() {
           },
         });
 
-        log(`✅ Rendimento de R$ ${lucro.toFixed(2)} registrado para usuário ID ${investimento.userId}`);
+        log(
+          `✅ Rendimento de R$ ${lucroFormatado} registrado para usuário ID ${investimento.userId}`
+        );
       } else {
-        log(`⚠️ Rendimento para usuário ID ${investimento.userId} e data ${dateKey} já existe. Pulando...`);
+        log(
+          `⚠️ Rendimento para usuário ID ${investimento.userId} e data ${dateKey} já existe. Pulando...`
+        );
       }
     }
 
