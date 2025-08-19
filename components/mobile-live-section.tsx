@@ -89,7 +89,7 @@ export function MobileLiveSection() {
                   <Clock className="h-3 w-3" />
                   {match.time}
                   <Users className="h-3 w-3" />
-                  {(match.viewers / 1000).toFixed(1)}K
+                  {(Number(match.viewers) / 1000).toFixed(1)}K
                 </div>
               </div>
 
@@ -97,11 +97,15 @@ export function MobileLiveSection() {
               <div className="space-y-2 mb-4">
                 <div className="flex items-center justify-between">
                   <span className="text-white font-medium text-sm">{match.homeTeam}</span>
-                  <span className="text-green-400 font-bold text-lg">{match.score.split("-")[0]}</span>
+                  <span className="text-green-400 font-bold text-lg">
+                    {match.score.split("-")[0]}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-white font-medium text-sm">{match.awayTeam}</span>
-                  <span className="text-green-400 font-bold text-lg">{match.score.split("-")[1]}</span>
+                  <span className="text-green-400 font-bold text-lg">
+                    {match.score.split("-")[1]}
+                  </span>
                 </div>
               </div>
 
@@ -113,7 +117,9 @@ export function MobileLiveSection() {
                   className="flex flex-col h-auto py-2 bg-gray-700 border-gray-600 hover:bg-green-700"
                 >
                   <span className="text-xs text-gray-400">1</span>
-                  <span className="font-semibold text-white">{match.odds.home}</span>
+                  <span className="font-semibold text-white">
+                    {Number(match.odds.home).toFixed(2)}
+                  </span>
                 </Button>
                 <Button
                   variant="outline"
@@ -121,7 +127,9 @@ export function MobileLiveSection() {
                   className="flex flex-col h-auto py-2 bg-gray-700 border-gray-600 hover:bg-green-700"
                 >
                   <span className="text-xs text-gray-400">X</span>
-                  <span className="font-semibold text-white">{match.odds.draw}</span>
+                  <span className="font-semibold text-white">
+                    {Number(match.odds.draw).toFixed(2)}
+                  </span>
                 </Button>
                 <Button
                   variant="outline"
@@ -129,7 +137,9 @@ export function MobileLiveSection() {
                   className="flex flex-col h-auto py-2 bg-gray-700 border-gray-600 hover:bg-green-700"
                 >
                   <span className="text-xs text-gray-400">2</span>
-                  <span className="font-semibold text-white">{match.odds.away}</span>
+                  <span className="font-semibold text-white">
+                    {Number(match.odds.away).toFixed(2)}
+                  </span>
                 </Button>
               </div>
             </Card>
