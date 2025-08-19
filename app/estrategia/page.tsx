@@ -1,24 +1,22 @@
-// app/o-que-e-a-ziller/page.tsx
+// app/inteligencia-artificial/page.tsx
 "use client";
 
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 
-export default function OQueEZiller() {
-  const router = useRouter();
-
+export default function InteligenciaArtificial() {
   return (
     <main className="min-h-screen bg-gray-900 text-white px-6 py-12">
       <div className="max-w-5xl mx-auto space-y-10">
-        {/* Botão Voltar */}
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-yellow-400 hover:text-yellow-300 transition mb-6"
-        >
-          <ArrowLeft size={20} />
-          Voltar
-        </button>
+        
+        {/* Botão de Voltar */}
+        <div>
+          <a
+            href="/"
+            className="inline-block mb-6 text-yellow-400 hover:text-yellow-500 font-semibold"
+          >
+            ← Voltar ao Dashboard
+          </a>
+        </div>
 
         {/* Título */}
         <motion.h1
@@ -27,60 +25,59 @@ export default function OQueEZiller() {
           transition={{ duration: 0.8 }}
           className="text-4xl font-bold text-center text-yellow-400"
         >
-          O que é a Ziller.ia
+          Inteligência Artificial & Estratégia
         </motion.h1>
 
         {/* Subtítulo */}
         <p className="text-lg text-gray-300 text-center">
-          Inteligência Artificial a serviço do seu futuro
+          O cérebro invisível que opera nos bastidores dos maiores mercados do
+          mundo.
         </p>
 
         {/* Sessões */}
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold text-yellow-300">
-            🦍 O Especialista que nunca dorme
+            🎯 A disciplina do especialista
           </h2>
           <ul className="list-disc list-inside text-gray-300 space-y-2">
-            <li>Monitoramento 24h de mercados nacionais e internacionais</li>
-            <li>Integração com calendários econômicos globais</li>
-            <li>Análise técnica e fundamentalista com leitura avançada</li>
-            <li>Poucas entradas, porém altamente assertivas</li>
+            <li>Atuação focada entre <strong>9h e 18h</strong>, nos mercados do Brasil e EUA</li>
+            <li>Poucas entradas ao dia, porém altamente assertivas</li>
+            <li>Operações baseadas em estatísticas e inteligência de dados</li>
+            <li>Proteção do capital sempre em primeiro lugar</li>
           </ul>
         </section>
 
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold text-yellow-300">
-            📊 Resultados com sustentabilidade
+            ⚡ O poder da tecnologia
           </h2>
           <ul className="list-disc list-inside text-gray-300 space-y-2">
-            <li>Rendimento-alvo: 1,5% a 2,5% ao dia</li>
-            <li>Divisão de lucros diária preservando o capital</li>
-            <li>Ecossistema limitado a 100 mil usuários</li>
-            <li>Qualidade acima da quantidade de operações</li>
+            <li>Armazenamento massivo de dados para mapear padrões</li>
+            <li>Modelos preditivos avançados com ajustes em tempo real</li>
+            <li>Integração com calendário econômico global</li>
+            <li>Criptografia e segurança de nível bancário</li>
           </ul>
         </section>
 
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold text-yellow-300">
-            🔒 Transparência e segurança
+            🦍 A filosofia da força silenciosa
           </h2>
           <ul className="list-disc list-inside text-gray-300 space-y-2">
-            <li>Relatórios diários com movimentações</li>
-            <li>Acesso ao Bolsão da Empresa</li>
-            <li>Auditorias periódicas e criptografia de ponta</li>
-            <li>Entregas trimestrais com projeções, lucros e perdas</li>
+            <li>Força e disciplina contra as armadilhas do mercado</li>
+            <li>Lealdade à comunidade antes de tudo</li>
+            <li>Precisão cirúrgica: agir apenas quando a vitória é clara</li>
           </ul>
         </section>
 
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold text-yellow-300">
-            🌍 Crescimento coletivo
+            📊 Resultados sustentáveis
           </h2>
           <ul className="list-disc list-inside text-gray-300 space-y-2">
-            <li>Mentorias exclusivas e trilhas de aprendizado</li>
-            <li>Comunidade privada de investidores</li>
-            <li>Formação em consciência financeira e gestão de risco</li>
-            <li>Suporte humano + IA para decisões melhores</li>
+            <li>Rendimento-alvo entre 1,5% e 2,5% ao dia</li>
+            <li>Operações baseadas em estatística e probabilidade real</li>
+            <li>Estratégia feita para durar, não para apostas arriscadas</li>
           </ul>
         </section>
 
@@ -95,9 +92,8 @@ export default function OQueEZiller() {
             Ziller — Força. Família. Lealdade.
           </h2>
           <p className="text-gray-300 max-w-2xl mx-auto">
-            Mais que uma plataforma, somos um ecossistema exclusivo que une
-            tecnologia, segurança e propósito. Crescemos juntos, com os pés no
-            presente e os olhos no futuro.
+            A Inteligência Artificial que pensa como um especialista, age como
+            um profissional e protege como uma família.
           </p>
           <a
             href="/"

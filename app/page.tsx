@@ -127,7 +127,10 @@ export default function Home() {
               >
                 O que é a Ziller.Ia
               </li>
-              <li className="hover:text-yellow-500 cursor-pointer transition-colors">
+              <li
+                onClick={() => router.push('/estrategia')}
+                className="hover:text-yellow-500 cursor-pointer transition-colors"
+              >
                 Inteligência Artificial e Estratégias
               </li>
               <li className="hover:text-yellow-500 cursor-pointer transition-colors">
