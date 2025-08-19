@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 type LinhaRede = {
   id: number;
@@ -8,22 +8,50 @@ type LinhaRede = {
   nivel: number;
 };
 
-type ResumoNivel = {
+type UsuarioComFilhos = {
+  id: number;
+  nome: string;
+  indicadoPorId: number | null;
   nivel: number;
-  quantidade: number;
+  filhos: UsuarioComFilhos[];
 };
 
+function construirArvore(lista: LinhaRede[]): UsuarioComFilhos {
+  const mapa = new Map<number, UsuarioComFilhos>();
+
+  // Cria cada nó vazio de filhos
+  lista.forEach((u) => {
+    mapa.set(u.id, { ...u, filhos: [] });
+  });
+
+  let raiz: UsuarioComFilhos | null = null;
+
+  // Conecta cada nó ao seu pai
+  lista.forEach((u) => {
+    if (u.indicadoPorId === null) {
+      raiz = mapa.get(u.id)!; // raiz encontrada
+    } else {
+      const pai = mapa.get(u.indicadoPorId);
+      if (pai) {
+        pai.filhos.push(mapa.get(u.id)!);
+      }
+    }
+  });
+
+  return raiz!;
+}
+
 export async function GET(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  context: { params: { id: string } }
 ) {
-  const usuarioId = Number(params.id);
+  const usuarioId = Number(context.params.id);
   if (!Number.isInteger(usuarioId)) {
-    return NextResponse.json({ error: 'ID inválido' }, { status: 400 });
+    return NextResponse.json({ error: "ID inválido" }, { status: 400 });
   }
 
   try {
-    // 1) Buscar rede completa
+    // 🔹 Consulta recursiva no Postgres
     const rede = await prisma.$queryRaw<LinhaRede[]>`
       WITH RECURSIVE rede AS (
         SELECT id, nome, "indicadoPorId", 0 AS nivel
@@ -40,34 +68,15 @@ export async function GET(
       ORDER BY nivel, id;
     `;
 
-    // 2) Buscar resumo por nível
-    const resumo = await prisma.$queryRaw<ResumoNivel[]>`
-      WITH RECURSIVE rede AS (
-        SELECT id, nome, "indicadoPorId", 0 AS nivel
-        FROM "User"
-        WHERE id = ${usuarioId}
+    // 🔹 Transforma lista em árvore
+    const arvore = construirArvore(rede);
 
-        UNION ALL
-
-        SELECT u.id, u.nome, u."indicadoPorId", r.nivel + 1
-        FROM "User" u
-        INNER JOIN rede r ON u."indicadoPorId" = r.id
-      )
-      SELECT nivel, COUNT(*)::int AS quantidade
-      FROM rede
-      GROUP BY nivel
-      ORDER BY nivel;
-    `;
-
-    return NextResponse.json({
-      raiz: usuarioId,
-      total: Math.max(0, rede.length - 1), // todos menos o raiz
-      usuarios: rede,
-      resumo: resumo,
-    });
+    return NextResponse.json(arvore);
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: 'Erro ao consultar a rede' }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro ao consultar a rede" },
+      { status: 500 }
+    );
   }
 }
-
