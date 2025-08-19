@@ -5,24 +5,24 @@ import jwt from 'jsonwebtoken'
 
 export async function GET() {
   try {
-    const cookieStore = await cookies() // <-- manter o await
+    const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value
 
     if (!token) {
       return NextResponse.json({ error: 'Token ausente' }, { status: 401 })
     }
 
-    const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!) // 👈 alterado aqui
-    const userName = decoded?.nome
+    const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!)
+    const userId = decoded?.id // 👈 pegar o ID do usuário, não o nome
 
-    if (!userName) {
+    if (!userId) {
       return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
     }
 
-    // Conta quantos usuários foram indicados pelo usuário logado
+    // Conta quantos usuários foram indicados por este usuário
     const quantidadeIndicados = await prisma.user.count({
       where: {
-        indicador: userName,
+        indicadoPorId: userId, // 👈 agora usa o campo correto
       },
     })
 
