@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
@@ -9,7 +8,6 @@ export default function LoginPage() {
   const [senha, setSenha] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [carregando, setCarregando] = useState(false);
-  const roteador = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,18 +21,15 @@ export default function LoginPage() {
     }
 
     const result = await signIn('credentials', {
-      redirect: false,
       email,
-      password: senha, // 🔥 importante: agora é "password"
+      password: senha, // 🔑 precisa ser "password"
+      callbackUrl: '/dashboard', // ✅ redireciona automático
     });
 
     if (result?.error) {
       setMensagem('Email ou senha incorreta.');
-    } else {
-      roteador.push('/dashboard');
+      setCarregando(false);
     }
-
-    setCarregando(false);
   };
 
   return (
