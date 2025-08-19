@@ -17,14 +17,14 @@ export function Header() {
     setUser(usuario);
 
     if (usuario?.saldo) {
-      setSaldo(usuario.saldo);
+      setSaldo(Number(usuario.saldo) || 0);
     }
 
     socket.on('saldo:atualizado', ({ email, valor }) => {
       const usuarioAtual = JSON.parse(localStorage.getItem('usuarioLogado') || 'null');
 
       if (usuarioAtual?.email === email) {
-        usuarioAtual.saldo += valor;
+        usuarioAtual.saldo = Number(usuarioAtual.saldo || 0) + Number(valor || 0);
         localStorage.setItem('usuarioLogado', JSON.stringify(usuarioAtual));
         setSaldo(usuarioAtual.saldo);
         console.log('💰 Saldo atualizado via socket:', usuarioAtual.saldo);
@@ -63,7 +63,9 @@ export function Header() {
         {/* Saldo do usuário */}
         <div className="flex items-center gap-2">
           {user && (
-            <span className="mr-2 font-bold text-yellow-300">Saldo: R${saldo.toFixed(2)}</span>
+            <span className="mr-2 font-bold text-yellow-300">
+              Saldo: R${Number(saldo).toFixed(2)}
+            </span>
           )}
         </div>
       </div>
