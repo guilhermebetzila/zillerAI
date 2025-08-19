@@ -31,7 +31,7 @@ export default function InvestimentosPage() {
   // Carregar dados do usuário
   const carregarDados = async () => {
     try {
-      const res = await fetch("/api/investimentos");
+      const res = await fetch("/api/investir"); // ✅ rota corrigida
       const data = await res.json();
       if (res.ok) {
         setSaldo(data.saldo);
@@ -56,7 +56,7 @@ export default function InvestimentosPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/investimentos/novo", {
+      const res = await fetch("/api/investir/novo", { // ✅ rota corrigida
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ valor: valorNum }),
@@ -124,9 +124,17 @@ export default function InvestimentosPage() {
           <ul className="space-y-2">
             {investimentos.map((inv) => (
               <li key={inv.id} className="bg-gray-700 p-3 rounded">
-                <p>💵 Valor: <span className="text-yellow-400">{inv.valor} USDT</span></p>
+                <p>
+                  💵 Valor:{" "}
+                  <span className="text-yellow-400">{inv.valor} USDT</span>
+                </p>
                 <p>📅 Criado em: {new Date(inv.criadoEm).toLocaleString()}</p>
-                <p>📊 Acumulado: <span className="text-green-400">{inv.rendimentoAcumulado} USDT</span></p>
+                <p>
+                  📊 Acumulado:{" "}
+                  <span className="text-green-400">
+                    {inv.rendimentoAcumulado} USDT
+                  </span>
+                </p>
                 <p>Status: {inv.ativo ? "✅ Ativo" : "❌ Finalizado"}</p>
               </li>
             ))}
