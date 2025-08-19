@@ -15,8 +15,9 @@ interface BetSlipProps {
 export function BetSlip({ bets, onRemoveBet }: BetSlipProps) {
   const [stake, setStake] = useState("")
 
-  const totalOdds = bets.reduce((acc, bet) => acc * bet.odds, 1)
-  const potentialWin = stake ? (Number.parseFloat(stake) * totalOdds).toFixed(2) : "0.00"
+  const totalOdds = bets.reduce((acc, bet) => acc * Number(bet.odds), 1)
+  const stakeValue = parseFloat(stake) || 0
+  const potentialWin = (stakeValue * totalOdds).toFixed(2)
 
   if (bets.length === 0) {
     return (
@@ -51,7 +52,7 @@ export function BetSlip({ bets, onRemoveBet }: BetSlipProps) {
                   <p className="text-xs text-gray-600 truncate">{bet.match}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant="outline" className="text-xs">
-                      {bet.odds}
+                      {Number(bet.odds).toFixed(2)}
                     </Badge>
                   </div>
                 </div>
@@ -81,7 +82,7 @@ export function BetSlip({ bets, onRemoveBet }: BetSlipProps) {
                 type="number"
                 placeholder="0,00"
                 value={stake}
-                onChange={(e) => setStake(e.target.value)}
+                onChange={(e) => setStake(e.target.value.replace(",", "."))}
                 className="text-center"
               />
             </div>
