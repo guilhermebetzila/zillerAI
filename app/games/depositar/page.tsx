@@ -254,6 +254,33 @@ export default function Depositar() {
           </div>
         )}
 
+        {/* Histórico Pix */}
+        <div className="mt-8">
+          <h2 className="text-xl font-semibold text-green-400 mb-4">
+            📜 Histórico via Pix
+          </h2>
+          {historicoPix.length === 0 ? (
+            <p className="text-gray-400">Nenhum depósito Pix registrado ainda.</p>
+          ) : (
+            <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
+              {historicoPix.map((item) => (
+                <li
+                  key={item.id}
+                  className="text-sm text-gray-200 border-b border-gray-600 pb-2 flex justify-between items-center"
+                >
+                  <span>
+                    💵 R$ {Number(item.valor || 0).toFixed(2)} –{' '}
+                    {item.criadoEm
+                      ? new Date(item.criadoEm).toLocaleString('pt-BR')
+                      : '-'}
+                  </span>
+                  <StatusBadge status={item.status || 'pendente'} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
         {/* --- USDT On-Chain --- */}
         <div className="mt-10">
           <h2 className="text-xl font-semibold text-yellow-400 mb-4">
@@ -317,37 +344,6 @@ export default function Depositar() {
               </>
             )}
           </div>
-        </div>
-
-        {/* Histórico Pix */}
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold text-green-400 mb-4">
-            📜 Histórico via Pix
-          </h2>
-          {historicoPix.length === 0 ? (
-            <p className="text-gray-400">Nenhum depósito Pix registrado ainda.</p>
-          ) : (
-            <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
-              {historicoPix.map((item) => (
-                <li
-                  key={item.id}
-                  className="text-sm text-gray-200 border-b border-gray-600 pb-2 flex justify-between items-center"
-                >
-                  <span>
-                    💵 R{'$ '}
-                    {typeof item.valor === 'number'
-                      ? item.valor.toFixed(2)
-                      : '0.00'}{' '}
-                    –{' '}
-                    {item.criadoEm
-                      ? new Date(item.criadoEm).toLocaleString('pt-BR')
-                      : '-'}
-                  </span>
-                  <StatusBadge status={item.status || 'pendente'} />
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
 
         {/* On-chain confirmados */}
