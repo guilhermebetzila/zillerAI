@@ -3,7 +3,10 @@ import { getToken } from 'next-auth/jwt'
 import MercadoPagoConfig, { Payment } from 'mercadopago'
 
 // ⚡ Loga o token no servidor (NUNCA no cliente)
-console.log("🔑 MERCADO_PAGO_ACCESS_TOKEN carregado:", process.env.MERCADO_PAGO_ACCESS_TOKEN?.slice(0,10) + "...")
+console.log(
+  "🔑 MERCADO_PAGO_ACCESS_TOKEN carregado:",
+  process.env.MERCADO_PAGO_ACCESS_TOKEN?.slice(0, 10) + "..."
+)
 
 const mp = new MercadoPagoConfig({
   accessToken: (process.env.MERCADO_PAGO_ACCESS_TOKEN || '').trim(), // 👈 remove espaços/quebras
@@ -23,14 +26,15 @@ export async function POST(req: NextRequest) {
     }
 
     const { amount, description = 'Depósito via PIX' } = await req.json()
-    let valor = Number(amount)
+    let valor = Number(amount || 0)
 
     if (!valor || valor <= 0) {
       console.log('⚠️ Valor inválido:', valor)
       return NextResponse.json({ error: 'Valor inválido' }, { status: 400 })
     }
 
-    valor = parseFloat(valor.toFixed(2))
+    // ✅ seguro contra string/null
+    valor = Number(valor.toFixed(2))
 
     console.log('📤 Criando pagamento para:', userEmail, 'Valor:', valor)
 
