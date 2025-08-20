@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Iniciando seed do banco...");
 
+  // ---- Usuários demo ----
   const senhaHash = await bcrypt.hash("123456", 10);
 
   const joao = await prisma.user.upsert({
@@ -16,7 +17,7 @@ async function main() {
       email: "joao@email.com",
       senha: senhaHash,
       saldo: 0,
-      cpf: "11111111111", // ✅ adicionado
+      cpf: "11111111111",
     },
   });
 
@@ -28,7 +29,7 @@ async function main() {
       email: "ana@email.com",
       senha: senhaHash,
       saldo: 0,
-      cpf: "22222222222", // ✅ adicionado
+      cpf: "22222222222",
     },
   });
 
@@ -40,7 +41,7 @@ async function main() {
       email: "maria@email.com",
       senha: senhaHash,
       saldo: 0,
-      cpf: "33333333333", // ✅ adicionado
+      cpf: "33333333333",
     },
   });
 
@@ -52,6 +53,23 @@ async function main() {
       { userId: maria.id, valor: 300, status: "cancelado" },
     ],
   });
+
+  // ---- Instrumentos demo ----
+  const instruments = [
+    { symbol: "WIN", venue: "B3_SIM", tickSize: 5.0 },     // Mini-índice B3
+    { symbol: "WDO", venue: "B3_SIM", tickSize: 0.5 },     // Mini-dólar B3
+    { symbol: "ES", venue: "ALPACA", tickSize: 0.25 },     // S&P 500 future (simulação)
+    { symbol: "NQ", venue: "ALPACA", tickSize: 0.25 },     // Nasdaq future
+    { symbol: "USDJPY", venue: "OANDA", tickSize: 0.001 }, // Forex par
+  ];
+
+  for (const inst of instruments) {
+    await prisma.instrument.upsert({
+      where: { symbol_venue: { symbol: inst.symbol, venue: inst.venue } },
+      update: {},
+      create: inst,
+    });
+  }
 
   console.log("✅ Seed concluído com sucesso!");
 }

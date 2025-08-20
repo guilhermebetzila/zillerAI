@@ -115,3 +115,136 @@ enum StatusSaque {
   concluido
   rejeitado
 }
+
+// ====== DEMO TRADING – ENUNS ======
+enum Venue {
+  ALPACA
+  OANDA
+  B3_SIM
+}
+
+enum SignalSide {
+  long
+  short
+  flat
+}
+
+enum Side {
+  buy
+  sell
+}
+
+enum OrderType {
+  market
+  limit
+  stop
+  stop_limit
+}
+
+enum OrderStatus {
+  new
+  accepted
+  partially_filled
+  filled
+  canceled
+  rejected
+}
+
+// ====== DEMO TRADING – MODELOS ======
+
+// Tabela de instrumentos negociáveis
+model Instrument {
+  id         Int          @id @default(autoincrement())
+  symbol     String
+  venue      Venue
+  tickSize   Decimal      @default(0.01)
+
+  signals    Signal[]
+  orders     TradeOrder[]
+  positions  Position[]
+  trades     Trade[]
+
+  @@unique([symbol, venue], name: "symbol_venue")
+  @@map("instruments")
+}
+
+// Sinais da estratégia
+model Signal {
+  id            Int         @id @default(autoincrement())
+  instrumentId  Int
+  instrument    Instrument  @relation(fields: [instrumentId], references: [id])
+  timestamp     DateTime    @default(now())
+  timeframe     String
+  side          SignalSide
+  confidence    Float?
+  extras        Json?
+
+  @@index([instrumentId, timestamp])
+  @@map("signals")
+}
+
+// Ordens (paper)
+model TradeOrder {
+  id              Int          @id @default(autoincrement())
+  instrumentId    Int
+  instrument      Instrument   @relation(fields: [instrumentId], references: [id])
+  broker          String
+  brokerOrderId   String?
+  side            Side
+  qty             Decimal
+  type            OrderType
+  limitPrice      Decimal?
+  status          OrderStatus
+  createdAt       DateTime     @default(now())
+
+  fills           Fill[]
+
+  @@index([instrumentId, createdAt])
+  @@map("orders")
+}
+
+// Execuções (fills)
+model Fill {
+  id         Int         @id @default(autoincrement())
+  orderId    Int
+  order      TradeOrder  @relation(fields: [orderId], references: [id])
+  price      Decimal
+  qty        Decimal
+  fee        Decimal     @default(0)
+  tax        Decimal     @default(0)
+  filledAt   DateTime    @default(now())
+
+  @@index([orderId, filledAt])
+  @@map("fills")
+}
+
+// Posição agregada
+model Position {
+  id            Int         @id @default(autoincrement())
+  instrumentId  Int
+  instrument    Instrument  @relation(fields: [instrumentId], references: [id])
+  qty           Decimal
+  avgPrice      Decimal
+  updatedAt     DateTime    @default(now())
+
+  @@unique([instrumentId])
+  @@map("positions")
+}
+
+// Trades (entrada/saída)
+model Trade {
+  id            Int         @id @default(autoincrement())
+  instrumentId  Int
+  instrument    Instrument  @relation(fields: [instrumentId], references: [id])
+  entryTime     DateTime
+  exitTime      DateTime?
+  entryPrice    Decimal
+  exitPrice     Decimal?
+  qty           Decimal
+  grossPnl      Decimal?
+  netPnl        Decimal?
+  costs         Decimal?    @default(0)
+
+  @@index([instrumentId, entryTime])
+  @@map("trades")
+}
