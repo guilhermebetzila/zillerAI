@@ -1,44 +1,75 @@
-import { PrismaClient } from '@prisma/client'
+import { localPrisma, remotePrisma } from "./clients";
+import { Investimento, RendimentoDiario, User } from "@prisma/client";
 
-// Conexão com o banco LOCAL (usa LOCAL_DATABASE_URL do .env)
-const local = new PrismaClient({
-  datasources: {
-    db: { url: process.env.LOCAL_DATABASE_URL! }
+async function migrate() {
+  try {
+    const users = await localPrisma.user.findMany({
+      include: {
+        investimentos: true,
+        rendimentos: true,
+        indicados: true,
+      },
+    });
+
+    for (const user of users) {
+      await remotePrisma.user.create({
+        data: {
+          id: user.id,
+          nome: user.nome,
+          email: user.email,
+          senha: user.senha,
+          saldo: user.saldo,
+          valorInvestido: user.valorInvestido,
+          cpf: user.cpf || "00000000000",
+          pontos: user.pontos,
+          lastLogin: user.lastLogin,
+          carteira: user.carteira,
+          investimentos: {
+            create: user.investimentos.map((inv: Investimento) => ({
+              id: inv.id,
+              valor: inv.valor,
+              criadoEm: inv.criadoEm,
+              percentualDiario: inv.percentualDiario,
+              rendimentoAcumulado: inv.rendimentoAcumulado,
+              ativo: inv.ativo,
+              limite: inv.limite,
+            })),
+          },
+          rendimentos: {
+            create: user.rendimentos.map((rend: RendimentoDiario) => ({
+              id: rend.id,
+              dateKey: rend.dateKey,
+              base: rend.base,
+              rate: rend.rate,
+              amount: rend.amount,
+              creditedAt: rend.creditedAt,
+            })),
+          },
+          indicados: {
+            create: user.indicados.map((ind: User) => ({
+              id: ind.id,
+              nome: ind.nome,
+              email: ind.email,
+              senha: ind.senha,
+              saldo: ind.saldo,
+              valorInvestido: ind.valorInvestido,
+              cpf: ind.cpf || "00000000000",
+              pontos: ind.pontos,
+              lastLogin: ind.lastLogin,
+              carteira: ind.carteira,
+            })),
+          },
+        },
+      });
+    }
+
+    console.log("✅ Migração concluída com sucesso!");
+  } catch (error) {
+    console.error("❌ Erro na migração:", error);
+  } finally {
+    await localPrisma.$disconnect();
+    await remotePrisma.$disconnect();
   }
-})
-
-// Conexão com o banco REMOTO (Railway - usa DATABASE_URL do .env)
-const remote = new PrismaClient({
-  datasources: {
-    db: { url: process.env.DATABASE_URL! }
-  }
-})
-
-async function main() {
-  // Buscar todos os usuários do banco local
-  const users = await local.user.findMany()
-  console.log(`🚀 Migrando ${users.length} usuários...`)
-
-  for (const u of users) {
-    await remote.user.upsert({
-      where: { email: u.email }, // evita duplicar pelo e-mail
-      update: {}, // não sobrescreve caso já exista
-      create: {
-        email: u.email,
-        nome: u.nome,
-        senha: u.senha,
-        saldo: u.saldo,
-        cpf: u.cpf ?? "00000000000" // fallback se não tiver CPF
-      }
-    })
-  }
-
-  console.log("✅ Migração concluída com sucesso!")
 }
 
-main()
-  .catch(e => console.error("❌ Erro na migração:", e))
-  .finally(async () => {
-    await local.$disconnect()
-    await remote.$disconnect()
-  })
+migrate();

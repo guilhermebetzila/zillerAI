@@ -15,7 +15,8 @@ async function main() {
       nome: "João Silva",
       email: "joao@email.com",
       senha: senhaHash,
-      saldo: 0, // ✅ number simples
+      saldo: 0,
+      cpf: "11111111111", // ✅ adicionado
     },
   });
 
@@ -27,6 +28,7 @@ async function main() {
       email: "ana@email.com",
       senha: senhaHash,
       saldo: 0,
+      cpf: "22222222222", // ✅ adicionado
     },
   });
 
@@ -38,12 +40,13 @@ async function main() {
       email: "maria@email.com",
       senha: senhaHash,
       saldo: 0,
+      cpf: "33333333333", // ✅ adicionado
     },
   });
 
   await prisma.deposito.createMany({
     data: [
-      { userId: joao.id, valor: 100, status: "confirmado" }, // ✅ number simples
+      { userId: joao.id, valor: 100, status: "confirmado" },
       { userId: joao.id, valor: 250, status: "pendente" },
       { userId: ana.id, valor: 75, status: "em_analise" },
       { userId: maria.id, valor: 300, status: "cancelado" },
