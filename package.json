@@ -11,6 +11,7 @@
     "sync:android": "npx cap sync android",
     "socket": "ts-node app/socket/server.ts",
     "atualizar": "node --loader ts-node/esm app/scripts/atualizarInvestimentos.ts",
+    "migrate:users": "ts-node app/scripts/migrateUsers.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -105,7 +106,7 @@
     "prisma": "^6.14.0",
     "tailwindcss": "^3.4.17",
     "ts-node": "^10.9.2",
-    "tsx": "^4.20.3",
+    "tsx": "^4.20.4",
     "typescript": "^5.9.2"
   }
 }
