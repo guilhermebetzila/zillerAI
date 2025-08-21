@@ -1,11 +1,31 @@
 import { NextResponse } from "next/server";
 
-// evita cache em Edge/Node
 export const dynamic = "force-dynamic";
+
+// função auxiliar para buscar um ativo por vez
+async function fetchBrapiQuote(symbol: string, brapiKey: string) {
+  const res = await fetch(
+    `https://brapi.dev/api/quote/${symbol}?token=${brapiKey}`,
+    { cache: "no-store" }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Erro Brapi ${res.status}: ${await res.text()}`);
+  }
+
+  const json = await res.json();
+  return (
+    json?.results?.map((a: any) => ({
+      symbol: a.symbol,
+      price: a.regularMarketPrice,
+      source: "Brapi.dev",
+    })) || []
+  );
+}
 
 export async function GET() {
   try {
-    // 🔑 chave da ExConvert
+    // --- chave ExConvert
     const exKey =
       process.env.EXCONVERT_API_KEY || process.env.NEXT_PUBLIC_EXCONVERT_API_KEY;
 
@@ -16,10 +36,10 @@ export async function GET() {
       );
     }
 
-    // 🔑 chave da brapi.dev
+    // --- chave Brapi
     const brapiKey =
       process.env.BRAPI_TOKEN ||
-      process.env.BRAPI_API_KEY || // 👈 agora aceita as duas
+      process.env.BRAPI_API_KEY ||
       process.env.NEXT_PUBLIC_BRAPI_TOKEN;
 
     if (!brapiKey) {
@@ -38,7 +58,6 @@ export async function GET() {
     }
 
     const usdJson = await usdRes.json();
-
     const rawUsd =
       usdJson?.result?.BRL ??
       usdJson?.result ??
@@ -55,22 +74,11 @@ export async function GET() {
       throw new Error("Preço inválido recebido da ExConvert");
     }
 
-    // --- Brapi (WINFUT e WDOFUT) ---
-    const urlBrapi = `https://brapi.dev/api/quote/WINFUT,WDOFUT?token=${brapiKey}`;
-    const brapiRes = await fetch(urlBrapi, { cache: "no-store" });
+    // --- Brapi (busca 1 por vez) ---
+    const win = await fetchBrapiQuote("WINFUT", brapiKey);
+    const wdo = await fetchBrapiQuote("WDOFUT", brapiKey);
 
-    if (!brapiRes.ok) {
-      throw new Error(`Erro Brapi ${brapiRes.status}: ${await brapiRes.text()}`);
-    }
-
-    const brapiJson = await brapiRes.json();
-
-    const brapiAssets =
-      brapiJson?.results?.map((a: any) => ({
-        symbol: a.symbol,
-        price: a.regularMarketPrice,
-        source: "Brapi.dev",
-      })) || [];
+    const brapiAssets = [...win, ...wdo];
 
     // --- Resultado final ---
     const assets = [
