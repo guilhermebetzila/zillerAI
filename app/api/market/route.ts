@@ -10,34 +10,16 @@ export async function GET() {
       );
     }
 
-    // ---- 1) Cotação do dólar (USD/BRL) ----
-    const fxUrl = `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=BRL&apikey=${apiKey}`;
-    const fxRes = await fetch(fxUrl);
-    const fxData = await fxRes.json();
-    const usdBrl =
-      fxData["Realtime Currency Exchange Rate"]?.["5. Exchange Rate"];
+    // Cotação do dólar (USD/BRL)
+    const url = `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=BRL&apikey=${apiKey}`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-    // ---- 2) Cotação da Apple (AAPL - Nasdaq) ----
-    const stockUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=AAPL&interval=5min&apikey=${apiKey}`;
-    const stockRes = await fetch(stockUrl);
-    const stockData = await stockRes.json();
-
-    const latestKey =
-      stockData["Meta Data"]?.["3. Last Refreshed"] ||
-      Object.keys(stockData["Time Series (5min)"] || {})[0];
-
-    const stockPrice =
-      stockData["Time Series (5min)"]?.[latestKey]?.["4. close"];
+    const usdBrl = data["Realtime Currency Exchange Rate"]?.["5. Exchange Rate"];
 
     return NextResponse.json({
-      forex: {
-        symbol: "USD/BRL",
-        price: usdBrl ? parseFloat(usdBrl) : null,
-      },
-      stock: {
-        symbol: "AAPL",
-        price: stockPrice ? parseFloat(stockPrice) : null,
-      },
+      symbol: "USD/BRL",
+      price: usdBrl ? parseFloat(usdBrl) : null,
       source: "Alpha Vantage",
       updated: new Date().toISOString(),
     });
