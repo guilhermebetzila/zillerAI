@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const brapiToken = process.env.BRAPI_TOKEN;
-    const exconvertKey = process.env.EXCONVERT_API_KEY;
+    const exconvertKey = process.env.NEXT_PUBLIC_EXCONVERT_API_KEY; // 👈 ajuste aqui
 
     if (!brapiToken || !exconvertKey) {
       throw new Error("Tokens de API não configurados no .env");
