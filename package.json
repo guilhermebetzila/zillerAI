@@ -7,21 +7,16 @@
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint",
-
     "build:android": "npm run build && npx cap copy android",
     "sync:android": "npx cap sync android",
-
     "socket": "tsx app/socket/server.ts",
-
     "scripts:atualizar": "tsx app/scripts/atualizarInvestimentos.ts",
     "migrate:users": "tsx app/scripts/migrateUsers.ts",
-
     "db:push": "prisma db push",
     "db:push:local": "DATABASE_URL=\"postgresql://postgres:KqPpaxIvaJwhSbcZVPMZxLWGFptQmlSg@metro.proxy.rlwy.net:12732/railway\" prisma db push",
     "db:push:prod": "prisma db push",
     "db:studio": "prisma studio",
     "prisma:seed": "prisma db seed",
-
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -92,7 +87,7 @@
     "react-icons": "^5.5.0",
     "react-resizable-panels": "^2.1.7",
     "react-toastify": "^11.0.5",
-    "recharts": "2.15.0",
+    "recharts": "^2.15.0",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "sonner": "^1.7.1",

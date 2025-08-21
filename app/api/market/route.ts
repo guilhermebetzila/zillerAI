@@ -1,12 +1,10 @@
-// app/api/market/route.ts
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  // Exemplo: usar Yahoo Finance via RapidAPI
   const urls = {
     nasdaq: "https://query1.finance.yahoo.com/v7/finance/quote?symbols=^IXIC",
     dolar: "https://query1.finance.yahoo.com/v7/finance/quote?symbols=USDBRL=X",
-    miniIndice: "https://query1.finance.yahoo.com/v7/finance/quote?symbols=^BVSP", // simulação
+    miniIndice: "https://query1.finance.yahoo.com/v7/finance/quote?symbols=^BVSP",
   };
 
   const [nasdaqRes, dolarRes, miniRes] = await Promise.all(

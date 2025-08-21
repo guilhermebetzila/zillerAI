@@ -17,7 +17,8 @@ export default function Sidebar() {
       aria-label="Menu inferior"
     >
       <SidebarItem href="/dashboard" icon={<FaChartLine />} label="Painel" />
-      <SidebarItem href="/games/ia" icon={<FaRocket />} label="IA" />
+      {/* Alterado de /games/ia para /demos */}
+      <SidebarItem href="/demos" icon={<FaRocket />} label="IA" />
       <SidebarItem href="/games/investir" icon={<FaWallet />} label="Investir" />
       <SidebarItem href="/como-funciona" icon={<FaBrain />} label="Como Funciona" />
       <SidebarItem href="/ecossistema" icon={<FaGlobe />} label="Ecossistema" />
