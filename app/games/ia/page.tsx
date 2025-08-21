@@ -7,6 +7,7 @@ interface UsuarioComIndicados {
   id: number;
   nome: string;
   email: string;
+  quantidadeDiretos: number;
   indicados: UsuarioComIndicados[];
 }
 
@@ -16,6 +17,7 @@ interface UsuarioRede {
   nivel: number;
   indicados: UsuarioRede[];
   aberto: boolean;
+  quantidadeDiretos: number;
 }
 
 export default function RedePage() {
@@ -27,7 +29,7 @@ export default function RedePage() {
       try {
         const res = await fetch('/api/rede', {
           method: 'GET',
-          credentials: 'include', // 🔑 manda cookies da sessão
+          credentials: 'include',
         });
         if (!res.ok) throw new Error('Erro ao buscar rede');
         const data: UsuarioComIndicados = await res.json();
@@ -36,6 +38,7 @@ export default function RedePage() {
           return {
             id: usuario.id,
             nome: usuario.nome,
+            quantidadeDiretos: usuario.quantidadeDiretos,
             nivel,
             aberto: nivel <= 1,
             indicados: usuario.indicados.map((ind) => converter(ind, nivel + 1)),
@@ -75,7 +78,7 @@ export default function RedePage() {
 
   function renderNode(node: UsuarioRede) {
     const filhos = node.indicados.length;
-    const spacing = Math.max(80, filhos * 20); // horizontal adaptativo
+    const spacing = Math.max(80, filhos * 20);
 
     return (
       <div key={node.id} className="relative flex flex-col items-center mt-4">
@@ -91,7 +94,7 @@ export default function RedePage() {
               node.nivel
             )} text-white px-3 py-1 rounded-md shadow-lg hover:scale-105 transition transform text-sm md:text-base`}
           >
-            {node.nome}
+            {node.nome} ({node.quantidadeDiretos})
           </div>
         </div>
 

@@ -1,34 +1,47 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { cookies } from 'next/headers'
-import jwt from 'jsonwebtoken'
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import prisma from "@/lib/prisma";
 
-export async function GET() {
+// Tipo da resposta
+export type IndicacoesQuantidadeResponse = {
+  quantidade: number;
+};
+
+export async function GET(req: Request) {
   try {
-    const cookieStore = await cookies()
-    const token = cookieStore.get('token')?.value
-
-    if (!token) {
-      return NextResponse.json({ error: 'Token ausente' }, { status: 401 })
+    const session = await getServerSession();
+    if (!session || !session.user?.email) {
+      return NextResponse.json(
+        { error: "Não autenticado" },
+        { status: 401 }
+      );
     }
 
-    const decoded: any = jwt.verify(token, process.env.NEXTAUTH_SECRET!)
-    const userId = decoded?.id // 👈 pegar o ID do usuário, não o nome
+    // Buscar usuário logado
+    const usuario = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
 
-    if (!userId) {
-      return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
+    if (!usuario) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado" },
+        { status: 404 }
+      );
     }
 
-    // Conta quantos usuários foram indicados por este usuário
-    const quantidadeIndicados = await prisma.user.count({
-      where: {
-        indicadoPorId: userId, // 👈 agora usa o campo correto
-      },
-    })
+    // Contar quantos indicados diretos ele possui
+    const quantidade: number = await prisma.user.count({
+      where: { indicadoPorId: usuario.id },
+    });
 
-    return NextResponse.json({ quantidade: quantidadeIndicados })
+    const resposta: IndicacoesQuantidadeResponse = { quantidade };
+
+    return NextResponse.json(resposta);
   } catch (error) {
-    console.error('Erro ao buscar quantidade de indicados:', error)
-    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+    console.error("Erro API indicacoes/quantidade:", error);
+    return NextResponse.json(
+      { error: "Erro interno" },
+      { status: 500 }
+    );
   }
 }

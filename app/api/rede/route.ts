@@ -1,69 +1,60 @@
-import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import prisma from "@/lib/prisma";
 
-interface UsuarioComIndicados {
+export type UsuarioArvore = {
   id: number;
-  nome: string;
+  nome: string | null;
   email: string;
-  indicados: UsuarioComIndicados[];
-}
+  quantidadeDiretos: number;
+  indicados: UsuarioArvore[];
+};
 
-// Função recursiva para buscar toda a rede
-async function buscarRede(usuarioId: number): Promise<UsuarioComIndicados> {
-  if (!usuarioId) {
-    throw new Error('ID de usuário inválido');
-  }
-
-  const usuario = await prisma.user.findUnique({
-    where: { id: usuarioId },
-    select: {
-      id: true,
-      nome: true,
-      email: true,
-      indicados: { 
-        select: { id: true, nome: true, email: true } 
-      },
-    },
-  });
-
-  if (!usuario) {
-    throw new Error('Usuário não encontrado');
-  }
-
-  const indicadosCompletos: UsuarioComIndicados[] = [];
-  for (const indicado of usuario.indicados) {
-    // Chamada recursiva
-    indicadosCompletos.push(await buscarRede(indicado.id));
-  }
-
-  return {
-    id: usuario.id,
-    nome: usuario.nome,
-    email: usuario.email,
-    indicados: indicadosCompletos,
-  };
-}
-
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    // 🔒 Lê token do cookie
-    const token = (await cookies()).get('token')?.value;
-    if (!token) {
-      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+    const session = await getServerSession();
+    if (!session || !session.user?.email) {
+      return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    const userId = Number(token);
-    if (!userId || isNaN(userId)) {
-      return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
+    const usuario = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { indicados: true },
+    });
+
+    if (!usuario) {
+      return NextResponse.json(
+        { error: "Usuário não encontrado" },
+        { status: 404 }
+      );
     }
 
-    // 🔎 Busca a rede completa do usuário
-    const rede = await buscarRede(userId);
+    async function carregarArvore(userId: number): Promise<UsuarioArvore | null> {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { indicados: true },
+      });
 
-    return NextResponse.json(rede);
-  } catch (error: any) {
-    console.error('Erro ao buscar rede:', error);
-    return NextResponse.json({ error: error.message || 'Erro interno' }, { status: 500 });
+      if (!user) return null;
+
+      const filhos = await Promise.all(
+        user.indicados.map((ind) => carregarArvore(ind.id))
+      );
+
+      return {
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        quantidadeDiretos: user.indicados.length,
+        indicados: filhos.filter((f): f is UsuarioArvore => f !== null),
+      };
+    }
+
+    const arvore = await carregarArvore(usuario.id);
+
+    return NextResponse.json(arvore);
+  } catch (error) {
+    console.error("Erro API rede:", error);
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
