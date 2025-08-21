@@ -10,18 +10,33 @@ interface AssetData {
 
 export default function MarketDemo() {
   const [data, setData] = useState<AssetData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/api/market");
-      const json = await res.json();
-      setData(json);
+      try {
+        const res = await fetch("/api/market", { cache: "no-store" });
+        if (!res.ok) throw new Error("Falha na API");
+        const json: AssetData = await res.json();
+        setData(json);
+        setError(null);
+      } catch (e) {
+        setError("Não foi possível carregar a cotação agora.");
+      }
     };
 
-    fetchData();
+    fetchData(); // primeira carga
     const interval = setInterval(fetchData, 10000); // atualiza a cada 10s
     return () => clearInterval(interval);
   }, []);
+
+  if (error) {
+    return (
+      <div className="bg-white shadow-lg rounded-lg p-4 text-center">
+        <p className="text-sm text-red-600">{error}</p>
+      </div>
+    );
+  }
 
   if (!data) return <div>Carregando...</div>;
 
