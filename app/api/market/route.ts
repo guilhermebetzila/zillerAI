@@ -19,24 +19,18 @@ export async function GET() {
       throw new Error(`Erro Brapi (IBOV): ${ibovData.message}`);
     }
 
-    // 2️⃣ Buscar USD/BRL (Exchangerate.host)
+    // 2️⃣ Buscar USD/BRL (AwesomeAPI – sem token)
     const dolarRes = await fetch(
-      `https://api.exchangerate.host/convert?from=USD&to=BRL&amount=1`,
+      "https://economia.awesomeapi.com.br/json/last/USD-BRL",
       { cache: "no-store" }
     );
     const dolarData = await dolarRes.json();
 
-    // garante que pega tanto result quanto info.rate
-    const dolarPrice =
-      typeof dolarData?.result === "number"
-        ? dolarData.result
-        : typeof dolarData?.info?.rate === "number"
-        ? dolarData.info.rate
-        : null;
+    const dolarPrice = parseFloat(dolarData?.USDBRL?.bid ?? "0");
 
     if (!dolarPrice) {
-      console.error("Resposta da exchangerate.host:", dolarData);
-      throw new Error("Erro ao buscar USD/BRL na exchangerate.host");
+      console.error("Resposta da AwesomeAPI:", dolarData);
+      throw new Error("Erro ao buscar USD/BRL na AwesomeAPI");
     }
 
     // 3️⃣ Montar resposta unificada
@@ -51,7 +45,7 @@ export async function GET() {
         {
           symbol: "USD/BRL",
           price: dolarPrice,
-          source: "exchangerate.host",
+          source: "awesomeapi.com.br",
         },
       ],
     });
