@@ -14,7 +14,6 @@ export async function GET() {
     const fxUrl = `https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=BRL&apikey=${apiKey}`;
     const fxRes = await fetch(fxUrl);
     const fxData = await fxRes.json();
-
     const usdBrl =
       fxData["Realtime Currency Exchange Rate"]?.["5. Exchange Rate"];
 

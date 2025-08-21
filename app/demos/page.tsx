@@ -19,7 +19,8 @@ export default function DemosPage() {
       </main>
 
       {/* Sidebar inferior para mobile */}
-      <Sidebar />
+      {/* ⚠️ Só renderiza a Sidebar se o componente realmente existir */}
+      {Sidebar ? <Sidebar /> : null}
     </div>
   );
 }

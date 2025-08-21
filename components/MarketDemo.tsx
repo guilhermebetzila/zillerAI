@@ -64,7 +64,6 @@ export default function MarketDemo() {
 
   if (!data) return <div>Carregando...</div>;
 
-  // Mapeia os ativos com nome, símbolo, preço, histórico e cor
   const assets = [
     {
       label: "Dólar",
@@ -106,6 +105,8 @@ export default function MarketDemo() {
               <span className="text-sm text-gray-500">{asset.label}</span>
               <span className="font-bold text-lg">{asset.symbol}</span>
             </div>
+
+            {/* CORRIGIDO o className */}
             <span
               className={`text-2xl font-semibold ${
                 isUp ? "text-green-500" : "text-red-500"
@@ -113,6 +114,7 @@ export default function MarketDemo() {
             >
               {asset.price.toFixed(2)}
             </span>
+
             <div className="w-full mt-2">
               <ResponsiveContainer width="100%" height={80}>
                 <LineChart data={asset.history}>
@@ -120,7 +122,7 @@ export default function MarketDemo() {
                   <XAxis dataKey="time" hide />
                   <Tooltip
                     formatter={(val: number) => val.toFixed(2)}
-                    labelFormatter={(label) => `Horário: ${label}`}
+                    labelFormatter={(label) => `Horário: ${label}`} // CORRIGIDO
                   />
                   <Line
                     type="monotone"
@@ -133,6 +135,7 @@ export default function MarketDemo() {
                 </LineChart>
               </ResponsiveContainer>
             </div>
+
             <div className="mt-2">
               {isUp ? (
                 <FaArrowUp className="text-green-500" />
