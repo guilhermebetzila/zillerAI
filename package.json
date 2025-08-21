@@ -17,6 +17,8 @@
     "migrate:users": "tsx app/scripts/migrateUsers.ts",
 
     "db:push": "prisma db push",
+    "db:push:local": "DATABASE_URL=\"postgresql://postgres:KqPpaxIvaJwhSbcZVPMZxLWGFptQmlSg@metro.proxy.rlwy.net:12732/railway\" prisma db push",
+    "db:push:prod": "prisma db push",
     "db:studio": "prisma studio",
     "prisma:seed": "prisma db seed",
 
