@@ -5,52 +5,76 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const apiKey =
+    // 🔑 chave da ExConvert
+    const exKey =
       process.env.EXCONVERT_API_KEY || process.env.NEXT_PUBLIC_EXCONVERT_API_KEY;
 
-    if (!apiKey) {
+    if (!exKey) {
       return NextResponse.json(
         { error: "Chave da ExConvert não encontrada nas envs" },
         { status: 500 }
       );
     }
 
-    // ✅ endpoint correto da ExConvert
-    const url = `https://api.exconvert.com/convert?access_key=${apiKey}&from=USD&to=BRL&amount=1`;
+    // 🔑 chave da brapi.dev
+    const brapiKey =
+      process.env.BRAPI_TOKEN || process.env.NEXT_PUBLIC_BRAPI_TOKEN;
 
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`ExConvert ${res.status}: ${text}`);
+    if (!brapiKey) {
+      return NextResponse.json(
+        { error: "Chave da Brapi.dev não encontrada nas envs" },
+        { status: 500 }
+      );
     }
 
-    const json = await res.json();
+    // --- ExConvert (USD/BRL) ---
+    const urlUsd = `https://api.exconvert.com/convert?access_key=${exKey}&from=USD&to=BRL&amount=1`;
+    const usdRes = await fetch(urlUsd, { cache: "no-store" });
+    const usdJson = await usdRes.json();
 
-    // ✅ tenta encontrar a cotação em diferentes formatos
-    const raw =
-      json?.result?.BRL ??
-      json?.result ??
-      json?.rate ??
-      json?.info?.rate ??
+    const rawUsd =
+      usdJson?.result?.BRL ??
+      usdJson?.result ??
+      usdJson?.rate ??
+      usdJson?.info?.rate ??
       null;
 
-    const price =
-      typeof raw === "string" ? parseFloat(raw.replace(",", ".")) : Number(raw);
+    const usdPrice =
+      typeof rawUsd === "string" ? parseFloat(rawUsd.replace(",", ".")) : Number(rawUsd);
 
-    if (!price || Number.isNaN(price)) {
+    if (!usdPrice || Number.isNaN(usdPrice)) {
       throw new Error("Preço inválido recebido da ExConvert");
     }
 
+    // --- Brapi (WIN e WDO) ---
+    const urlBrapi = `https://brapi.dev/api/quote/WINQ25,WDOQ25?token=${brapiKey}`;
+    const brapiRes = await fetch(urlBrapi, { cache: "no-store" });
+    const brapiJson = await brapiRes.json();
+
+    const brapiAssets = brapiJson?.results?.map((a: any) => ({
+      symbol: a.symbol,
+      price: a.regularMarketPrice,
+      source: "Brapi.dev",
+    })) || [];
+
+    // --- Resultado final ---
+    const assets = [
+      {
+        symbol: "USD/BRL",
+        price: usdPrice,
+        source: "ExConvert",
+      },
+      ...brapiAssets,
+    ];
+
     return NextResponse.json({
-      symbol: "USD/BRL",
-      price,
       updated: new Date().toISOString(),
-      source: "ExConvert",
+      assets,
     });
   } catch (error) {
     console.error("Erro /api/market:", error);
     return NextResponse.json(
-      { error: "Erro ao buscar cotação" },
+      { error: "Erro ao buscar cotações" },
       { status: 500 }
     );
   }

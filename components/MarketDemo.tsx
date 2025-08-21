@@ -5,12 +5,16 @@ import { useEffect, useState } from "react";
 interface AssetData {
   symbol: string;
   price: number;
-  updated: string;
   source: string;
 }
 
+interface MarketResponse {
+  updated: string;
+  assets: AssetData[];
+}
+
 export default function MarketDemo() {
-  const [data, setData] = useState<AssetData | null>(null);
+  const [data, setData] = useState<MarketResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -18,11 +22,11 @@ export default function MarketDemo() {
       try {
         const res = await fetch("/api/market", { cache: "no-store" });
         if (!res.ok) throw new Error("Falha na API");
-        const json: AssetData = await res.json();
+        const json: MarketResponse = await res.json();
         setData(json);
         setError(null);
       } catch (e) {
-        setError("Não foi possível carregar a cotação agora.");
+        setError("Não foi possível carregar as cotações agora.");
       }
     };
 
@@ -42,22 +46,29 @@ export default function MarketDemo() {
   if (!data) return <div>Carregando...</div>;
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-4 text-center">
-      {/* Preço */}
-      <p className="text-3xl font-bold text-green-600">
-        R$ {data.price.toFixed(2)}
-      </p>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {data.assets.map((asset) => (
+        <div
+          key={asset.symbol}
+          className="bg-white shadow-lg rounded-lg p-4 text-center"
+        >
+          {/* Preço */}
+          <p className="text-3xl font-bold text-green-600">
+            R$ {asset.price.toFixed(2)}
+          </p>
 
-      {/* Nome do ativo embaixo */}
-      <h3 className="mt-2 text-lg font-semibold text-gray-800">
-        {data.symbol}
-      </h3>
+          {/* Nome do ativo */}
+          <h3 className="mt-2 text-lg font-semibold text-gray-800">
+            {asset.symbol}
+          </h3>
 
-      {/* Informações adicionais */}
-      <p className="text-xs text-gray-500 mt-1">
-        Atualizado: {new Date(data.updated).toLocaleTimeString()}
-      </p>
-      <p className="text-[10px] text-gray-400">Fonte: {data.source}</p>
+          {/* Informações adicionais */}
+          <p className="text-xs text-gray-500 mt-1">
+            Atualizado: {new Date(data.updated).toLocaleTimeString()}
+          </p>
+          <p className="text-[10px] text-gray-400">Fonte: {asset.source}</p>
+        </div>
+      ))}
     </div>
   );
 }
