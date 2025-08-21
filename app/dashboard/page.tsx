@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import LayoutWrapper from '@/components/LayoutWrapper';
@@ -38,9 +38,7 @@ export default function DashboardPage() {
       try {
         const res = await fetch(`${API_BASE_URL}/api/saldo`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         });
         const data = await res.json();
@@ -71,9 +69,7 @@ export default function DashboardPage() {
 
   const progresso = Math.min((pontos / 1000) * 100, 100);
   const codigoIndicacao = user?.id || user?.email || '';
-  const linkIndicacao = `https://www.ziller.club/register?indicador=${encodeURIComponent(
-    codigoIndicacao
-  )}`;
+  const linkIndicacao = `https://www.ziller.club/register?indicador=${encodeURIComponent(codigoIndicacao)}`;
 
   if (status === 'loading')
     return <p className="text-center mt-10 text-white">Carregando...</p>;
@@ -188,9 +184,9 @@ export default function DashboardPage() {
             Informações da Empresa
           </h3>
           <div className="flex flex-col gap-2 px-2 py-4 border-t border-b border-white/20 text-sm text-white">
-            <p>📌 CNPJ: 12.345.678/0001-99</p>
-            <p>📧 E-mail: contato@ziller.club</p>
-            <p>📱 WhatsApp: (11) 99999-9999</p>
+            <p>📌 CNPJ: 60.483.352/001-77</p>
+            <p>📧 E-mail: suporteziller@gmail.com</p>
+            <p>📱 WhatsApp: (21) 95941-3135</p>
             <p>🌐 Site Oficial: www.ziller.club</p>
             <p>📸 Instagram: @ziller.club</p>
           </div>

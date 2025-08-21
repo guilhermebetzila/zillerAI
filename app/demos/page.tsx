@@ -9,7 +9,7 @@ export default function DemosPage() {
       <header className="bg-gray-900 text-white p-4 shadow-md">
         <h1 className="text-2xl font-bold">📈 Mercado Financeiro</h1>
         <p className="text-gray-300 mt-1">
-          Visualize Nasdaq, Mini Índice e Dólar em tempo real, com gráficos interativos e indicadores de alta/baixa.
+          Visualize Nasdaq, Mini Índice e Dólar em tempo real. Ziller.AI
         </p>
       </header>
 
