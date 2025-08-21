@@ -2,33 +2,37 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [emailOrCpf, setEmailOrCpf] = useState('');
   const [senha, setSenha] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [carregando, setCarregando] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMensagem('');
     setCarregando(true);
 
-    if (!email || !senha) {
+    if (!emailOrCpf || !senha) {
       setMensagem('Todos os campos são obrigatórios.');
       setCarregando(false);
       return;
     }
 
     const result = await signIn('credentials', {
-      email,
-      password: senha, // 🔑 precisa ser "password"
-      callbackUrl: '/dashboard', // ✅ redireciona automático
+      email: emailOrCpf, // ⚡ pode ser email ou CPF
+      password: senha,
+      redirect: false,
     });
 
     if (result?.error) {
-      setMensagem('Email ou senha incorreta.');
+      setMensagem(result.error || 'Credenciais inválidas.');
       setCarregando(false);
+    } else {
+      router.push('/dashboard'); // ✅ redireciona manualmente
     }
   };
 
@@ -38,10 +42,10 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
         <div>
           <input
-            type="email"
-            placeholder="Seu email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            placeholder="Email ou CPF"
+            value={emailOrCpf}
+            onChange={(e) => setEmailOrCpf(e.target.value)}
             className="w-full px-4 py-2 border border-gray-600 bg-transparent text-white rounded focus:outline-none focus:ring-2 focus:ring-green-500 placeholder-gray-400"
             required
           />

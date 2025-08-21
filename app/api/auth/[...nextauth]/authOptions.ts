@@ -1,7 +1,6 @@
-// app/api/auth/[...nextauth]/authOptions.ts
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { compare } from "bcrypt";
+import { compare } from "bcryptjs"; // ⚡ usar bcryptjs igual no register
 import { prisma } from "@/lib/prisma";
 import type { NextAuthOptions } from "next-auth";
 
@@ -11,7 +10,7 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "text" },
+        email: { label: "Email ou CPF", type: "text" },
         password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
@@ -19,15 +18,17 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Preencha todos os campos");
         }
 
-        // ✅ garante que o email nunca seja undefined
-        const email = credentials.email.trim().toLowerCase();
+        const emailOrCpf = credentials.email.trim().toLowerCase();
 
-        const user = await prisma.user.findUnique({
-          where: { email },
+        // 🔎 Permite login tanto por email quanto CPF
+        const user = await prisma.user.findFirst({
+          where: {
+            OR: [{ email: emailOrCpf }, { cpf: emailOrCpf }],
+          },
         });
 
         if (!user) {
-          throw new Error("Email não encontrado");
+          throw new Error("Usuário não encontrado");
         }
 
         if (!user.senha) {
@@ -39,12 +40,19 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Senha incorreta");
         }
 
+        // Atualiza lastLogin
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLogin: new Date() },
+        });
+
+        // ⚡ Converte Decimal para number
         return {
           id: String(user.id),
           nome: user.nome,
           email: user.email,
-          saldo: user.saldo ? Number(user.saldo) : 0,
-          valorInvestido: user.valorInvestido ? Number(user.valorInvestido) : 0,
+          saldo: Number(user.saldo ?? 0),
+          valorInvestido: Number(user.valorInvestido ?? 0),
         };
       },
     }),
@@ -76,7 +84,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 dias
   },
   jwt: {
-    maxAge: 30 * 24 * 60 * 60, // 30 dias
+    maxAge: 30 * 24 * 60 * 60,
   },
   pages: {
     signIn: "/login",

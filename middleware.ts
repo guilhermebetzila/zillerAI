@@ -1,6 +1,7 @@
-import { withAuth } from 'next-auth/middleware'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+// middleware.ts
+import { withAuth } from "next-auth/middleware"
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
 export default withAuth(
   function middleware(req: NextRequest) {
@@ -9,19 +10,23 @@ export default withAuth(
   {
     callbacks: {
       authorized({ token }) {
+        // ✅ só deixa passar se existir token
         return !!token
       },
+    },
+    pages: {
+      signIn: "/login", // ✅ força redirecionar para /login
     },
   }
 )
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/painel/:path*',
-    '/minha-conta/:path*',
-    '/investimentos/:path*',
-    '/indicacoes/:path*',
-    // ❌ NÃO inclui /login, /register e nem /api/webhook
+    "/dashboard/:path*",
+    "/painel/:path*",
+    "/minha-conta/:path*",
+    "/investimentos/:path*",
+    "/indicacoes/:path*",
+    // ⚠️ NÃO incluir /login, /register ou /api/*
   ],
 }
