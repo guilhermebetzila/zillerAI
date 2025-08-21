@@ -8,7 +8,7 @@ export async function GET() {
       throw new Error("Token BRAPI não configurado no .env");
     }
 
-    // 1️⃣ Buscar Ibovespa (BRAPI) – apenas 1 ativo por vez no plano free
+    // 1️⃣ Buscar Ibovespa (BRAPI)
     const ibovRes = await fetch(
       `https://brapi.dev/api/quote/^BVSP?token=${brapiToken}`,
       { cache: "no-store" }
@@ -19,14 +19,16 @@ export async function GET() {
       throw new Error(`Erro Brapi (IBOV): ${ibovData.message}`);
     }
 
-    // 2️⃣ Buscar USD/BRL (Exchangerate.host - grátis, sem token)
+    // 2️⃣ Buscar USD/BRL (Exchangerate.host)
     const dolarRes = await fetch(
       `https://api.exchangerate.host/convert?from=USD&to=BRL`,
       { cache: "no-store" }
     );
     const dolarData = await dolarRes.json();
 
-    if (!dolarData?.result) {
+    const dolarPrice = dolarData?.result ?? dolarData?.info?.rate ?? null;
+
+    if (!dolarPrice) {
       throw new Error("Erro ao buscar USD/BRL na exchangerate.host");
     }
 
@@ -41,7 +43,7 @@ export async function GET() {
         },
         {
           symbol: "USD/BRL",
-          price: dolarData.result ?? null,
+          price: dolarPrice,
           source: "exchangerate.host",
         },
       ],
