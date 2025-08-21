@@ -18,7 +18,9 @@ export async function GET() {
 
     // 🔑 chave da brapi.dev
     const brapiKey =
-      process.env.BRAPI_TOKEN || process.env.NEXT_PUBLIC_BRAPI_TOKEN;
+      process.env.BRAPI_TOKEN ||
+      process.env.BRAPI_API_KEY || // 👈 agora aceita as duas
+      process.env.NEXT_PUBLIC_BRAPI_TOKEN;
 
     if (!brapiKey) {
       return NextResponse.json(
