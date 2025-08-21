@@ -1,31 +1,11 @@
 import { NextResponse } from "next/server";
 
+// garante que não usa cache da Vercel/Edge
 export const dynamic = "force-dynamic";
-
-// função auxiliar para buscar um ativo por vez
-async function fetchBrapiQuote(symbol: string, brapiKey: string) {
-  const res = await fetch(
-    `https://brapi.dev/api/quote/${symbol}?token=${brapiKey}`,
-    { cache: "no-store" }
-  );
-
-  if (!res.ok) {
-    throw new Error(`Erro Brapi ${res.status}: ${await res.text()}`);
-  }
-
-  const json = await res.json();
-  return (
-    json?.results?.map((a: any) => ({
-      symbol: a.symbol,
-      price: a.regularMarketPrice,
-      source: "Brapi.dev",
-    })) || []
-  );
-}
 
 export async function GET() {
   try {
-    // --- chave ExConvert
+    // 🔑 chave da ExConvert
     const exKey =
       process.env.EXCONVERT_API_KEY || process.env.NEXT_PUBLIC_EXCONVERT_API_KEY;
 
@@ -36,11 +16,9 @@ export async function GET() {
       );
     }
 
-    // --- chave Brapi
+    // 🔑 chave da brapi.dev
     const brapiKey =
-      process.env.BRAPI_TOKEN ||
-      process.env.BRAPI_API_KEY ||
-      process.env.NEXT_PUBLIC_BRAPI_TOKEN;
+      process.env.BRAPI_TOKEN || process.env.NEXT_PUBLIC_BRAPI_TOKEN;
 
     if (!brapiKey) {
       return NextResponse.json(
@@ -58,6 +36,7 @@ export async function GET() {
     }
 
     const usdJson = await usdRes.json();
+
     const rawUsd =
       usdJson?.result?.BRL ??
       usdJson?.result ??
@@ -74,11 +53,22 @@ export async function GET() {
       throw new Error("Preço inválido recebido da ExConvert");
     }
 
-    // --- Brapi (busca 1 por vez) ---
-    const win = await fetchBrapiQuote("WINFUT", brapiKey);
-    const wdo = await fetchBrapiQuote("WDOFUT", brapiKey);
+    // --- Brapi (Ibovespa e Dólar Spot) ---
+    const urlBrapi = `https://brapi.dev/api/quote/^BVSP,USDBRL?token=${brapiKey}`;
+    const brapiRes = await fetch(urlBrapi, { cache: "no-store" });
 
-    const brapiAssets = [...win, ...wdo];
+    if (!brapiRes.ok) {
+      throw new Error(`Erro Brapi ${brapiRes.status}: ${await brapiRes.text()}`);
+    }
+
+    const brapiJson = await brapiRes.json();
+
+    const brapiAssets =
+      brapiJson?.results?.map((a: any) => ({
+        symbol: a.symbol,
+        price: a.regularMarketPrice,
+        source: "Brapi.dev",
+      })) || [];
 
     // --- Resultado final ---
     const assets = [
