@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
 import { LineChart, Line, ResponsiveContainer, Tooltip, CartesianGrid, XAxis } from "recharts";
@@ -8,6 +8,7 @@ interface MarketData {
   nasdaq: number;
   miniIndice: number;
   dolar: number;
+  time?: string;
 }
 
 export default function MarketDemo() {
@@ -23,21 +24,37 @@ export default function MarketDemo() {
     const fetchData = async () => {
       try {
         const res = await fetch("/api/market");
+        if (!res.ok) throw new Error("Erro na API");
         const json = await res.json();
         setData(json);
 
         setHistory((prev) => {
           const newHistory = [...prev, { ...json, time: new Date().toLocaleTimeString() }];
-          if (newHistory.length > 20) newHistory.shift(); // manter últimas 20 atualizações
+          if (newHistory.length > 20) newHistory.shift();
           return newHistory;
         });
       } catch (err) {
         console.error(err);
+
+        // 🔹 MOCK de dados se API não responder
+        const mock = {
+          nasdaq: Math.random() * 10000,
+          miniIndice: Math.random() * 120000,
+          dolar: 4 + Math.random(),
+          time: new Date().toLocaleTimeString(),
+        };
+
+        setData(mock);
+        setHistory((prev) => {
+          const newHistory = [...prev, mock];
+          if (newHistory.length > 20) newHistory.shift();
+          return newHistory;
+        });
       }
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 5000); // atualizar a cada 5s
+    const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
   }, []);
 

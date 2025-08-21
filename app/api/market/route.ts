@@ -1,19 +1,18 @@
+// app/api/market/route.ts
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const urls = {
-    nasdaq: "https://query1.finance.yahoo.com/v7/finance/quote?symbols=^IXIC",
-    dolar: "https://query1.finance.yahoo.com/v7/finance/quote?symbols=USDBRL=X",
-    miniIndice: "https://query1.finance.yahoo.com/v7/finance/quote?symbols=^BVSP",
-  };
+  try {
+    // 🔹 Simula valores de mercado em tempo real
+    const data = {
+      nasdaq: 12000 + Math.random() * 200,   // varia entre 12000 e 12200
+      miniIndice: 115000 + Math.random() * 500, // varia entre 115000 e 115500
+      dolar: 4.5 + Math.random() * 0.1,      // varia entre 4.5 e 4.6
+    };
 
-  const [nasdaqRes, dolarRes, miniRes] = await Promise.all(
-    Object.values(urls).map((url) => fetch(url).then((r) => r.json()))
-  );
-
-  return NextResponse.json({
-    nasdaq: nasdaqRes.quoteResponse.result[0].regularMarketPrice,
-    dolar: dolarRes.quoteResponse.result[0].regularMarketPrice,
-    miniIndice: miniRes.quoteResponse.result[0].regularMarketPrice,
-  });
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Erro no /api/market:", error);
+    return NextResponse.json({ error: "Erro ao obter dados de mercado" }, { status: 500 });
+  }
 }
