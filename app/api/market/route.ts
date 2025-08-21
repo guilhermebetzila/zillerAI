@@ -3,10 +3,9 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const brapiToken = process.env.BRAPI_TOKEN;
-    const exconvertKey = process.env.NEXT_PUBLIC_EXCONVERT_API_KEY; // 👈 ajuste aqui
 
-    if (!brapiToken || !exconvertKey) {
-      throw new Error("Tokens de API não configurados no .env");
+    if (!brapiToken) {
+      throw new Error("Token BRAPI não configurado no .env");
     }
 
     // 1️⃣ Buscar Ibovespa (BRAPI) – apenas 1 ativo por vez no plano free
@@ -20,15 +19,15 @@ export async function GET() {
       throw new Error(`Erro Brapi (IBOV): ${ibovData.message}`);
     }
 
-    // 2️⃣ Buscar USD/BRL (ExConvert)
+    // 2️⃣ Buscar USD/BRL (Exchangerate.host - grátis, sem token)
     const dolarRes = await fetch(
-      `https://api.exconvert.com/convert?from=USD&to=BRL&amount=1&apiKey=${exconvertKey}`,
+      `https://api.exchangerate.host/convert?from=USD&to=BRL`,
       { cache: "no-store" }
     );
     const dolarData = await dolarRes.json();
 
-    if (dolarData.error) {
-      throw new Error(`Erro ExConvert: ${dolarData.message}`);
+    if (!dolarData?.result) {
+      throw new Error("Erro ao buscar USD/BRL na exchangerate.host");
     }
 
     // 3️⃣ Montar resposta unificada
@@ -43,7 +42,7 @@ export async function GET() {
         {
           symbol: "USD/BRL",
           price: dolarData.result ?? null,
-          source: "exconvert",
+          source: "exchangerate.host",
         },
       ],
     });
