@@ -5,7 +5,6 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    // funciona com EXCONVERT_API_KEY ou NEXT_PUBLIC_EXCONVERT_API_KEY
     const apiKey =
       process.env.EXCONVERT_API_KEY || process.env.NEXT_PUBLIC_EXCONVERT_API_KEY;
 
@@ -26,16 +25,6 @@ export async function GET() {
     }
 
     const json = await res.json();
-    // A API pode retornar:
-    // {
-    //   "base":"USD","valor":"1",
-    //   "resultado":{"BRL":5.42,"taxa":5.42}
-    // }
-    // ou:
-    // {
-    //   "base":"BRL","valor":"11.5",
-    //   "resultado":{"USD":2.09,"taxa":0.18}
-    // }
 
     const raw =
       json?.resultado?.BRL ??
