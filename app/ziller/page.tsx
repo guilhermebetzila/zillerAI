@@ -1,8 +1,9 @@
-// app/demos/page.tsx
+'use client';
+
 import MarketDemo from "@/components/MarketDemo";
 import Sidebar from "@/components/Sidebar";
 
-export default function DemosPage() {
+export default function ZillerPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar fixa (mobile + desktop) */}

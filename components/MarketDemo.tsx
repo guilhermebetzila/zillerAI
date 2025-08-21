@@ -13,25 +13,19 @@ export default function MarketDemo() {
   const [data, setData] = useState<AssetData | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch("/api/market");
-        if (!res.ok) throw new Error("Erro na API");
-        const json: AssetData = await res.json();
-        setData(json);
-      } catch {
-        // Fallback simples (mock)
-        setData({
-          symbol: "USD/BRL",
-          price: 5,
-          updated: new Date().toISOString(),
-          source: "Mock",
-        });
-      }
+    // Simula atualização a cada 5 segundos
+    const updateMock = () => {
+      setData({
+        symbol: "USD/BRL",
+        price: 5 + Math.random(), // número variando
+        updated: new Date().toISOString(),
+        source: "Mock",
+      });
     };
 
-    fetchData();
-    const interval = setInterval(fetchData, 5000);
+    updateMock(); // primeira vez
+    const interval = setInterval(updateMock, 5000);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -44,6 +38,7 @@ export default function MarketDemo() {
       <p className="text-xs text-gray-500 mt-2">
         Atualizado: {new Date(data.updated).toLocaleTimeString()}
       </p>
+      <p className="text-[10px] text-gray-400">Fonte: {data.source}</p>
     </div>
   );
 }
