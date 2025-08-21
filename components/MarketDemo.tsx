@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { LineChart, Line, ResponsiveContainer } from "recharts";
+import { LineChart, Line, ResponsiveContainer, Tooltip, CartesianGrid, XAxis } from "recharts";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 
 interface MarketData {
@@ -27,7 +27,7 @@ export default function MarketDemo() {
         setData(json);
 
         setHistory((prev) => {
-          const newHistory = [...prev, json];
+          const newHistory = [...prev, { ...json, time: new Date().toLocaleTimeString() }];
           if (newHistory.length > 20) newHistory.shift(); // manter últimas 20 atualizações
           return newHistory;
         });
@@ -41,10 +41,17 @@ export default function MarketDemo() {
     return () => clearInterval(interval);
   }, []);
 
-  const renderCard = (label: string, value: number, prevValue: number, color: string, dataKey: keyof MarketData) => {
+  const renderCard = (
+    label: string,
+    value: number,
+    prevValue: number,
+    color: string,
+    dataKey: keyof MarketData
+  ) => {
     const isUp = value >= prevValue;
+
     return (
-      <div className="bg-white shadow-lg rounded-lg p-4 flex flex-col items-center">
+      <div className="bg-white shadow-lg rounded-lg p-4 flex flex-col items-center transition-transform transform hover:scale-105">
         <div className="flex items-center gap-2 mb-2">
           <span className="font-bold">{label}</span>
           {isUp ? <FaArrowUp className="text-green-500" /> : <FaArrowDown className="text-red-500" />}
@@ -53,9 +60,22 @@ export default function MarketDemo() {
           {value.toFixed(2)}
         </span>
         <div className="w-full mt-2">
-          <ResponsiveContainer width="100%" height={60}>
+          <ResponsiveContainer width="100%" height={80}>
             <LineChart data={history}>
-              <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} dot={false} isAnimationActive={true}/>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis dataKey="time" hide />
+              <Tooltip
+                formatter={(val: number) => val.toFixed(2)}
+                labelFormatter={(label) => `Horário: ${label}`}
+              />
+              <Line
+                type="monotone"
+                dataKey={dataKey}
+                stroke={color}
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive={true}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
