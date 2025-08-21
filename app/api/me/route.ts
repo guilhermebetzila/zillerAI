@@ -7,15 +7,18 @@ const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest) {
   try {
+    // 🔒 Obtém token da sessão
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
     if (!token?.email) {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
-    // Buscar usuário no banco para pegar dados completos, como CPF
+    const email = token.email;
+
+    // 🔎 Busca usuário com campos específicos
     const user = await prisma.user.findUnique({
-      where: { email: token.email },
+      where: { email },
       select: { id: true, email: true, cpf: true, saldo: true, valorInvestido: true },
     });
 

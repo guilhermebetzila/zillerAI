@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma"; // ✅ usa a instância única
 
 export async function GET(req: NextRequest) {
   try {
+    // 🔑 Autenticação via token
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token?.email) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
@@ -32,7 +31,7 @@ export async function GET(req: NextRequest) {
         id: true,
         valor: true,
         criadoEm: true,
-        status: true, // ✅ enviando status
+        status: true,
       },
     });
 
@@ -47,7 +46,7 @@ export async function GET(req: NextRequest) {
         to: true,
         amount: true,
         createdAt: true,
-        status: true, // ✅ agora retorna status também
+        status: true,
       },
     });
 
@@ -62,7 +61,7 @@ export async function GET(req: NextRequest) {
         to: true,
         amount: true,
         createdAt: true,
-        status: true, // ✅ também retorna status
+        status: true,
       },
     });
 
@@ -76,8 +75,11 @@ export async function GET(req: NextRequest) {
       onchainConfirmados,
       onchainPendentes,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro no histórico de depósitos:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro interno: " + (error.message || "desconhecido") },
+      { status: 500 }
+    );
   }
 }

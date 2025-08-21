@@ -11,6 +11,10 @@ interface UsuarioComIndicados {
 
 // Função recursiva para buscar toda a rede
 async function buscarRede(usuarioId: number): Promise<UsuarioComIndicados> {
+  if (!usuarioId) {
+    throw new Error('ID de usuário inválido');
+  }
+
   const usuario = await prisma.user.findUnique({
     where: { id: usuarioId },
     select: {
@@ -29,6 +33,7 @@ async function buscarRede(usuarioId: number): Promise<UsuarioComIndicados> {
 
   const indicadosCompletos: UsuarioComIndicados[] = [];
   for (const indicado of usuario.indicados) {
+    // Chamada recursiva
     indicadosCompletos.push(await buscarRede(indicado.id));
   }
 
@@ -42,18 +47,18 @@ async function buscarRede(usuarioId: number): Promise<UsuarioComIndicados> {
 
 export async function GET() {
   try {
-    // Lê o ID salvo no cookie
+    // 🔒 Lê token do cookie
     const token = (await cookies()).get('token')?.value;
     if (!token) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
     }
 
     const userId = Number(token);
-    if (isNaN(userId)) {
+    if (!userId || isNaN(userId)) {
       return NextResponse.json({ error: 'Token inválido' }, { status: 401 });
     }
 
-    // Busca a rede do usuário logado
+    // 🔎 Busca a rede completa do usuário
     const rede = await buscarRede(userId);
 
     return NextResponse.json(rede);

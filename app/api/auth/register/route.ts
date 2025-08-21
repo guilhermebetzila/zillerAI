@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   try {
     const { name, email, cpf, password, indicador } = await req.json()
 
-    // Campos obrigatórios
+    // ✅ Verificação de campos obrigatórios
     if (!name || !email || !cpf || !password) {
       return NextResponse.json(
         { message: 'Todos os campos são obrigatórios.' },
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Validação da senha
+    // ✅ Validação da senha
     const senhaRegex =
       /^(?=.*[A-Z])(?=(?:.*[a-z]){2,})(?=.*\d)(?=.*[!@#$%^&*()_+\-[\]{};:'",.<>\/?\\|]).{6,}$/
     if (!senhaRegex.test(password)) {
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Evitar duplicados
+    // ✅ Verificação de duplicidade de e-mail
     if (await prisma.user.findUnique({ where: { email } })) {
       return NextResponse.json(
         { message: 'E-mail já cadastrado.' },
@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // ✅ Verificação de duplicidade de CPF
     if (await prisma.user.findUnique({ where: { cpf } })) {
       return NextResponse.json(
         { message: 'CPF já cadastrado.' },
@@ -45,7 +46,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Verifica se existe indicador válido
+    // ✅ Verificação de indicador (pode ser email, nome ou id)
     let indicadoPorId: number | null = null
     if (indicador) {
       const userIndicador = await prisma.user.findFirst({
@@ -53,7 +54,9 @@ export async function POST(req: NextRequest) {
           OR: [
             { email: indicador },
             { nome: indicador },
-            { id: Number.isInteger(Number(indicador)) ? Number(indicador) : -1 },
+            {
+              id: !isNaN(Number(indicador)) ? Number(indicador) : -1,
+            },
           ],
         },
       })
@@ -66,9 +69,10 @@ export async function POST(req: NextRequest) {
       indicadoPorId = userIndicador.id
     }
 
+    // ✅ Criptografa senha
     const hashedPassword = await hash(password, 10)
 
-    // Cria usuário já com lastLogin = agora
+    // ✅ Cria usuário (já define lastLogin no momento do cadastro)
     const newUser = await prisma.user.create({
       data: {
         nome: name,
@@ -76,10 +80,11 @@ export async function POST(req: NextRequest) {
         cpf,
         senha: hashedPassword,
         indicadoPorId,
-        lastLogin: new Date(), // ✅ salva último login como data de cadastro
+        lastLogin: new Date(),
       },
     })
 
+    // ✅ Envia email de boas-vindas (não bloqueia o cadastro se falhar)
     try {
       await sendWelcomeEmail(email, name)
     } catch (err) {
@@ -94,7 +99,11 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('[REGISTER] Erro inesperado:', error)
     return NextResponse.json(
-      { message: `Erro interno: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}` },
+      {
+        message: `Erro interno: ${
+          JSON.stringify(error, Object.getOwnPropertyNames(error))
+        }`,
+      },
       { status: 500 }
     )
   }

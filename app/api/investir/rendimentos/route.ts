@@ -6,15 +6,17 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 
 export async function GET() {
   try {
-    // 🔒 Sessão
+    // 🔒 Verifica sessão
     const session = await getServerSession(authOptions);
-    if (!session || !session.user?.email) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
     }
 
-    // 🔎 Busca rendimentos já ordenados
+    const email = session.user.email;
+
+    // 🔎 Busca usuário com rendimentos
     const usuario = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email },
       include: {
         rendimentos: {
           orderBy: { creditedAt: "desc" },
@@ -26,7 +28,7 @@ export async function GET() {
       return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
     }
 
-    // Mapeia rendimentos convertendo Decimals
+    // 🔄 Mapeia rendimentos convertendo Decimal para string
     const rendimentos = usuario.rendimentos.map((r) => ({
       id: r.id,
       dateKey: r.dateKey,

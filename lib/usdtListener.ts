@@ -51,10 +51,13 @@ export function startUSDTListener() {
         return;
       }
 
-      // 👉 Buscar usuário pela carteira (precisa ser UNIQUE no schema)
-      const user = await prisma.user.findUnique({
-        where: { carteira: to.toLowerCase() },
-      });
+      // 👉 Buscar usuário pela carteira (apenas se carteira não for vazia)
+      let user = null;
+      if (to) {
+        user = await prisma.user.findUnique({
+          where: { carteira: to.toLowerCase() },
+        });
+      }
 
       // Registrar OnChainDeposit
       await prisma.onChainDeposit.create({

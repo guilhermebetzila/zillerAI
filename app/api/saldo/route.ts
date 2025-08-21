@@ -4,14 +4,17 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
   try {
+    // 🔒 Obtém token da sessão
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token?.email) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    // Busca usuário
+    const email = token.email;
+
+    // 🔎 Busca usuário com campos essenciais
     const user = await prisma.user.findUnique({
-      where: { email: token.email },
+      where: { email },
       select: {
         id: true,
         saldo: true,
@@ -27,7 +30,7 @@ export async function GET(req: NextRequest) {
     // 🔹 Pega o último rendimento diário do usuário
     const ultimoRendimento = await prisma.rendimentoDiario.findFirst({
       where: { userId: user.id },
-      orderBy: { creditedAt: 'desc' }, // pega o mais recente
+      orderBy: { creditedAt: 'desc' },
       select: { amount: true },
     });
 
@@ -52,14 +55,14 @@ export async function GET(req: NextRequest) {
     }
 
     // Calcular pontos: 1 por direto, 1 por indireto
-    const pontosDiretos = indicadosDiretos * 1;
-    const pontosIndiretos = indicadosIndiretos * 1;
+    const pontosDiretos = indicadosDiretos;
+    const pontosIndiretos = indicadosIndiretos;
     const pontosTotais = user.pontos + pontosDiretos + pontosIndiretos;
 
     return NextResponse.json({
       saldo: user.saldo,
       valorInvestido: user.valorInvestido,
-      rendimentoDiario: ultimoRendimento?.amount ?? 0, // ✅ envia o último rendimento
+      rendimentoDiario: ultimoRendimento?.amount ?? 0,
       pontos: pontosTotais,
       pontosDiretos,
       pontosIndiretos,

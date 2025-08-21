@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'ID ausente' }, { status: 400 })
     }
 
-    // 👉 Se for ID de teste (não numérico real), apenas retornar OK
+    // 👉 Ignora IDs de teste
     if (isNaN(Number(paymentId))) {
       console.log('⚠️ Recebido ID de teste, ignorando:', paymentId)
       return NextResponse.json({ status: 'test event recebido' }, { status: 200 })
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       paymentData = await payments.get({ id: String(paymentId) })
     } catch (error) {
       console.error('❌ Erro ao buscar detalhes do pagamento:', error)
-      return NextResponse.json({ error: 'Erro ao buscar pagamento' }, { status: 200 }) // não quebrar o fluxo
+      return NextResponse.json({ error: 'Erro ao buscar pagamento' }, { status: 200 })
     }
 
     const status = (paymentData.status ?? '').toString().trim().toLowerCase()
@@ -68,8 +68,10 @@ export async function POST(req: Request) {
     const tipoAceito = tiposAceitos.includes(tipo)
 
     if (aprovado && tipoAceito) {
+      // 🔎 Busca usuário de forma segura
       const user = await prisma.user.findUnique({ where: { email } })
       if (!user) {
+        console.warn(`⚠️ Usuário não encontrado para email: ${email}`)
         return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 400 })
       }
 

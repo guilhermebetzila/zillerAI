@@ -19,12 +19,19 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Preencha todos os campos");
         }
 
+        // ✅ garante que o email nunca seja undefined
+        const email = credentials.email.trim().toLowerCase();
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email },
         });
 
-        if (!user || !user.senha) {
+        if (!user) {
           throw new Error("Email não encontrado");
+        }
+
+        if (!user.senha) {
+          throw new Error("Senha não configurada para este usuário");
         }
 
         const senhaCorreta = await compare(credentials.password, user.senha);

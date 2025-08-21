@@ -9,18 +9,19 @@ export async function POST(req: Request) {
   try {
     // 🔒 Verifica sessão
     const session = await getServerSession(authOptions);
-    if (!session || !session.user?.email) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
     }
 
     // 📥 Lê body
     const { valor } = await req.json();
     const valorNumber = Number(valor);
-    const valorDecimal = new Prisma.Decimal(valorNumber);
 
     if (!valorNumber || isNaN(valorNumber) || valorNumber <= 0) {
       return NextResponse.json({ error: "Valor inválido." }, { status: 400 });
     }
+
+    const valorDecimal = new Prisma.Decimal(valorNumber);
 
     // 🔎 Busca usuário
     const usuario = await prisma.user.findUnique({
@@ -28,10 +29,7 @@ export async function POST(req: Request) {
     });
 
     if (!usuario) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado." },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
     }
 
     const saldoAtual = usuario.saldo ?? new Prisma.Decimal(0);
@@ -73,16 +71,13 @@ export async function POST(req: Request) {
         message: "✅ Investimento realizado com sucesso!",
         investimento: {
           ...investimento,
-          valor: investimento.valor.toString(),
+          valor: investimento.valor.toString(), // 🔄 Converte Decimal → string
         },
       },
       { status: 201 }
     );
   } catch (error) {
     console.error("❌ Erro em /api/investir/novo:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Erro interno do servidor." }, { status: 500 });
   }
 }

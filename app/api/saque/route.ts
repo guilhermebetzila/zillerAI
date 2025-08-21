@@ -11,9 +11,9 @@ const USDT_ABI = [
 
 export async function POST(req: NextRequest) {
   try {
+    // 🔒 Valida sessão
     const session = await getServerSession(authOptions);
-
-    if (!session || !session.user?.email) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
@@ -23,21 +23,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     }
 
-    // Busca usuário
+    const email = session.user.email;
+
+    // 🔎 Busca usuário
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email },
     });
 
     if (!user) {
       return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
-    // Verifica saldo suficiente (Decimal -> Number)
+    // Verifica saldo suficiente
     if (Number(user.saldo) < Number(valor)) {
       return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
     }
 
-    // --- 🔗 Blockchain Config ---
+    // --- 🔗 Configuração Blockchain ---
     const provider = new ethers.JsonRpcProvider(process.env.BSC_RPC_URL);
     const wallet = new ethers.Wallet(process.env.MAIN_PRIVATE_KEY!, provider);
 
@@ -45,7 +47,7 @@ export async function POST(req: NextRequest) {
     const USDT_CONTRACT = process.env.USDT_CONTRACT || "0x55d398326f99059fF775485246999027B3197955";
     const contract = new ethers.Contract(USDT_CONTRACT, USDT_ABI, wallet);
 
-    // Convertendo valor para 6 casas decimais (USDT BEP20 usa 6)
+    // Converte valor para 6 casas decimais (USDT BEP20)
     const amount = ethers.parseUnits(String(valor), 6);
 
     // 🔹 Cria registro do saque como "processando"
@@ -62,15 +64,13 @@ export async function POST(req: NextRequest) {
     const tx = await contract.transfer(carteira, amount);
     await tx.wait();
 
-    // 🔹 Atualiza saque para "concluido" com hash
+    // 🔹 Atualiza saque para "concluído" com hash
     await prisma.saque.update({
       where: { id: saque.id },
       data: {
         status: "concluido",
         processadoEm: new Date(),
-        // 🔥 importante: salva hash da tx
-        // (precisa adicionar `txHash String?` no modelo Saque do prisma)
-        // txHash: tx.hash,
+        // txHash: tx.hash, // lembre de adicionar no modelo Saque: txHash String?
       },
     });
 

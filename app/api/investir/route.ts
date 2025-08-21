@@ -9,7 +9,7 @@ export async function GET() {
   try {
     // 🔒 Sessão
     const session = await getServerSession(authOptions);
-    if (!session || !session.user?.email) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
     }
 
@@ -18,19 +18,16 @@ export async function GET() {
       where: { email: session.user.email },
       include: {
         investimentos: {
-          orderBy: { criadoEm: "desc" }, // ✅ mais recentes primeiro
+          orderBy: { criadoEm: "desc" },
         },
         rendimentos: {
-          orderBy: { creditedAt: "desc" }, // ✅ mais recentes primeiro
+          orderBy: { creditedAt: "desc" },
         },
       },
     });
 
     if (!usuario) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado." },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
     }
 
     // 💰 Total investido (somente ativos)
@@ -41,6 +38,7 @@ export async function GET() {
         new Prisma.Decimal(0)
       );
 
+    // 📦 Resposta formatada
     return NextResponse.json({
       saldo: usuario.saldo?.toString() ?? "0",
       valorInvestido: valorInvestidoDecimal.toString(),
@@ -63,9 +61,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("❌ Erro em /api/investir:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Erro interno do servidor." }, { status: 500 });
   }
 }
