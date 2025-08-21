@@ -16,7 +16,7 @@ export async function GET() {
     }
 
     // ✅ endpoint correto da ExConvert
-    const url = `https://api.exconvert.com/v1/convert?from=USD&to=BRL&amount=1&api_key=${apiKey}`;
+    const url = `https://api.exconvert.com/convert?access_key=${apiKey}&from=USD&to=BRL&amount=1`;
 
     const res = await fetch(url, { cache: "no-store" });
     if (!res.ok) {
@@ -26,11 +26,12 @@ export async function GET() {
 
     const json = await res.json();
 
-    // tenta pegar o preço de forma segura
+    // ✅ tenta encontrar a cotação em diferentes formatos
     const raw =
       json?.result?.BRL ??
-      json?.result?.rate ??
+      json?.result ??
       json?.rate ??
+      json?.info?.rate ??
       null;
 
     const price =
