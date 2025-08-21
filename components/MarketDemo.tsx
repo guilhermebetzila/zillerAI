@@ -11,9 +11,14 @@ import {
 } from "recharts";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 
+interface AssetData {
+  symbol: string;
+  price: number;
+}
+
 interface MarketDataFromAPI {
-  forex: { symbol: string; price: number };
-  stock: { symbol: string; price: number };
+  forex: AssetData;
+  stock: AssetData;
   source: string;
   updated: string;
 }
@@ -28,8 +33,8 @@ export default function MarketDemo() {
         const res = await fetch("/api/market");
         if (!res.ok) throw new Error("Erro na API");
         const json: MarketDataFromAPI = await res.json();
-        setData(json);
 
+        setData(json);
         setHistory((prev) => {
           const newHistory = [...prev, json];
           if (newHistory.length > 20) newHistory.shift();
@@ -59,78 +64,85 @@ export default function MarketDemo() {
 
   if (!data) return <div>Carregando...</div>;
 
-  const renderCard = (
-    label: string,
-    value: number,
-    prevValue: number,
-    color: string,
-    dataKey: "forex" | "stock"
-  ) => {
-    const isUp = value >= prevValue;
-    return (
-      <div className="bg-white shadow-lg rounded-lg p-4 flex flex-col items-center transition-transform transform hover:scale-105">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="font-bold">{label}</span>
-          {isUp ? (
-            <FaArrowUp className="text-green-500" />
-          ) : (
-            <FaArrowDown className="text-red-500" />
-          )}
-        </div>
-        <span
-          className={`text-2xl font-semibold ${
-            isUp ? "text-green-500" : "text-red-500"
-          }`}
-        >
-          {value.toFixed(2)}
-        </span>
-        <div className="w-full mt-2">
-          <ResponsiveContainer width="100%" height={80}>
-            <LineChart
-              data={history.map((h, i) => ({
-                time: new Date(h.updated).toLocaleTimeString(),
-                value: h[dataKey].price,
-              }))}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="time" hide />
-              <Tooltip
-                formatter={(val: number) => val.toFixed(2)}
-                labelFormatter={(label) => `Horário: ${label}`}
-              />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke={color}
-                strokeWidth={2}
-                dot={false}
-                isAnimationActive={true}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-    );
-  };
-
-  const lastHistory = history[history.length - 2] || data;
+  // Mapeia os ativos com nome, símbolo, preço, histórico e cor
+  const assets = [
+    {
+      label: "Dólar",
+      symbol: data.forex.symbol,
+      price: data.forex.price,
+      history: history.map((h) => ({
+        time: new Date(h.updated).toLocaleTimeString(),
+        price: h.forex.price,
+      })),
+      color: "#FBBF24",
+    },
+    {
+      label: "Apple",
+      symbol: data.stock.symbol,
+      price: data.stock.price,
+      history: history.map((h) => ({
+        time: new Date(h.updated).toLocaleTimeString(),
+        price: h.stock.price,
+      })),
+      color: "#34D399",
+    },
+  ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {renderCard(
-        data.forex.symbol,
-        data.forex.price,
-        lastHistory.forex.price,
-        "#FBBF24",
-        "forex"
-      )}
-      {renderCard(
-        data.stock.symbol,
-        data.stock.price,
-        lastHistory.stock.price,
-        "#34D399",
-        "stock"
-      )}
+      {assets.map((asset) => {
+        const prevPrice =
+          asset.history.length > 1
+            ? asset.history[asset.history.length - 2].price
+            : asset.price;
+        const isUp = asset.price >= prevPrice;
+
+        return (
+          <div
+            key={asset.symbol}
+            className="bg-white shadow-lg rounded-lg p-4 flex flex-col items-center transition-transform transform hover:scale-105"
+          >
+            <div className="flex flex-col items-center mb-2">
+              <span className="text-sm text-gray-500">{asset.label}</span>
+              <span className="font-bold text-lg">{asset.symbol}</span>
+            </div>
+            <span
+              className={`text-2xl font-semibold ${
+                isUp ? "text-green-500" : "text-red-500"
+              }`}
+            >
+              {asset.price.toFixed(2)}
+            </span>
+            <div className="w-full mt-2">
+              <ResponsiveContainer width="100%" height={80}>
+                <LineChart data={asset.history}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="time" hide />
+                  <Tooltip
+                    formatter={(val: number) => val.toFixed(2)}
+                    labelFormatter={(label) => `Horário: ${label}`}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="price"
+                    stroke={asset.color}
+                    strokeWidth={2}
+                    dot={false}
+                    isAnimationActive={true}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-2">
+              {isUp ? (
+                <FaArrowUp className="text-green-500" />
+              ) : (
+                <FaArrowDown className="text-red-500" />
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
