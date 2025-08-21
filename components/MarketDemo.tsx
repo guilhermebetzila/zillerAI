@@ -45,7 +45,7 @@ export default function MarketDemo() {
     <div className="bg-white shadow-lg rounded-lg p-4 text-center">
       {/* Preço */}
       <p className="text-3xl font-bold text-green-600">
-        {data.price.toFixed(2)}
+        R$ {data.price.toFixed(2)}
       </p>
 
       {/* Nome do ativo embaixo */}
