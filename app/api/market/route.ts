@@ -2,17 +2,21 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    // Retorna dado fixo simulado
+    const apiKey = process.env.EXCONVERT_API_KEY;
+    const url = `https://api.exconvert.com/convert?de=USD&para=BRL&quantia=1&chave=${apiKey}`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
     return NextResponse.json({
       symbol: "USD/BRL",
-      price: 5.25,
-      source: "Mock API",
+      price: data.resultado.BRL,
       updated: new Date().toISOString(),
+      source: "ExConvert",
     });
   } catch (error) {
-    console.error("Erro mock:", error);
     return NextResponse.json(
-      { error: "Erro interno mock" },
+      { error: "Erro ao buscar cotação" },
       { status: 500 }
     );
   }
