@@ -30,6 +30,11 @@ export async function GET() {
     // --- ExConvert (USD/BRL) ---
     const urlUsd = `https://api.exconvert.com/convert?access_key=${exKey}&from=USD&to=BRL&amount=1`;
     const usdRes = await fetch(urlUsd, { cache: "no-store" });
+
+    if (!usdRes.ok) {
+      throw new Error(`Erro ExConvert ${usdRes.status}: ${await usdRes.text()}`);
+    }
+
     const usdJson = await usdRes.json();
 
     const rawUsd =
@@ -40,22 +45,30 @@ export async function GET() {
       null;
 
     const usdPrice =
-      typeof rawUsd === "string" ? parseFloat(rawUsd.replace(",", ".")) : Number(rawUsd);
+      typeof rawUsd === "string"
+        ? parseFloat(rawUsd.replace(",", "."))
+        : Number(rawUsd);
 
     if (!usdPrice || Number.isNaN(usdPrice)) {
       throw new Error("Preço inválido recebido da ExConvert");
     }
 
-    // --- Brapi (WIN e WDO) ---
-    const urlBrapi = `https://brapi.dev/api/quote/WINQ25,WDOQ25?token=${brapiKey}`;
+    // --- Brapi (WINFUT e WDOFUT) ---
+    const urlBrapi = `https://brapi.dev/api/quote/WINFUT,WDOFUT?token=${brapiKey}`;
     const brapiRes = await fetch(urlBrapi, { cache: "no-store" });
+
+    if (!brapiRes.ok) {
+      throw new Error(`Erro Brapi ${brapiRes.status}: ${await brapiRes.text()}`);
+    }
+
     const brapiJson = await brapiRes.json();
 
-    const brapiAssets = brapiJson?.results?.map((a: any) => ({
-      symbol: a.symbol,
-      price: a.regularMarketPrice,
-      source: "Brapi.dev",
-    })) || [];
+    const brapiAssets =
+      brapiJson?.results?.map((a: any) => ({
+        symbol: a.symbol,
+        price: a.regularMarketPrice,
+        source: "Brapi.dev",
+      })) || [];
 
     // --- Resultado final ---
     const assets = [
@@ -71,10 +84,10 @@ export async function GET() {
       updated: new Date().toISOString(),
       assets,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Erro /api/market:", error);
     return NextResponse.json(
-      { error: "Erro ao buscar cotações" },
+      { error: error?.message || "Erro ao buscar cotações" },
       { status: 500 }
     );
   }
