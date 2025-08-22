@@ -2,7 +2,8 @@
 
 import MarketDemo from "@/components/MarketDemo";
 import Sidebar from "@/components/Sidebar";
-import GraficoFinanceiro from "@/components/GraficoFinanceiro"; // <-- importamos aqui
+import GraficoFinanceiro from "@/components/GraficoFinanceiro";
+import GraficoFundamentalista from "@/components/GraficoFundamentalista"; // <-- novo import
 
 export default function ZillerPage() {
   return (
@@ -10,6 +11,7 @@ export default function ZillerPage() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col md:ml-56">
+        {/* Cabeçalho */}
         <header className="bg-gray-900 text-white p-4 shadow-md">
           <h1 className="text-2xl font-bold">📈 Mercado Financeiro</h1>
           <p className="text-gray-300 mt-1">
@@ -17,7 +19,9 @@ export default function ZillerPage() {
           </p>
         </header>
 
+        {/* Conteúdo principal */}
         <main className="flex-1 p-4 md:p-8 space-y-6">
+          {/* Bloco de cotações */}
           <MarketDemo />
 
           {/* Bloco de calendário econômico */}
@@ -31,8 +35,11 @@ export default function ZillerPage() {
             </div>
           </section>
 
-          {/* Novo gráfico financeiro */}
+          {/* Gráfico financeiro (barras) */}
           <GraficoFinanceiro />
+
+          {/* Gráfico fundamentalista (área) */}
+          <GraficoFundamentalista />
         </main>
       </div>
     </div>
