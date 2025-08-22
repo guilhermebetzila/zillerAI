@@ -42,7 +42,7 @@ async function migrate() {
               base: rend.base,
               rate: rend.rate,
               amount: rend.amount,
-              creditedAt: rend.creditedAt,
+              createdAt: rend.createdAt, // ✅ corrigido
             })),
           },
           indicados: {
