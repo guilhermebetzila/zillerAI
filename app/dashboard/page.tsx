@@ -205,28 +205,41 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Bloco de informações profissionais da empresa */}
-        <div className="mb-8">
-          <h3 className="text-lg text-center text-white font-semibold mb-3">
-            Informações da Empresa
-          </h3>
-          <div className="flex flex-col gap-2 px-2 py-4 border-t border-b border-white/20 text-sm text-white">
-            <p>📌 CNPJ: 60.483.352/001-77</p>
-            <p>📧 E-mail: suporteziller@gmail.com</p>
-            <p>📱 WhatsApp: (21) 95941-3135</p>
-            <p>🌐 Site Oficial: www.ziller.club</p>
-            <p>📸 Instagram: @ziller.club</p>
-          </div>
-        </div>
+      {/* Bloco de informações profissionais da empresa */}
+<div className="mb-8">
+  <h3 className="text-lg text-center text-white font-semibold mb-3">
+    Informações da Empresa
+  </h3>
+  <div className="flex flex-col gap-2 px-2 py-4 border-t border-b border-white/20 text-sm text-white">
+    <p>📌 CNPJ: 60.483.352/0001-77</p>
+    <p>📧 E-mail: suporteziller@gmail.com</p>
+    <p>📱 WhatsApp: (21) 95941-3135</p>
+    <p>🌐 Site Oficial: www.ziller.club</p>
+    <p>📸 Instagram: @ziller.club</p>
 
-        <div className="flex justify-center mb-8">
-          <button
-            onClick={() => router.push('/games/investir')}
-            className="bg-black hover:bg-gray-800 text-white font-semibold py-2 px-5 rounded-lg shadow-md transition-all text-base"
-          >
-            Investir Agora
-          </button>
-        </div>
+    {/* Novas informações */}
+    <p>📊 Relatórios entregues no grupo do Telegram</p>
+    <p>💰 Atualização de recebimento via USDT: 01 de Outubro de 2025</p>
+    <p>📅 Segunda-feira, 20h - Mentoria Ao Vivo</p>
+    <p>📅 Terça-feira, 20h - Apresentação Ziller</p>
+    <p>📅 Sexta-feira, 20h - Alinhamento com a Liderança</p>
+    <p className="mt-2">
+      ℹ️ Ao realizar seu depósito via Pix ou USDT é necessário acessar o botão <strong>Investir</strong> 
+      para efetivar o investimento e visualizar todas as informações.
+    </p>
+    <p>⏰ Rendimentos creditados às 10h do dia seguinte</p>
+    <p>🤝 Suporte humanizado via WhatsApp</p>
+  </div>
+</div>
+
+<div className="flex justify-center mb-8">
+  <button
+    onClick={() => router.push('/games/investir')}
+    className="bg-black hover:bg-gray-800 text-white font-semibold py-2 px-5 rounded-lg shadow-md transition-all text-base"
+  >
+    Investir Agora
+  </button>
+</div>
       </div>
 
       {/* Footer */}
