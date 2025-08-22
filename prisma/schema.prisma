@@ -27,6 +27,7 @@ model User {
   rendimentos     RendimentoDiario[]
   saques          Saque[]
   graduacao       Graduacao?         @relation(fields: [graduacaoId], references: [id])
+  withdrawalRequests WithdrawalRequest[]   // 👈 Relacionamento novo
 
   // Relações de indicação
   indicadoPor     User?              @relation("Indicacoes", fields: [indicadoPorId], references: [id])
@@ -93,12 +94,30 @@ model Saque {
   id           Int         @id @default(autoincrement())
   userId       Int
   user         User        @relation(fields: [userId], references: [id])
+
   valor        Decimal
-  carteira     String
+  tipo         String      @default("pix") // pix ou cripto
+  chavePix     String?     // chave Pix usada no saque
+  descricao    String?     // opcional
+
   status       StatusSaque @default(pendente)
   criadoEm     DateTime    @default(now())
   processadoEm DateTime?
-  txHash       String?     @unique
+
+  endToEndId   String?     @unique // ID retornado pela Efi para rastrear o Pix
+  txHash       String?     @unique // Para saques cripto
+}
+
+model WithdrawalRequest {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  amount      Decimal
+  pixKey      String
+  description String?
+  status      String   @default("PENDING")
+  idEnvio     String?
+  createdAt   DateTime @default(now())
 }
 
 enum StatusDeposito {
@@ -151,8 +170,6 @@ enum OrderStatus {
 }
 
 // ====== DEMO TRADING – MODELOS ======
-
-// Tabela de instrumentos negociáveis
 model Instrument {
   id         Int          @id @default(autoincrement())
   symbol     String
@@ -168,7 +185,6 @@ model Instrument {
   @@map("instruments")
 }
 
-// Sinais da estratégia
 model Signal {
   id            Int         @id @default(autoincrement())
   instrumentId  Int
@@ -183,7 +199,6 @@ model Signal {
   @@map("signals")
 }
 
-// Ordens (paper)
 model TradeOrder {
   id              Int          @id @default(autoincrement())
   instrumentId    Int
@@ -203,7 +218,6 @@ model TradeOrder {
   @@map("orders")
 }
 
-// Execuções (fills)
 model Fill {
   id         Int         @id @default(autoincrement())
   orderId    Int
@@ -218,7 +232,6 @@ model Fill {
   @@map("fills")
 }
 
-// Posição agregada
 model Position {
   id            Int         @id @default(autoincrement())
   instrumentId  Int
@@ -231,7 +244,6 @@ model Position {
   @@map("positions")
 }
 
-// Trades (entrada/saída)
 model Trade {
   id            Int         @id @default(autoincrement())
   instrumentId  Int

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { gerarRendimentoDiario } from "@/lib/rendimento";
+import { gerarRendimentoDiario, calcularRendimentoUsuario } from "@/lib/rendimento";
 
 // 🔹 POST /api/rendimento
-// Gera rendimentos diários para todos os usuários
+// Aplica rendimentos a todos os usuários
 export async function POST() {
   try {
     const resultado = await gerarRendimentoDiario();
@@ -17,9 +17,7 @@ export async function POST() {
 }
 
 // 🔹 GET /api/rendimento?userId=123
-// Calcula o rendimento de um único usuário
-import { calcularRendimentoUsuario } from "@/lib/rendimento";
-
+// Calcula rendimento de um único usuário (simulação, sem salvar)
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
