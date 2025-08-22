@@ -21,7 +21,7 @@ export async function GET() {
           orderBy: { criadoEm: "desc" },
         },
         rendimentos: {
-          orderBy: { creditedAt: "desc" },
+          orderBy: { createdAt: "desc" }, // ✅ corrigido
         },
       },
     });
@@ -56,7 +56,7 @@ export async function GET() {
         base: r.base?.toString() ?? "0",
         rate: r.rate?.toString() ?? "0",
         amount: r.amount?.toString() ?? "0",
-        creditedAt: r.creditedAt,
+        createdAt: r.createdAt, // ✅ corrigido
       })),
     });
   } catch (error) {

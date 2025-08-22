@@ -8,13 +8,22 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
 
-    if (!session || !session.user?.email) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+    }
+
+    // 🔎 Busca usuário
+    const usuario = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    })
+
+    if (!usuario) {
+      return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 })
     }
 
     // 🔎 Busca investimentos já ordenados
     const historico = await prisma.investimento.findMany({
-      where: { user: { email: session.user.email } },
+      where: { userId: usuario.id },
       orderBy: { criadoEm: 'desc' },
     })
 

@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     const { valor } = await req.json();
     const valorNumber = Number(valor);
 
-    if (!valorNumber || isNaN(valorNumber) || valorNumber <= 0) {
+    if (isNaN(valorNumber) || valorNumber <= 0) {
       return NextResponse.json({ error: "Valor inválido." }, { status: 400 });
     }
 
