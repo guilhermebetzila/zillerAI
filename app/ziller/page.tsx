@@ -5,7 +5,7 @@ import Sidebar from "@/components/Sidebar";
 
 export default function ZillerPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen flex">
       {/* Sidebar fixa (mobile + desktop) */}
       <Sidebar />
 
@@ -27,10 +27,10 @@ export default function ZillerPage() {
           {/* Bloco de calendário econômico */}
           <section>
             <h2 className="text-xl font-bold mb-2">📅 Calendário Econômico</h2>
-            <div className="rounded-2xl shadow p-2 bg-white">
+            <div className="rounded-2xl shadow p-2">
               <iframe
                 src="https://s.tradingview.com/embed-widget/events/?locale=br#%7B%22width%22%3A%22100%25%22%2C%22height%22%3A500%2C%22importanceFilter%22%3A%22%22%2C%22currencyFilter%22%3A%22%22%7D"
-                style={{ width: "100%", height: "500px", border: "none" }}
+                style={{ width: "100%", height: "500px", border: "none", background: "transparent" }}
               />
             </div>
           </section>
