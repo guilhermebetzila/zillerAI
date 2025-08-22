@@ -3,7 +3,8 @@
 import MarketDemo from "@/components/MarketDemo";
 import Sidebar from "@/components/Sidebar";
 import GraficoFinanceiro from "@/components/GraficoFinanceiro";
-import GraficoFundamentalista from "@/components/GraficoFundamentalista"; // <-- novo import
+import GraficoFundamentalista from "@/components/GraficoFundamentalista";
+import GraficoDecisoes from "@/components/GraficoDecisoes"; // <-- novo import
 
 export default function ZillerPage() {
   return (
@@ -40,6 +41,9 @@ export default function ZillerPage() {
 
           {/* Gráfico fundamentalista (área) */}
           <GraficoFundamentalista />
+
+          {/* Novo gráfico de decisões (donut chart) */}
+          <GraficoDecisoes />
         </main>
       </div>
     </div>
