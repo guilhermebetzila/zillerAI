@@ -1,71 +1,61 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
-// Taxa fixa de rendimento diário
 const TAXA_DIARIA = 0.015; // 1,5% ao dia
 
-// 🔹 Função para calcular o rendimento diário de UM usuário
+// Calcula o rendimento de UM usuário (com base no valorInvestido atual)
 export async function calcularRendimentoUsuario(userId: number) {
   const usuario = await prisma.user.findUnique({
     where: { id: userId },
     select: { valorInvestido: true },
   });
 
-  if (!usuario || Number(usuario.valorInvestido) <= 0) return 0;
+  if (!usuario) return 0;
 
-  return Number(usuario.valorInvestido) * TAXA_DIARIA;
+  const base = new Prisma.Decimal(usuario.valorInvestido || 0);
+  if (base.lte(0)) return 0;
+
+  return Number(base.mul(TAXA_DIARIA));
 }
 
-// 🔹 Função para gerar rendimentos diários para TODOS os usuários
+// Gera o rendimento do dia para TODOS, atualiza valorInvestido e grava histórico
 export async function gerarRendimentoDiario() {
   const usuarios = await prisma.user.findMany({
     select: { id: true, valorInvestido: true },
   });
 
-  const hoje = new Date().toISOString().split("T")[0]; // chave única para o dia
+  const hoje = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const resultados: Array<{ userId: number; rendimento: number }> = [];
 
-  const resultados: any[] = [];
+  for (const u of usuarios) {
+    const base = new Prisma.Decimal(u.valorInvestido || 0);
+    if (base.lte(0)) continue;
 
-  for (const usuario of usuarios) {
-    if (!usuario.valorInvestido || Number(usuario.valorInvestido) <= 0) continue;
+    const rendimento = base.mul(TAXA_DIARIA);
 
-    const rendimento = Number(usuario.valorInvestido) * TAXA_DIARIA;
-
-    // Evita inserir rendimento duplicado no mesmo dia
-    const existente = await prisma.rendimentoDiario.findUnique({
-      where: {
-        userId_dateKey: {
-          userId: usuario.id,
-          dateKey: hoje,
-        },
-      },
+    // evita duplicar para o mesmo dia (chave única)
+    const jaExiste = await prisma.rendimentoDiario.findUnique({
+      where: { userId_dateKey: { userId: u.id, dateKey: hoje } },
     });
+    if (jaExiste) continue;
 
-    if (!existente) {
-      await prisma.$transaction([
-        // Atualiza o valor investido do usuário (incrementa rendimento)
-        prisma.user.update({
-          where: { id: usuario.id },
-          data: {
-            valorInvestido: new Prisma.Decimal(usuario.valorInvestido).plus(
-              rendimento
-            ),
-          },
-        }),
-        // Cria o registro de rendimento no histórico
-        prisma.rendimentoDiario.create({
-          data: {
-            userId: usuario.id,
-            dateKey: hoje,
-            base: new Prisma.Decimal(usuario.valorInvestido),
-            rate: new Prisma.Decimal(TAXA_DIARIA),
-            amount: new Prisma.Decimal(rendimento),
-          },
-        }),
-      ]);
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: u.id },
+        data: { valorInvestido: base.plus(rendimento) },
+      }),
+      prisma.rendimentoDiario.create({
+        data: {
+          userId: u.id,
+          dateKey: hoje,
+          base: base,
+          rate: new Prisma.Decimal(TAXA_DIARIA),
+          amount: rendimento,
+        },
+      }),
+    ]);
 
-      resultados.push({ userId: usuario.id, rendimento });
-    }
+    resultados.push({ userId: u.id, rendimento: Number(rendimento) });
   }
 
   return { message: "Rendimentos gerados com sucesso", resultados };

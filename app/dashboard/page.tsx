@@ -36,7 +36,8 @@ export default function DashboardPage() {
   const [pontosDiretos, setPontosDiretos] = useState<number>(0);
   const [pontosIndiretos, setPontosIndiretos] = useState<number>(0);
 
-  const user = session?.user;
+  const user = session?.user as any;
+  const userId = user?.id ? Number(user.id) : undefined;
 
   // Buscar saldo e dados do usuário
   useEffect(() => {
@@ -48,7 +49,6 @@ export default function DashboardPage() {
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         });
-
         const data = await res.json();
         if (res.ok) {
           setSaldo(Number(data.saldo) || 0);
@@ -62,26 +62,27 @@ export default function DashboardPage() {
         console.error('Erro ao buscar dados do usuário:', error);
       }
     };
-
     if (user) fetchUsuario();
   }, [user]);
 
-  // Buscar rendimento diário
+  // Buscar rendimento diário REAL
   useEffect(() => {
     const fetchRendimento = async () => {
       try {
-        const res = await fetch('/api/rendimento/usuario');
+        // usa base se existir, senão relativo
+        const base = API_BASE_URL || '';
+        const url = userId
+          ? `${base}/api/rendimentos/usuario?userId=${encodeURIComponent(String(userId))}`
+          : `${base}/api/rendimentos/usuario`;
+        const res = await fetch(url, { credentials: 'include' });
         const data = await res.json();
-        if (res.ok) {
-          setRendimentoDiario(Number(data.rendimento) || 0);
-        }
+        if (res.ok) setRendimentoDiario(Number(data.rendimento) || 0);
       } catch (error) {
         console.error('Erro ao buscar rendimento diário:', error);
       }
     };
-
     if (user) fetchRendimento();
-  }, [user]);
+  }, [user, userId]);
 
   const handleMenuClick = (item: MenuItem) => {
     if (item.action === 'logout') {
@@ -92,7 +93,7 @@ export default function DashboardPage() {
   };
 
   const progresso = Math.min((pontos / 1000) * 100, 100);
-  const codigoIndicacao = (user as any)?.id || user?.email || '';
+  const codigoIndicacao = user?.id || user?.email || '';
   const linkIndicacao = `https://www.ziller.club/register?indicador=${encodeURIComponent(
     codigoIndicacao
   )}`;
@@ -129,11 +130,7 @@ export default function DashboardPage() {
                 onClick={() => handleMenuClick(item)}
                 className="flex-shrink-0 w-20 h-20 rounded-full border-2 border-white overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200"
               >
-                <img
-                  src={item.img}
-                  alt={item.label}
-                  className="w-full h-full object-cover"
-                />
+                <img src={item.img} alt={item.label} className="w-full h-full object-cover" />
               </div>
             ))}
           </div>
@@ -160,17 +157,12 @@ export default function DashboardPage() {
 
           {/* Barra de pontos */}
           <div className="mt-4">
-            <p className="text-white text-sm mb-1">
-              Pontos Acumulados: {pontos} pontos
-            </p>
+            <p className="text-white text-sm mb-1">Pontos Acumulados: {pontos} pontos</p>
             <p className="text-white text-xs mb-1">
               Diretos: {pontosDiretos} | Indiretos: {pontosIndiretos}
             </p>
             <div className="w-full bg-white/20 rounded-full h-4">
-              <div
-                className="bg-white h-4 rounded-full"
-                style={{ width: `${progresso}%` }}
-              ></div>
+              <div className="bg-white h-4 rounded-full" style={{ width: `${progresso}%` }}></div>
             </div>
             <p className="text-white text-xs mt-1">
               Você precisa de 1000 pontos para desbloquear o próximo prêmio
@@ -179,9 +171,7 @@ export default function DashboardPage() {
 
           {/* Código de indicação */}
           <div className="mt-6 bg-black/20 rounded-lg p-4 border border-white shadow-md">
-            <h3 className="text-white text-sm font-semibold mb-2">
-              Seu Código de Indicação:
-            </h3>
+            <h3 className="text-white text-sm font-semibold mb-2">Seu Código de Indicação:</h3>
             <div className="flex items-center justify-between bg-black/10 text-white px-3 py-2 rounded-md font-mono text-sm border border-white">
               <a
                 href={linkIndicacao}
@@ -199,93 +189,65 @@ export default function DashboardPage() {
               </button>
             </div>
             <p className="text-white text-xs mt-1">
-              Compartilhe este link com amigos e ganhe bônus por cada novo Ziler
-              indicado.
+              Compartilhe este link com amigos e ganhe bônus por cada novo Ziler indicado.
             </p>
           </div>
         </div>
 
-      {/* Bloco de informações profissionais da empresa */}
-<div className="mb-8">
-  <h3 className="text-lg text-center text-white font-semibold mb-3">
-    Informações da Empresa
-  </h3>
-  <div className="flex flex-col gap-2 px-2 py-4 border-t border-b border-white/20 text-sm text-white">
-    <p>📌 CNPJ: 60.483.352/0001-77</p>
-    <p>📧 E-mail: suporteziller@gmail.com</p>
-    <p>📱 WhatsApp: (21) 95941-3135</p>
-    <p>🌐 Site Oficial: www.ziller.club</p>
-    <p>📸 Instagram: @ziller.club</p>
+        {/* Informações da Empresa */}
+        <div className="mb-8">
+          <h3 className="text-lg text-center text-white font-semibold mb-3">
+            Informações da Empresa
+          </h3>
+          <div className="flex flex-col gap-2 px-2 py-4 border-t border-b border-white/20 text-sm text-white">
+            <p>📌 CNPJ: 60.483.352/0001-77</p>
+            <p>📧 E-mail: suporteziller@gmail.com</p>
+            <p>📱 WhatsApp: (21) 95941-3135</p>
+            <p>🌐 Site Oficial: www.ziller.club</p>
+            <p>📸 Instagram: @ziller.club</p>
+            <p>📊 Relatórios entregues no grupo do Telegram</p>
+            <p>💰 Atualização de recebimento via USDT: 01 de Outubro de 2025</p>
+            <p>📅 Segunda-feira, 20h - Mentoria Ao Vivo</p>
+            <p>📅 Terça-feira, 20h - Apresentação Ziller</p>
+            <p>📅 Sexta-feira, 20h - Alinhamento com a Liderança</p>
+            <p className="mt-2">
+              ℹ️ Ao realizar seu depósito via Pix ou USDT é necessário acessar o botão <strong>Investir</strong> para efetivar o investimento e visualizar todas as informações.
+            </p>
+            <p>⏰ Rendimentos creditados às 10h do dia seguinte</p>
+            <p>🤝 Suporte humanizado via WhatsApp</p>
+          </div>
+        </div>
 
-    {/* Novas informações */}
-    <p>📊 Relatórios entregues no grupo do Telegram</p>
-    <p>💰 Atualização de recebimento via USDT: 01 de Outubro de 2025</p>
-    <p>📅 Segunda-feira, 20h - Mentoria Ao Vivo</p>
-    <p>📅 Terça-feira, 20h - Apresentação Ziller</p>
-    <p>📅 Sexta-feira, 20h - Alinhamento com a Liderança</p>
-    <p className="mt-2">
-      ℹ️ Ao realizar seu depósito via Pix ou USDT é necessário acessar o botão <strong>Investir</strong> 
-      para efetivar o investimento e visualizar todas as informações.
-    </p>
-    <p>⏰ Rendimentos creditados às 10h do dia seguinte</p>
-    <p>🤝 Suporte humanizado via WhatsApp</p>
-  </div>
-</div>
-
-<div className="flex justify-center mb-8">
-  <button
-    onClick={() => router.push('/games/investir')}
-    className="bg-black hover:bg-gray-800 text-white font-semibold py-2 px-5 rounded-lg shadow-md transition-all text-base"
-  >
-    Investir Agora
-  </button>
-</div>
+        <div className="flex justify-center mb-8">
+          <button
+            onClick={() => router.push('/games/investir')}
+            className="bg-black hover:bg-gray-800 text-white font-semibold py-2 px-5 rounded-lg shadow-md transition-all text-base"
+          >
+            Investir Agora
+          </button>
+        </div>
       </div>
 
       {/* Footer */}
       <footer className="w-full mt-20 text-white py-12 px-6 border-t border-white/20">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <div>
-            <h3 className="text-white text-lg font-bold mb-4">
-              Segurança & Confiança
-            </h3>
-            <p className="text-white text-sm mb-2">
-              Auditoria independente concluída com sucesso.
-            </p>
-            <p className="text-white text-sm mb-2">
-              IA operando com precisão validada de 87,9%.
-            </p>
-            <p className="text-white text-sm">
-              Certificados e parcerias disponíveis no painel.
-            </p>
+            <h3 className="text-white text-lg font-bold mb-4">Segurança & Confiança</h3>
+            <p className="text-white text-sm mb-2">Auditoria independente concluída com sucesso.</p>
+            <p className="text-white text-sm mb-2">IA operando com precisão validada de 87,9%.</p>
+            <p className="text-white text-sm">Certificados e parcerias disponíveis no painel.</p>
           </div>
           <div>
-            <h3 className="text-white text-lg font-bold mb-4">
-              Transparência Total
-            </h3>
-            <p className="text-white text-sm mb-2">
-              Painel de controle com histórico completo.
-            </p>
-            <p className="text-white text-sm mb-2">
-              Saque e depósito via Pix 100% transparente.
-            </p>
-            <p className="text-white text-sm">
-              Controle total do seu investimento, em tempo real.
-            </p>
+            <h3 className="text-white text-lg font-bold mb-4">Transparência Total</h3>
+            <p className="text-white text-sm mb-2">Painel de controle com histórico completo.</p>
+            <p className="text-white text-sm mb-2">Saque e depósito via Pix 100% transparente.</p>
+            <p className="text-white text-sm">Controle total do seu investimento, em tempo real.</p>
           </div>
           <div>
-            <h3 className="text-white text-lg font-bold mb-4">
-              Comunidade Ziler
-            </h3>
-            <p className="text-white text-sm mb-2">
-              Top 10 Zilers com maiores ganhos do mês.
-            </p>
-            <p className="text-white text-sm mb-2">
-              Missão: Pagar dívidas, viver de renda, transformar vidas.
-            </p>
-            <p className="text-white text-sm">
-              Você é o protagonista dessa revolução financeira.
-            </p>
+            <h3 className="text-white text-lg font-bold mb-4">Comunidade Ziler</h3>
+            <p className="text-white text-sm mb-2">Top 10 Zilers com maiores ganhos do mês.</p>
+            <p className="text-white text-sm mb-2">Missão: Pagar dívidas, viver de renda, transformar vidas.</p>
+            <p className="text-white text-sm">Você é o protagonista dessa revolução financeira.</p>
           </div>
         </div>
         <div className="text-center mt-12 text-white text-sm">

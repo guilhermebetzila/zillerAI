@@ -9,29 +9,29 @@ datasource db {
 }
 
 model User {
-  id              Int                @id @default(autoincrement())
-  email           String             @unique
-  nome            String
-  senha           String
-  saldo           Decimal            @default(0)
-  valorInvestido  Decimal            @default(0)
-  indicadoPorId   Int?
-  cpf             String             @unique
-  pontos          Int                @default(0)
-  graduacaoId     Int?
-  lastLogin       DateTime?
-  carteira        String?            @unique
-  depositos       Deposito[]
-  investimentos   Investimento[]
-  onChainDeposits OnChainDeposit[]
-  rendimentos     RendimentoDiario[]
-  saques          Saque[]
-  graduacao       Graduacao?         @relation(fields: [graduacaoId], references: [id])
-  withdrawalRequests WithdrawalRequest[]   // 👈 Relacionamento novo
+  id                 Int                  @id @default(autoincrement())
+  email              String               @unique
+  nome               String
+  senha              String
+  saldo              Decimal              @default(0)
+  valorInvestido     Decimal              @default(0)
+  indicadoPorId      Int?
+  cpf                String               @unique
+  pontos             Int                  @default(0)
+  graduacaoId        Int?
+  lastLogin          DateTime?
+  carteira           String?              @unique
+  depositos          Deposito[]
+  investimentos      Investimento[]
+  onChainDeposits    OnChainDeposit[]
+  rendimentos        RendimentoDiario[]
+  saques             Saque[]
+  graduacao          Graduacao?           @relation(fields: [graduacaoId], references: [id])
+  withdrawalRequests WithdrawalRequest[]
 
-  // Relações de indicação
-  indicadoPor     User?              @relation("Indicacoes", fields: [indicadoPorId], references: [id])
-  indicados       User[]             @relation("Indicacoes")
+  // Indicação
+  indicadoPor User?  @relation("Indicacoes", fields: [indicadoPorId], references: [id])
+  indicados   User[] @relation("Indicacoes")
 }
 
 model Deposito {
@@ -57,14 +57,14 @@ model Investimento {
 }
 
 model RendimentoDiario {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  dateKey    String
-  base       Decimal
-  rate       Decimal
-  amount     Decimal
-  creditedAt DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id])
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  dateKey   String
+  base      Decimal
+  rate      Decimal
+  amount    Decimal
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, dateKey])
   @@index([userId, dateKey])
@@ -96,16 +96,16 @@ model Saque {
   user         User        @relation(fields: [userId], references: [id])
 
   valor        Decimal
-  tipo         String      @default("pix") // pix ou cripto
-  chavePix     String?     // chave Pix usada no saque
-  descricao    String?     // opcional
+  tipo         String      @default("pix")
+  chavePix     String?
+  descricao    String?
 
   status       StatusSaque @default(pendente)
   criadoEm     DateTime    @default(now())
   processadoEm DateTime?
 
-  endToEndId   String?     @unique // ID retornado pela Efi para rastrear o Pix
-  txHash       String?     @unique // Para saques cripto
+  endToEndId   String?     @unique
+  txHash       String?     @unique
 }
 
 model WithdrawalRequest {
@@ -135,7 +135,7 @@ enum StatusSaque {
   rejeitado
 }
 
-// ====== DEMO TRADING – ENUNS ======
+// ====== DEMO TRADING – ENUMS ======
 enum Venue {
   ALPACA
   OANDA
