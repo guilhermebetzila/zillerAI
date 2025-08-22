@@ -19,7 +19,7 @@ export async function GET() {
       where: { email },
       include: {
         rendimentos: {
-          orderBy: { creditedAt: "desc" },
+          orderBy: { createdAt: "desc" }, // ✅ corrigido
         },
       },
     });
@@ -35,7 +35,7 @@ export async function GET() {
       base: r.base?.toString() ?? "0",
       rate: r.rate?.toString() ?? "0",
       amount: r.amount?.toString() ?? "0",
-      creditedAt: r.creditedAt,
+      createdAt: r.createdAt, // ✅ ajustado para bater com schema
     }));
 
     return NextResponse.json({
