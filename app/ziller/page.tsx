@@ -4,7 +4,8 @@ import MarketDemo from "@/components/MarketDemo";
 import Sidebar from "@/components/Sidebar";
 import GraficoFinanceiro from "@/components/GraficoFinanceiro";
 import GraficoFundamentalista from "@/components/GraficoFundamentalista";
-import GraficoDecisoes from "@/components/GraficoDecisoes"; // <-- novo import
+import GraficoDecisoes from "@/components/GraficoDecisoes";
+import GraficoBookOfertas from "@/components/GraficoBookOfertas"; // <-- novo import
 
 export default function ZillerPage() {
   return (
@@ -31,7 +32,12 @@ export default function ZillerPage() {
             <div className="rounded-2xl shadow p-2">
               <iframe
                 src="https://s.tradingview.com/embed-widget/events/?locale=br#%7B%22width%22%3A%22100%25%22%2C%22height%22%3A500%2C%22importanceFilter%22%3A%22%22%2C%22currencyFilter%22%3A%22%22%7D"
-                style={{ width: "100%", height: "500px", border: "none", background: "transparent" }}
+                style={{
+                  width: "100%",
+                  height: "500px",
+                  border: "none",
+                  background: "transparent",
+                }}
               />
             </div>
           </section>
@@ -44,6 +50,9 @@ export default function ZillerPage() {
 
           {/* Novo gráfico de decisões (donut chart) */}
           <GraficoDecisoes />
+
+          {/* Novo gráfico de book de ofertas (barras horizontais empilhadas) */}
+          <GraficoBookOfertas />
         </main>
       </div>
     </div>
