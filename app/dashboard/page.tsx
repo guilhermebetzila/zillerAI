@@ -8,7 +8,13 @@ import { FaBell, FaRobot } from 'react-icons/fa';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
-const menuItems = [
+interface MenuItem {
+  label: string;
+  action: string;
+  img: string;
+}
+
+const menuItems: MenuItem[] = [
   { label: '🤖 IA', action: '/games/ia', img: '/img/ia.png' },
   { label: '📥 Depositar', action: '/games/depositar', img: '/img/2.png' },
   { label: '📤 Saque via Pix', action: '/games/saque', img: '/img/3.png' },
@@ -32,20 +38,21 @@ export default function DashboardPage() {
 
   const user = session?.user;
 
-  // Buscar dados do usuário
+  // Buscar saldo e dados do usuário
   useEffect(() => {
     const fetchUsuario = async () => {
+      if (!API_BASE_URL) return;
       try {
         const res = await fetch(`${API_BASE_URL}/api/saldo`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         });
+
         const data = await res.json();
         if (res.ok) {
           setSaldo(Number(data.saldo) || 0);
           setValorInvestido(Number(data.valorInvestido) || 0);
-          setRendimentoDiario(Number(data.rendimentoDiario) || 0);
           setTotalIndicados(Number(data.totalIndicados) || 0);
           setPontos(Number(data.pontos) || 0);
           setPontosDiretos(Number(data.pontosDiretos) || 0);
@@ -59,20 +66,40 @@ export default function DashboardPage() {
     if (user) fetchUsuario();
   }, [user]);
 
-  const handleMenuClick = (item: typeof menuItems[0]) => {
+  // Buscar rendimento diário
+  useEffect(() => {
+    const fetchRendimento = async () => {
+      try {
+        const res = await fetch('/api/rendimento/usuario');
+        const data = await res.json();
+        if (res.ok) {
+          setRendimentoDiario(Number(data.rendimento) || 0);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar rendimento diário:', error);
+      }
+    };
+
+    if (user) fetchRendimento();
+  }, [user]);
+
+  const handleMenuClick = (item: MenuItem) => {
     if (item.action === 'logout') {
       signOut({ callbackUrl: '/login' });
-    } else if (item.action) {
+    } else {
       router.push(item.action);
     }
   };
 
   const progresso = Math.min((pontos / 1000) * 100, 100);
-  const codigoIndicacao = user?.id || user?.email || '';
-  const linkIndicacao = `https://www.ziller.club/register?indicador=${encodeURIComponent(codigoIndicacao)}`;
+  const codigoIndicacao = (user as any)?.id || user?.email || '';
+  const linkIndicacao = `https://www.ziller.club/register?indicador=${encodeURIComponent(
+    codigoIndicacao
+  )}`;
 
   if (status === 'loading')
     return <p className="text-center mt-10 text-white">Carregando...</p>;
+
   if (status === 'unauthenticated')
     return (
       <p className="text-center mt-10 text-red-500">
@@ -115,7 +142,7 @@ export default function DashboardPage() {
         {/* Painel do usuário */}
         <div className="mb-6 max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold flex items-center gap-4">
-            Olá, {user?.nome || user?.email}
+            Olá, {user?.name || user?.email}
             <span className="bg-black text-white px-3 py-1 text-sm rounded shadow-sm font-semibold">
               Saldo: {Number(saldo).toFixed(2)} USDT
             </span>
@@ -123,9 +150,9 @@ export default function DashboardPage() {
           <p className="text-white text-sm mt-1">
             Valor investido: {Number(valorInvestido).toFixed(2)} USDT
           </p>
-          <p className="text-green-400 text-sm mt-1">
-            Rendimento diário: {Number(rendimentoDiario).toFixed(2)} USDT
-            <span className="text-xs text-white ml-2">(Atualizado às 10h)</span>
+          <p className="text-green-400 text-lg font-bold mt-2">
+            + {Number(rendimentoDiario).toFixed(2)} USDT
+            <span className="text-xs text-white ml-2">(Rendimento diário)</span>
           </p>
           <p className="text-white mt-2">
             Você já indicou <strong>{totalIndicados}</strong> pessoa(s)!

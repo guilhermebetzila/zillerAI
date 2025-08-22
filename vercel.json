@@ -5,6 +5,10 @@
     {
       "path": "/api/depositos/usdt/verificar",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/rendimentos/route",
+      "schedule": "0 9 * * *"
     }
   ]
 }
