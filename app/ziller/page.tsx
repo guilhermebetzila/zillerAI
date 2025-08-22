@@ -5,7 +5,8 @@ import Sidebar from "@/components/Sidebar";
 import GraficoFinanceiro from "@/components/GraficoFinanceiro";
 import GraficoFundamentalista from "@/components/GraficoFundamentalista";
 import GraficoDecisoes from "@/components/GraficoDecisoes";
-import GraficoBookOfertas from "@/components/GraficoBookOfertas"; // <-- novo import
+import GraficoBookOfertas from "@/components/GraficoBookOfertas"; 
+import LogsTempoReal from "@/components/LogsTempoReal"; // <-- novo import
 
 export default function ZillerPage() {
   return (
@@ -53,6 +54,12 @@ export default function ZillerPage() {
 
           {/* Novo gráfico de book de ofertas (barras horizontais empilhadas) */}
           <GraficoBookOfertas />
+
+          {/* Logs em tempo real estilo terminal */}
+          <section>
+            <h2 className="text-xl font-bold mb-2">🖥️ Logs em Tempo Real</h2>
+            <LogsTempoReal />
+          </section>
         </main>
       </div>
     </div>
