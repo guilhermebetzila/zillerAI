@@ -1,31 +1,25 @@
 // app/scripts/atualizarInvestimentos.ts
-import { prisma } from '../../lib/prisma';
+import { prisma } from "../../lib/prisma";
 
 async function aplicarRendimentos() {
   try {
-    // Busca todos os usuários com seus investimentos
     const usuarios = await prisma.user.findMany({
-      include: {
-        investimentos: true,
-      },
+      include: { investimentos: true },
     });
 
-    // Processa todos os usuários em paralelo
     await Promise.all(
       usuarios.map(async (usuario) => {
         let totalRendimento = 0;
 
-        // Converter saldo Decimal para number
         const saldoAtual =
           usuario.saldo instanceof Object
             ? usuario.saldo.toNumber()
             : usuario.saldo;
 
-        // Processa todos os investimentos do usuário
-        const atualizacoesInvestimentos = usuario.investimentos.map(async (inv) => {
+        // Processa investimentos
+        const atualizacoes = usuario.investimentos.map(async (inv) => {
           if (!inv.ativo) return 0;
 
-          // Converter valores Decimal para number
           const valor =
             inv.valor instanceof Object ? inv.valor.toNumber() : inv.valor;
           const rendimentoAcumulado =
@@ -35,7 +29,7 @@ async function aplicarRendimentos() {
           const limite =
             inv.limite instanceof Object ? inv.limite.toNumber() : inv.limite;
 
-          // Percentual diário variável por faixa
+          // Percentual diário
           let percentualDiario: number;
           if (valor <= 5000) {
             percentualDiario = 1.5;
@@ -64,41 +58,39 @@ async function aplicarRendimentos() {
             data: {
               rendimentoAcumulado: novoAcumulado,
               ativo,
+              // ⚠️ Não soma no valor do investimento → vai pro saldo
             },
           });
 
           return rendimento;
         });
 
-        const rendimentos = await Promise.all(atualizacoesInvestimentos);
+        const rendimentos = await Promise.all(atualizacoes);
         totalRendimento = rendimentos.reduce((acc, val) => acc + val, 0);
 
+        // Atualiza saldo do usuário
         if (totalRendimento > 0) {
           await prisma.user.update({
             where: { id: usuario.id },
-            data: {
-              saldo: saldoAtual + totalRendimento,
-            },
+            data: { saldo: saldoAtual + totalRendimento },
           });
 
-          const totalRendimentoFormatado = isNaN(totalRendimento)
-            ? "0.00"
-            : totalRendimento.toFixed(2);
-
           console.log(
-            `Rendimento total de R$ ${totalRendimentoFormatado} aplicado para o usuário ${usuario.id}`
+            `💰 Rendimento total R$ ${totalRendimento.toFixed(
+              2
+            )} aplicado para usuário ${usuario.id}`
           );
         }
       })
     );
 
-    console.log('✅ Rendimentos aplicados com sucesso!');
+    console.log("✅ Rendimentos aplicados com sucesso!");
   } catch (err) {
-    console.error('❌ Erro ao aplicar rendimentos:', err);
+    console.error("❌ Erro ao aplicar rendimentos:", err);
   } finally {
     await prisma.$disconnect();
   }
 }
 
-// Executa a função
+// Executa
 aplicarRendimentos();

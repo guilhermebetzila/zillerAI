@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 type Investimento = {
   id: number;
@@ -27,11 +28,12 @@ export default function InvestimentosPage() {
   const [rendimentos, setRendimentos] = useState<Rendimento[]>([]);
   const [novoValor, setNovoValor] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [loadingReinvestir, setLoadingReinvestir] = useState(false);
 
   // Carregar dados do usuário
   const carregarDados = async () => {
     try {
-      const res = await fetch("/api/investir"); // ✅ rota corrigida
+      const res = await fetch("/api/investir");
       const data = await res.json();
       if (res.ok) {
         setSaldo(data.saldo);
@@ -39,10 +41,10 @@ export default function InvestimentosPage() {
         setInvestimentos(data.investimentos);
         setRendimentos(data.rendimentos);
       } else {
-        alert(data.error || "Erro ao carregar dados.");
+        toast.error(data.error || "Erro ao carregar dados.");
       }
     } catch (err) {
-      alert("❌ Erro de conexão.");
+      toast.error("❌ Erro de conexão.");
     }
   };
 
@@ -50,29 +52,57 @@ export default function InvestimentosPage() {
   const investir = async () => {
     const valorNum = parseFloat(novoValor);
     if (!valorNum || valorNum <= 0) {
-      alert("Digite um valor válido.");
+      toast.error("Digite um valor válido.");
       return;
     }
 
     setLoading(true);
     try {
-      const res = await fetch("/api/investir/novo", { // ✅ rota corrigida
+      const res = await fetch("/api/investir/novo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ valor: valorNum }),
       });
       const data = await res.json();
       if (res.ok) {
-        alert("✅ Investimento realizado!");
+        toast.success("✅ Investimento realizado!");
         setNovoValor("");
-        carregarDados(); // recarregar lista
+        carregarDados();
       } else {
-        alert(data.error || "Erro ao investir.");
+        toast.error(data.error || "Erro ao investir.");
       }
     } catch (err) {
-      alert("❌ Erro de conexão.");
+      toast.error("❌ Erro de conexão.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Reinvestir saldo
+  const reinvestir = async () => {
+    if (parseFloat(saldo) <= 0) {
+      toast.error("❌ Você não tem saldo disponível para reinvestir.");
+      return;
+    }
+
+    setLoadingReinvestir(true);
+    try {
+      const res = await fetch("/api/reinvestir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ valor: parseFloat(saldo) }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("🔄 Reinvestimento realizado com sucesso!");
+        carregarDados();
+      } else {
+        toast.error(data.error || "Erro ao reinvestir.");
+      }
+    } catch (err) {
+      toast.error("❌ Erro de conexão.");
+    } finally {
+      setLoadingReinvestir(false);
     }
   };
 
@@ -112,6 +142,18 @@ export default function InvestimentosPage() {
           className="bg-yellow-600 w-full mt-2 p-2 rounded hover:bg-yellow-700 disabled:opacity-50"
         >
           {loading ? "Processando..." : "Investir"}
+        </button>
+      </div>
+
+      {/* Botão Reinvestir */}
+      <div className="bg-gray-800 p-4 rounded-lg shadow space-y-3">
+        <p>💰 Deseja reinvestir todo o saldo disponível?</p>
+        <button
+          onClick={reinvestir}
+          disabled={loadingReinvestir}
+          className="bg-blue-600 w-full mt-2 p-2 rounded hover:bg-blue-700 disabled:opacity-50"
+        >
+          {loadingReinvestir ? "Processando..." : "🔄 Reinvestir"}
         </button>
       </div>
 
