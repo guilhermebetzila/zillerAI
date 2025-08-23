@@ -1,128 +1,128 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState } from "react";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 export default function SaquePage() {
-  const [valor, setValor] = useState('')
-  const [carteira, setCarteira] = useState('')
-  const [mensagem, setMensagem] = useState('')
-  const [carteiraSalva, setCarteiraSalva] = useState('')
-  const router = useRouter()
+  const [valor, setValor] = useState("");
+  const [metodo, setMetodo] = useState<"PIX" | "USDT">("PIX");
+  const [chavePix, setChavePix] = useState("");
+  const [carteiraUsdt, setCarteiraUsdt] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [mensagem, setMensagem] = useState("");
 
-  // Carregar carteira salva no navegador
-  useEffect(() => {
-    const savedWallet = localStorage.getItem('usdt_wallet')
-    if (savedWallet) setCarteiraSalva(savedWallet)
-  }, [])
-
-  // Enviar pedido de saque para API
-  const handleSaque = async () => {
-    if (!valor || parseFloat(valor) <= 0) {
-      setMensagem('❌ Digite um valor válido para saque.')
-      return
-    }
-
-    if (!carteiraSalva) {
-      setMensagem('⚠️ Cadastre uma carteira USDT (BEP20) antes de sacar.')
-      return
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMensagem("");
 
     try {
-      const res = await fetch('/api/saque', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/saque", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          valor: parseFloat(valor),
-          carteira: carteiraSalva
-        })
-      })
+          userId: 1, // ⚠️ Trocar pelo ID do usuário logado (ex: via sessão ou localStorage)
+          valor,
+          metodo,
+          chavePix: metodo === "PIX" ? chavePix : null,
+          carteiraUsdt: metodo === "USDT" ? carteiraUsdt : null,
+        }),
+      });
 
-      const data = await res.json()
-      if (!res.ok) {
-        setMensagem(`❌ Erro: ${data.error || 'Não foi possível solicitar saque.'}`)
-        return
+      const data = await res.json();
+      if (res.ok) {
+        setMensagem("✅ Pedido de saque enviado com sucesso!");
+        setValor("");
+        setChavePix("");
+        setCarteiraUsdt("");
+      } else {
+        setMensagem(`❌ Erro: ${data.error || "Falha ao solicitar saque"}`);
       }
-
-      setMensagem(`✅ Pedido de saque de ${valor} USDT enviado para a carteira (BEP20): ${carteiraSalva}`)
-      setValor('')
     } catch (error) {
-      setMensagem('❌ Erro de conexão com servidor.')
+      setMensagem("❌ Erro inesperado. Tente novamente.");
+    } finally {
+      setLoading(false);
     }
-  }
-
-  // Salvar carteira USDT local
-  const salvarCarteira = () => {
-    if (!carteira) {
-      setMensagem('❌ Digite uma carteira USDT BEP20 válida.')
-      return
-    }
-
-    localStorage.setItem('usdt_wallet', carteira)
-    setCarteiraSalva(carteira)
-    setCarteira('')
-    setMensagem('✅ Carteira USDT (BEP20) salva com sucesso!')
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4">
-      <h1 className="text-3xl font-bold mb-4">📤 Tela de Saque</h1>
-      <p className="mb-6 text-gray-400">Solicite saques em USDT (BEP20 - Binance Smart Chain) para sua carteira.</p>
+    <LayoutWrapper>
+      <div className="max-w-xl mx-auto bg-white p-6 rounded-2xl shadow-lg mt-10">
+        <h1 className="text-2xl font-bold text-center mb-6">Solicitar Saque</h1>
 
-      {/* Formulário de saque */}
-      <div className="bg-gray-900 p-6 rounded-lg shadow-md w-full max-w-md">
-        <label className="block mb-2 font-semibold">💸 Valor do Saque (USDT)</label>
-        <input
-          type="number"
-          value={valor}
-          onChange={(e) => setValor(e.target.value)}
-          placeholder="Digite o valor em USDT"
-          className="w-full px-4 py-2 rounded bg-gray-800 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
-        />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Valor */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Valor (R$)</label>
+            <input
+              type="number"
+              min="1"
+              step="0.01"
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+              required
+              className="w-full border rounded-lg p-2"
+            />
+          </div>
 
-        <button
-          onClick={handleSaque}
-          className="bg-blue-600 hover:bg-blue-700 w-full py-2 rounded font-semibold transition duration-300"
-        >
-          📤 Solicitar Saque
-        </button>
-      </div>
+          {/* Método de Saque */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Método</label>
+            <select
+              value={metodo}
+              onChange={(e) => setMetodo(e.target.value as "PIX" | "USDT")}
+              className="w-full border rounded-lg p-2"
+            >
+              <option value="PIX">PIX</option>
+              <option value="USDT">USDT</option>
+            </select>
+          </div>
 
-      {/* Cadastro da carteira */}
-      <div className="bg-gray-800 mt-6 p-6 rounded-lg shadow-md w-full max-w-md">
-        <label className="block mb-2 font-semibold">🔐 Cadastrar Carteira USDT (BEP20 - BSC)</label>
-        <input
-          type="text"
-          value={carteira}
-          onChange={(e) => setCarteira(e.target.value)}
-          placeholder="Endereço da carteira USDT (BEP20 - BSC)"
-          className="w-full px-4 py-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 mb-4"
-        />
-        <button
-          onClick={salvarCarteira}
-          className="bg-green-600 hover:bg-green-700 w-full py-2 rounded font-semibold transition duration-300"
-        >
-          💾 Salvar Carteira
-        </button>
+          {/* Chave PIX */}
+          {metodo === "PIX" && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Chave PIX</label>
+              <input
+                type="text"
+                value={chavePix}
+                onChange={(e) => setChavePix(e.target.value)}
+                required={metodo === "PIX"}
+                className="w-full border rounded-lg p-2"
+              />
+            </div>
+          )}
 
-        {carteiraSalva && (
-          <p className="mt-4 text-sm text-gray-300 text-center">
-            ✅ Carteira cadastrada (BEP20): <strong>{carteiraSalva}</strong>
+          {/* Carteira USDT */}
+          {metodo === "USDT" && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Carteira USDT (BEP20 ou ERC20)</label>
+              <input
+                type="text"
+                value={carteiraUsdt}
+                onChange={(e) => setCarteiraUsdt(e.target.value)}
+                required={metodo === "USDT"}
+                className="w-full border rounded-lg p-2"
+              />
+            </div>
+          )}
+
+          {/* Botão */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-black text-white py-2 rounded-lg hover:opacity-80 transition"
+          >
+            {loading ? "Enviando..." : "Solicitar Saque"}
+          </button>
+        </form>
+
+        {/* Mensagem de Retorno */}
+        {mensagem && (
+          <p className="mt-4 text-center font-medium">
+            {mensagem}
           </p>
         )}
       </div>
-
-      {/* Mensagem de retorno */}
-      {mensagem && (
-        <p className="mt-6 text-sm text-yellow-400 text-center">{mensagem}</p>
-      )}
-
-      <button
-        onClick={() => router.push('/dashboard')}
-        className="mt-8 bg-white text-black px-6 py-2 rounded hover:bg-gray-100 transition"
-      >
-        ← Voltar para o Painel
-      </button>
-    </div>
-  )
+    </LayoutWrapper>
+  );
 }
