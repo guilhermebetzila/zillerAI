@@ -39,11 +39,9 @@ export default function DashboardPage() {
   const user = session?.user as any;
   const userId = user?.id ? Number(user.id) : undefined;
 
-  // 👤 Nome bonito no dashboard
   const displayName =
     user?.name || user?.email?.split('@')[0] || 'Usuário';
 
-  // Buscar saldo, pontos e indicados
   useEffect(() => {
     const fetchUsuario = async () => {
       if (!API_BASE_URL) return;
@@ -67,7 +65,6 @@ export default function DashboardPage() {
     if (user) fetchUsuario();
   }, [user]);
 
-  // Buscar diretos e indiretos
   useEffect(() => {
     const fetchRede = async () => {
       if (!API_BASE_URL) return;
@@ -89,7 +86,6 @@ export default function DashboardPage() {
     if (user) fetchRede();
   }, [user]);
 
-  // Buscar rendimento diário
   useEffect(() => {
     const fetchRendimento = async () => {
       try {
@@ -241,7 +237,10 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex justify-center mb-8">
+        {/* Botão Investir com Em Breve e imagem responsiva centralizada */}
+        <div className="flex flex-col items-center mb-8 gap-3 text-center">
+          <p className="text-white font-bold text-lg">Em breve</p>
+          <img src="/img/play.png" alt="Play" className="w-16 h-16 md:w-20 md:h-20" />
           <button
             onClick={() => router.push('/games/investir')}
             className="bg-black hover:bg-gray-800 text-white font-semibold py-2 px-5 rounded-lg shadow-md transition-all text-base"
