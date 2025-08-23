@@ -39,7 +39,7 @@ export default function DashboardPage() {
   const user = session?.user as any;
   const userId = user?.id ? Number(user.id) : undefined;
 
-  // Buscar saldo e dados do usuário
+  // Buscar saldo, pontos e indicados
   useEffect(() => {
     const fetchUsuario = async () => {
       if (!API_BASE_URL) return;
@@ -55,8 +55,6 @@ export default function DashboardPage() {
           setValorInvestido(Number(data.valorInvestido) || 0);
           setTotalIndicados(Number(data.totalIndicados) || 0);
           setPontos(Number(data.pontos) || 0);
-          setPontosDiretos(Number(data.pontosDiretos) || 0);
-          setPontosIndiretos(Number(data.pontosIndiretos) || 0);
         }
       } catch (error) {
         console.error('Erro ao buscar dados do usuário:', error);
@@ -65,11 +63,32 @@ export default function DashboardPage() {
     if (user) fetchUsuario();
   }, [user]);
 
-  // Buscar rendimento diário REAL
+  // Buscar diretos e indiretos
+  useEffect(() => {
+    const fetchRede = async () => {
+      if (!API_BASE_URL) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/rede`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setPontosDiretos(Number(data.diretos) || 0);
+          setPontosIndiretos(Number(data.indiretos) || 0);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar rede:', error);
+      }
+    };
+    if (user) fetchRede();
+  }, [user]);
+
+  // Buscar rendimento diário
   useEffect(() => {
     const fetchRendimento = async () => {
       try {
-        // usa base se existir, senão relativo
         const base = API_BASE_URL || '';
         const url = userId
           ? `${base}/api/rendimentos/usuario?userId=${encodeURIComponent(String(userId))}`
