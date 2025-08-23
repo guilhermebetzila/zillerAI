@@ -39,6 +39,10 @@ export default function DashboardPage() {
   const user = session?.user as any;
   const userId = user?.id ? Number(user.id) : undefined;
 
+  // 👤 Nome bonito no dashboard
+  const displayName =
+    user?.name || user?.email?.split('@')[0] || 'Usuário';
+
   // Buscar saldo, pontos e indicados
   useEffect(() => {
     const fetchUsuario = async () => {
@@ -158,7 +162,7 @@ export default function DashboardPage() {
         {/* Painel do usuário */}
         <div className="mb-6 max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold flex items-center gap-4">
-            Olá, {user?.name || user?.email}
+            Olá, {displayName}
             <span className="bg-black text-white px-3 py-1 text-sm rounded shadow-sm font-semibold">
               Saldo: {Number(saldo).toFixed(2)} USDT
             </span>
