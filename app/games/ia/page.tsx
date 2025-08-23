@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface UsuarioComIndicados {
   id: number;
-  nome: string;
+  nome: string | null;
   email: string;
   quantidadeDiretos: number;
   indicados: UsuarioComIndicados[];
@@ -32,12 +32,15 @@ export default function RedePage() {
           credentials: 'include',
         });
         if (!res.ok) throw new Error('Erro ao buscar rede');
-        const data: UsuarioComIndicados = await res.json();
+        const data = await res.json();
+
+        // API retorna { usuario, diretos, indiretos, arvore }
+        const usuario: UsuarioComIndicados = data.arvore;
 
         function converter(usuario: UsuarioComIndicados, nivel: number): UsuarioRede {
           return {
             id: usuario.id,
-            nome: usuario.nome,
+            nome: usuario.nome || "Sem Nome",
             quantidadeDiretos: usuario.quantidadeDiretos,
             nivel,
             aberto: nivel <= 1,
@@ -45,7 +48,9 @@ export default function RedePage() {
           };
         }
 
-        setRede(converter(data, 1));
+        if (usuario) {
+          setRede(converter(usuario, 1));
+        }
       } catch (err) {
         console.error(err);
       } finally {

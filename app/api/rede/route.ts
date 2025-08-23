@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import prisma from "@/lib/prisma";
+import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions"; // ✅ garante que pega o provider certo
+import { prisma } from "@/lib/prisma";
 
 export type UsuarioArvore = {
   id: number;
@@ -10,6 +11,7 @@ export type UsuarioArvore = {
   indicados: UsuarioArvore[];
 };
 
+// 🔁 Função recursiva para montar a árvore
 async function carregarArvore(userId: number): Promise<UsuarioArvore | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -31,12 +33,12 @@ async function carregarArvore(userId: number): Promise<UsuarioArvore | null> {
   };
 }
 
+// 📊 Contador de diretos e indiretos
 function contarDiretosEIndiretos(arvore: UsuarioArvore | null) {
   if (!arvore) return { diretos: 0, indiretos: 0 };
 
   const diretos = arvore.indicados.length;
 
-  // pega todos os nós descendentes (recursivo)
   function contarIndiretos(nodes: UsuarioArvore[]): number {
     return nodes.reduce((acc, node) => {
       return acc + 1 + contarIndiretos(node.indicados);
@@ -47,13 +49,15 @@ function contarDiretosEIndiretos(arvore: UsuarioArvore | null) {
 
   return {
     diretos,
-    indiretos: totalDescendentes - diretos, // só do nível 2 em diante
+    indiretos: totalDescendentes - diretos,
   };
 }
 
+// 🚀 Rota GET /api/rede
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
+
     if (!session || !session.user?.email) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
@@ -77,7 +81,7 @@ export async function GET(req: Request) {
       usuario: usuario.email,
       diretos,
       indiretos,
-      arvore,
+      arvore, // ✅ devolve a árvore completa também
     });
   } catch (error) {
     console.error("Erro API rede:", error);
