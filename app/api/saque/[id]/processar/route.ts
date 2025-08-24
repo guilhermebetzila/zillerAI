@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(
-  req: NextRequest,
-  context: { params: Record<string, string> } // 👈 aqui está o ajuste
-) {
+// Tipagem do contexto com params
+interface Context {
+  params: {
+    id: string;
+  };
+}
+
+export async function POST(req: NextRequest, { params }: Context) {
   try {
     const body = await req.json();
-    const id = context.params.id; // 👈 continua igual
+    const id = params.id; // pega o id da URL dinâmica
 
     const saque = await prisma.saque.update({
       where: { id: Number(id) },
