@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import dayjs from "dayjs"; // para formatação da data
+import dayjs from "dayjs";
 
 async function aplicarRendimentos() {
   const hoje = dayjs().format("YYYY-MM-DD");
@@ -25,6 +25,7 @@ async function aplicarRendimentos() {
             },
           },
         });
+
         if (jaRodouHoje) continue;
 
         const valor = Number(inv.valor);
@@ -35,13 +36,9 @@ async function aplicarRendimentos() {
         let percentualDiario: number;
         if (valor <= 5000) percentualDiario = 1.5;
         else if (valor <= 10000)
-          percentualDiario = Number(
-            (Math.random() * (1.8 - 1.6) + 1.6).toFixed(2)
-          );
+          percentualDiario = Number((Math.random() * (1.8 - 1.6) + 1.6).toFixed(2));
         else
-          percentualDiario = Number(
-            (Math.random() * (2.5 - 2.0) + 2.0).toFixed(2)
-          );
+          percentualDiario = Number((Math.random() * (2.5 - 2.0) + 2.0).toFixed(2));
 
         const rendimento = valor * (percentualDiario / 100);
         let novoAcumulado = rendimentoAcumulado + rendimento;
