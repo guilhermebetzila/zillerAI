@@ -15,7 +15,7 @@ async function aplicarRendimentos() {
       for (const inv of usuario.investimentos) {
         if (!inv.ativo) continue;
 
-        // Verifica se já aplicou hoje usando o índice composto
+        // Verifica se já aplicou hoje usando o índice único composto correto
         const jaRodouHoje = await prisma.rendimentoDiario.findUnique({
           where: {
             userId_investimentoId_dateKey: {
@@ -25,7 +25,6 @@ async function aplicarRendimentos() {
             },
           },
         });
-
         if (jaRodouHoje) continue;
 
         const valor = Number(inv.valor);
@@ -36,9 +35,13 @@ async function aplicarRendimentos() {
         let percentualDiario: number;
         if (valor <= 5000) percentualDiario = 1.5;
         else if (valor <= 10000)
-          percentualDiario = Number((Math.random() * (1.8 - 1.6) + 1.6).toFixed(2));
+          percentualDiario = Number(
+            (Math.random() * (1.8 - 1.6) + 1.6).toFixed(2)
+          );
         else
-          percentualDiario = Number((Math.random() * (2.5 - 2.0) + 2.0).toFixed(2));
+          percentualDiario = Number(
+            (Math.random() * (2.5 - 2.0) + 2.0).toFixed(2)
+          );
 
         const rendimento = valor * (percentualDiario / 100);
         let novoAcumulado = rendimentoAcumulado + rendimento;
