@@ -1,16 +1,43 @@
-// app/api/efi/webhook/route.ts
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+// app/scripts/registerWebhook.ts
+import "dotenv/config";
+import fetch from "node-fetch";
 
-export async function POST(req: Request) {
-  // a Efí enviará eventos dos Pix
-  const body = await req.json().catch(() => null);
-  // adapte conforme o payload da Efí que você habilitar
-  // (ex.: confirmação do pagamento, download de recibo, etc.)
-  console.log("Webhook Efí:", body);
+async function registerWebhook() {
+  try {
+    console.log("🔑 EFI_PAYER_PIX_KEY:", process.env.EFI_PAYER_PIX_KEY);
 
-  // se vier e2eId/status, você pode reconciliar:
-  // await prisma.withdrawalRequest.update({ where: { e2eId }, data: { status: "PAID" } });
+    if (!process.env.EFI_PAYER_PIX_KEY) {
+      throw new Error("❌ Variável EFI_PAYER_PIX_KEY não encontrada no .env");
+    }
 
-  return NextResponse.json({ received: true });
+    const payerKey = process.env.EFI_PAYER_PIX_KEY;
+
+    // 🔗 URL do webhook (ajuste para sua rota real)
+    const webhookUrl = "https://seuservidor.com/api/efi/webhook?hmac=meuhash1234";
+
+    console.log("📡 Registrando webhook na Efí...");
+    const response = await fetch("https://pix-h.api.efipay.com.br/v2/webhook", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.EFI_ACCESS_TOKEN || "SEU_TOKEN_AQUI"}`
+      },
+      body: JSON.stringify({
+        webhookUrl,
+        chave: payerKey
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(`❌ Erro ao registrar webhook: ${JSON.stringify(data)}`);
+    }
+
+    console.log("✅ Webhook registrado com sucesso:", data);
+  } catch (err: any) {
+    console.error("❌ Erro no script:", err.message || err);
+  }
 }
+
+registerWebhook();
