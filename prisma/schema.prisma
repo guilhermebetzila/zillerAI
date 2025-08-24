@@ -54,20 +54,23 @@ model Investimento {
   ativo               Boolean  @default(true)
   limite              Decimal  @default(0)
   user                User     @relation(fields: [userId], references: [id])
+  rendimentos         RendimentoDiario[]
 }
 
 model RendimentoDiario {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  dateKey   String
-  base      Decimal
-  rate      Decimal
-  amount    Decimal
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  id             Int           @id @default(autoincrement())
+  userId         Int
+  investimentoId Int
+  dateKey        String        // ex: "2025-08-24"
+  base           Decimal
+  rate           Decimal
+  amount         Decimal
+  createdAt      DateTime      @default(now())
+  user           User          @relation(fields: [userId], references: [id])
+  investimento   Investimento  @relation(fields: [investimentoId], references: [id])
 
-  @@unique([userId, dateKey])
-  @@index([userId, dateKey])
+  @@unique([userId, investimentoId, dateKey])
+  @@index([userId, investimentoId, dateKey])
 }
 
 model Graduacao {
@@ -94,16 +97,13 @@ model Saque {
   id           Int         @id @default(autoincrement())
   userId       Int
   user         User        @relation(fields: [userId], references: [id])
-
   valor        Decimal
   tipo         String      @default("pix")
   chavePix     String?
   descricao    String?
-
   status       StatusSaque @default(pendente)
   criadoEm     DateTime    @default(now())
   processadoEm DateTime?
-
   endToEndId   String?     @unique
   txHash       String?     @unique
 }
@@ -175,12 +175,10 @@ model Instrument {
   symbol     String
   venue      Venue
   tickSize   Decimal      @default(0.01)
-
   signals    Signal[]
   orders     TradeOrder[]
   positions  Position[]
   trades     Trade[]
-
   @@unique([symbol, venue], name: "symbol_venue")
   @@map("instruments")
 }
@@ -194,7 +192,6 @@ model Signal {
   side          SignalSide
   confidence    Float?
   extras        Json?
-
   @@index([instrumentId, timestamp])
   @@map("signals")
 }
@@ -211,9 +208,7 @@ model TradeOrder {
   limitPrice      Decimal?
   status          OrderStatus
   createdAt       DateTime     @default(now())
-
   fills           Fill[]
-
   @@index([instrumentId, createdAt])
   @@map("orders")
 }
@@ -227,7 +222,6 @@ model Fill {
   fee        Decimal     @default(0)
   tax        Decimal     @default(0)
   filledAt   DateTime    @default(now())
-
   @@index([orderId, filledAt])
   @@map("fills")
 }
@@ -239,7 +233,6 @@ model Position {
   qty           Decimal
   avgPrice      Decimal
   updatedAt     DateTime    @default(now())
-
   @@unique([instrumentId])
   @@map("positions")
 }
@@ -256,7 +249,6 @@ model Trade {
   grossPnl      Decimal?
   netPnl        Decimal?
   costs         Decimal?    @default(0)
-
   @@index([instrumentId, entryTime])
   @@map("trades")
 }

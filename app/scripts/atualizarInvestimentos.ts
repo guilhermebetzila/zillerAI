@@ -1,96 +1,88 @@
-// app/scripts/atualizarInvestimentos.ts
 import { prisma } from "../../lib/prisma";
+import dayjs from "dayjs"; // para formatação da data
 
 async function aplicarRendimentos() {
-  try {
-    const usuarios = await prisma.user.findMany({
-      include: { investimentos: true },
-    });
+  const hoje = dayjs().format("YYYY-MM-DD");
 
-    await Promise.all(
-      usuarios.map(async (usuario) => {
-        let totalRendimento = 0;
+  const usuarios = await prisma.user.findMany({
+    include: { investimentos: true },
+  });
 
-        const saldoAtual =
-          usuario.saldo instanceof Object
-            ? usuario.saldo.toNumber()
-            : usuario.saldo;
+  await Promise.all(
+    usuarios.map(async (usuario) => {
+      let totalRendimento = 0;
 
-        // Processa investimentos
-        const atualizacoes = usuario.investimentos.map(async (inv) => {
-          if (!inv.ativo) return 0;
+      for (const inv of usuario.investimentos) {
+        if (!inv.ativo) continue;
 
-          const valor =
-            inv.valor instanceof Object ? inv.valor.toNumber() : inv.valor;
-          const rendimentoAcumulado =
-            inv.rendimentoAcumulado instanceof Object
-              ? inv.rendimentoAcumulado.toNumber()
-              : inv.rendimentoAcumulado;
-          const limite =
-            inv.limite instanceof Object ? inv.limite.toNumber() : inv.limite;
+        // Verifica se já aplicou hoje
+        const jaRodouHoje = await prisma.rendimentoDiario.findFirst({
+          where: {
+            investimentoId: inv.id,
+            dateKey: hoje,
+          },
+        });
+        if (jaRodouHoje) continue;
 
-          // Percentual diário
-          let percentualDiario: number;
-          if (valor <= 5000) {
-            percentualDiario = 1.5;
-          } else if (valor <= 10000) {
-            percentualDiario = Number(
-              (Math.random() * (1.8 - 1.6) + 1.6).toFixed(2)
-            );
-          } else {
-            percentualDiario = Number(
-              (Math.random() * (2.5 - 2.0) + 2.0).toFixed(2)
-            );
-          }
+        const valor = Number(inv.valor);
+        const limite = Number(inv.limite);
+        const rendimentoAcumulado = Number(inv.rendimentoAcumulado);
 
-          const rendimento = valor * (percentualDiario / 100);
-          let novoAcumulado = rendimentoAcumulado + rendimento;
+        // Percentual diário
+        let percentualDiario: number;
+        if (valor <= 5000) percentualDiario = 1.5;
+        else if (valor <= 10000)
+          percentualDiario = Number((Math.random() * (1.8 - 1.6) + 1.6).toFixed(2));
+        else
+          percentualDiario = Number((Math.random() * (2.5 - 2.0) + 2.0).toFixed(2));
 
-          // Desativa investimento se atingir limite
-          let ativo = true;
-          if (novoAcumulado >= limite) {
-            novoAcumulado = limite;
-            ativo = false;
-          }
+        const rendimento = valor * (percentualDiario / 100);
+        let novoAcumulado = rendimentoAcumulado + rendimento;
 
-          await prisma.investimento.update({
-            where: { id: inv.id },
-            data: {
-              rendimentoAcumulado: novoAcumulado,
-              ativo,
-              // ⚠️ Não soma no valor do investimento → vai pro saldo
-            },
-          });
+        let ativo = true;
+        if (limite > 0 && novoAcumulado >= limite) {
+          novoAcumulado = limite;
+          ativo = false;
+        }
 
-          return rendimento;
+        // Atualiza investimento
+        await prisma.investimento.update({
+          where: { id: inv.id },
+          data: { rendimentoAcumulado: novoAcumulado, ativo },
         });
 
-        const rendimentos = await Promise.all(atualizacoes);
-        totalRendimento = rendimentos.reduce((acc, val) => acc + val, 0);
+        // Registra rendimento diário
+        await prisma.rendimentoDiario.create({
+          data: {
+            userId: usuario.id,
+            investimentoId: inv.id,
+            dateKey: hoje,
+            base: valor,
+            rate: percentualDiario,
+            amount: rendimento,
+          },
+        });
 
-        // Atualiza saldo do usuário
-        if (totalRendimento > 0) {
-          await prisma.user.update({
-            where: { id: usuario.id },
-            data: { saldo: saldoAtual + totalRendimento },
-          });
+        totalRendimento += rendimento;
+      }
 
-          console.log(
-            `💰 Rendimento total R$ ${totalRendimento.toFixed(
-              2
-            )} aplicado para usuário ${usuario.id}`
-          );
-        }
-      })
-    );
+      // Atualiza saldo do usuário
+      if (totalRendimento > 0) {
+        await prisma.user.update({
+          where: { id: usuario.id },
+          data: { saldo: Number(usuario.saldo) + totalRendimento },
+        });
 
-    console.log("✅ Rendimentos aplicados com sucesso!");
-  } catch (err) {
-    console.error("❌ Erro ao aplicar rendimentos:", err);
-  } finally {
-    await prisma.$disconnect();
-  }
+        console.log(
+          `💰 R$ ${totalRendimento.toFixed(2)} aplicados ao usuário ${usuario.id}`
+        );
+      }
+    })
+  );
+
+  console.log("✅ Rendimentos aplicados com sucesso!");
+  await prisma.$disconnect();
 }
 
-// Executa
+// Executa o script
 aplicarRendimentos();
