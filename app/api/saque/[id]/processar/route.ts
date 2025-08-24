@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req: NextRequest, context: { params: { id: string } }) {
   try {
     const body = await req.json();
-    const { id } = context.params;
+    const id = context.params.id; // 👈 Pega o id daqui
 
     const saque = await prisma.saque.update({
       where: { id: Number(id) },
