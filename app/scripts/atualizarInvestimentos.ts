@@ -15,30 +15,23 @@ async function aplicarRendimentos() {
       for (const inv of usuario.investimentos) {
         if (!inv.ativo) continue;
 
-        // Verifica se já aplicou hoje usando o índice único composto correto
-        const jaRodouHoje = await prisma.rendimentoDiario.findUnique({
-          where: {
-            userId_investimentoId_dateKey: {
-              userId: usuario.id,
-              investimentoId: inv.id,
-              dateKey: hoje,
-            },
-          },
-        });
-
-        if (jaRodouHoje) continue;
-
         const valor = Number(inv.valor);
         const limite = Number(inv.limite);
         const rendimentoAcumulado = Number(inv.rendimentoAcumulado);
 
         // Percentual diário
         let percentualDiario: number;
-        if (valor <= 5000) percentualDiario = 1.5;
-        else if (valor <= 10000)
-          percentualDiario = Number((Math.random() * (1.8 - 1.6) + 1.6).toFixed(2));
-        else
-          percentualDiario = Number((Math.random() * (2.5 - 2.0) + 2.0).toFixed(2));
+        if (valor <= 5000) {
+          percentualDiario = 1.5;
+        } else if (valor <= 10000) {
+          percentualDiario = Number(
+            (Math.random() * (1.8 - 1.6) + 1.6).toFixed(2)
+          );
+        } else {
+          percentualDiario = Number(
+            (Math.random() * (2.5 - 2.0) + 2.0).toFixed(2)
+          );
+        }
 
         const rendimento = valor * (percentualDiario / 100);
         let novoAcumulado = rendimentoAcumulado + rendimento;
@@ -55,9 +48,21 @@ async function aplicarRendimentos() {
           data: { rendimentoAcumulado: novoAcumulado, ativo },
         });
 
-        // Registra rendimento diário
-        await prisma.rendimentoDiario.create({
-          data: {
+        // 🔒 Usa upsert para garantir que não vai duplicar
+        await prisma.rendimentoDiario.upsert({
+          where: {
+            userId_investimentoId_dateKey: {
+              userId: usuario.id,
+              investimentoId: inv.id,
+              dateKey: hoje,
+            },
+          },
+          update: {
+            base: valor,
+            rate: percentualDiario,
+            amount: rendimento,
+          },
+          create: {
             userId: usuario.id,
             investimentoId: inv.id,
             dateKey: hoje,
