@@ -3,14 +3,14 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(
   req: NextRequest,
-  context: { params: { id: string } } // ✅ direto, sem {}
+  { params }: { params: { id: string } } // ✅ correto no App Router
 ) {
   try {
     const body = await req.json();
-    const id = context.params.id; // pega o id da URL dinâmica
+    const id = params.id; // pega o id da URL dinâmica
 
     const saque = await prisma.saque.update({
-      where: { id: Number(id) },
+      where: { id: Number(id) }, // garante que é número
       data: { status: body.status },
     });
 
