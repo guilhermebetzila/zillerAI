@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
-    const base = user.valorInvestido.toNumber();
+    const base = Number(user.valorInvestido);
     const rate = 0.01; // 1% ao dia
     const rendimento = base * rate;
 
@@ -117,10 +117,11 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Salvar rendimento
+    // Salvar rendimento (investimentoId é opcional)
     const novoRendimento = await prisma.rendimentoDiario.create({
       data: {
         userId: user.id,
+        investimentoId: null,
         amount: new Prisma.Decimal(rendimento),
         base: new Prisma.Decimal(base),
         rate: new Prisma.Decimal(rate),

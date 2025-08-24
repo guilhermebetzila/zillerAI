@@ -60,14 +60,14 @@ model Investimento {
 model RendimentoDiario {
   id             Int           @id @default(autoincrement())
   userId         Int
-  investimentoId Int
+  investimentoId Int?          // ⚠️ agora é opcional
   dateKey        String        // ex: "2025-08-24"
   base           Decimal
   rate           Decimal
   amount         Decimal
   createdAt      DateTime      @default(now())
   user           User          @relation(fields: [userId], references: [id])
-  investimento   Investimento  @relation(fields: [investimentoId], references: [id])
+  investimento   Investimento? @relation(fields: [investimentoId], references: [id])
 
   @@unique([userId, investimentoId, dateKey])
   @@index([userId, investimentoId, dateKey])
