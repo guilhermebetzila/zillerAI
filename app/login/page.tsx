@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [emailOrCpf, setEmailOrCpf] = useState('');
   const [senha, setSenha] = useState('');
   const [mensagem, setMensagem] = useState('');
   const [carregando, setCarregando] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,16 +21,15 @@ export default function LoginPage() {
     }
 
     const result = await signIn('credentials', {
-      email: emailOrCpf, // ⚡ pode ser email ou CPF
+      email: emailOrCpf,
       password: senha,
-      redirect: false,
+      redirect: true,            // ✅ deixa o NextAuth cuidar do redirect
+      callbackUrl: '/dashboard', // ✅ destino final
     });
 
     if (result?.error) {
       setMensagem(result.error || 'Credenciais inválidas.');
       setCarregando(false);
-    } else {
-      router.push('/dashboard'); // ✅ redireciona manualmente
     }
   };
 
