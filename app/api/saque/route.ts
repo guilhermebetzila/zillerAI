@@ -1,6 +1,8 @@
+// app/api/saque/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { StatusSaque } from "@prisma/client"; // enum do prisma
+import { StatusSaque } from "@prisma/client";
+import { efiSendPix } from "@/lib/efi";
 
 export async function POST(req: Request) {
   try {
@@ -28,6 +30,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Saldo insuficiente." }, { status: 400 });
     }
 
+    // 1️⃣ Cria o registro de saque no banco com status pendente
     const saque = await prisma.saque.create({
       data: {
         userId: Number(userId),
@@ -39,13 +42,51 @@ export async function POST(req: Request) {
       },
     });
 
+    // 2️⃣ Debita o saldo do usuário
     await prisma.user.update({
       where: { id: Number(userId) },
-      data: {
-        saldo: Number(usuario.saldo) - valorNum,
-      },
+      data: { saldo: Number(usuario.saldo) - valorNum },
     });
 
+    // 3️⃣ Se for PIX, enviar via EFI
+    if (metodo === "PIX") {
+      try {
+        const respPix = await efiSendPix({
+          idEnvio: `saque-${saque.id}`,           // idempotência
+          amount: valorNum,
+          payerKey: process.env.EFI_PAYER_KEY!,   // sua chave PIX da EFI
+          recipientKey: chavePix,
+          description: `Saque de R$ ${valorNum} para usuário ${userId}`,
+        });
+
+        // 4️⃣ Atualiza o saque como concluído
+        await prisma.saque.update({
+          where: { id: saque.id },
+          data: {
+            status: StatusSaque.concluido,
+            txHash: respPix.e2eId,
+            processadoEm: new Date(),
+          },
+        });
+      } catch (err) {
+        console.error("Erro ao enviar PIX EFI:", err);
+
+        // 5️⃣ Se falhar, devolve o saldo e marca saque como rejeitado
+        await prisma.user.update({
+          where: { id: Number(userId) },
+          data: { saldo: { increment: valorNum } },
+        });
+
+        await prisma.saque.update({
+          where: { id: saque.id },
+          data: { status: StatusSaque.rejeitado, processadoEm: new Date() },
+        });
+
+        return NextResponse.json({ error: "Falha ao enviar PIX, saldo devolvido." }, { status: 500 });
+      }
+    }
+
+    // 6️⃣ Se USDT ou PIX concluído, retorna o saque
     return NextResponse.json(saque, { status: 201 });
   } catch (err) {
     console.error("Erro ao criar pedido de saque:", err);
