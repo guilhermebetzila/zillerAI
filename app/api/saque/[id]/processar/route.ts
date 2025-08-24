@@ -3,11 +3,11 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } } // ✅ tipagem inline
+  context: { params: { id: string } } // ✅ direto, sem {}
 ) {
   try {
     const body = await req.json();
-    const id = params.id; // pega o id da URL dinâmica
+    const id = context.params.id; // pega o id da URL dinâmica
 
     const saque = await prisma.saque.update({
       where: { id: Number(id) },
