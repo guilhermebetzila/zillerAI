@@ -3,22 +3,20 @@ import { Prisma } from "@prisma/client";
 
 const TAXA_DIARIA = 0.015; // 1,5% ao dia
 
-// Calcula o rendimento de UM usuário (com base no valorInvestido atual)
+// Calcula rendimento de um usuário
 export async function calcularRendimentoUsuario(userId: number) {
   const usuario = await prisma.user.findUnique({
     where: { id: userId },
     select: { valorInvestido: true },
   });
 
-  if (!usuario) return 0;
+  if (!usuario || !usuario.valorInvestido) return 0;
 
-  const base = new Prisma.Decimal(usuario.valorInvestido || 0);
-  if (base.lte(0)) return 0;
-
+  const base = new Prisma.Decimal(usuario.valorInvestido);
   return Number(base.mul(TAXA_DIARIA));
 }
 
-// Gera o rendimento do dia para TODOS, atualiza valorInvestido e grava histórico
+// Gera rendimento diário de todos os usuários
 export async function gerarRendimentoDiario() {
   const usuarios = await prisma.user.findMany({
     select: { id: true, valorInvestido: true },
@@ -33,7 +31,7 @@ export async function gerarRendimentoDiario() {
 
     const rendimento = base.mul(TAXA_DIARIA);
 
-    // evita duplicar para o mesmo dia (chave única)
+    // ✅ Evita duplicar o mesmo dia
     const jaExiste = await prisma.rendimentoDiario.findUnique({
       where: { userId_dateKey: { userId: u.id, dateKey: hoje } },
     });
@@ -48,7 +46,7 @@ export async function gerarRendimentoDiario() {
         data: {
           userId: u.id,
           dateKey: hoje,
-          base: base,
+          base,
           rate: new Prisma.Decimal(TAXA_DIARIA),
           amount: rendimento,
         },

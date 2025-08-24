@@ -60,7 +60,7 @@ model Investimento {
 model RendimentoDiario {
   id             Int           @id @default(autoincrement())
   userId         Int
-  investimentoId Int?          // ⚠️ agora é opcional
+  investimentoId Int?
   dateKey        String        // ex: "2025-08-24"
   base           Decimal
   rate           Decimal
@@ -69,8 +69,9 @@ model RendimentoDiario {
   user           User          @relation(fields: [userId], references: [id])
   investimento   Investimento? @relation(fields: [investimentoId], references: [id])
 
-  @@unique([userId, investimentoId, dateKey])
-  @@index([userId, investimentoId, dateKey])
+  // 🔑 Chaves únicas
+  @@unique([userId, investimentoId, dateKey], name: "userId_investimentoId_dateKey")
+  @@unique([userId, dateKey], name: "userId_dateKey")
 }
 
 model Graduacao {
@@ -135,7 +136,6 @@ enum StatusSaque {
   rejeitado
 }
 
-// ====== DEMO TRADING – ENUMS ======
 enum Venue {
   ALPACA
   OANDA
@@ -167,88 +167,4 @@ enum OrderStatus {
   filled
   canceled
   rejected
-}
-
-// ====== DEMO TRADING – MODELOS ======
-model Instrument {
-  id         Int          @id @default(autoincrement())
-  symbol     String
-  venue      Venue
-  tickSize   Decimal      @default(0.01)
-  signals    Signal[]
-  orders     TradeOrder[]
-  positions  Position[]
-  trades     Trade[]
-  @@unique([symbol, venue], name: "symbol_venue")
-  @@map("instruments")
-}
-
-model Signal {
-  id            Int         @id @default(autoincrement())
-  instrumentId  Int
-  instrument    Instrument  @relation(fields: [instrumentId], references: [id])
-  timestamp     DateTime    @default(now())
-  timeframe     String
-  side          SignalSide
-  confidence    Float?
-  extras        Json?
-  @@index([instrumentId, timestamp])
-  @@map("signals")
-}
-
-model TradeOrder {
-  id              Int          @id @default(autoincrement())
-  instrumentId    Int
-  instrument      Instrument   @relation(fields: [instrumentId], references: [id])
-  broker          String
-  brokerOrderId   String?
-  side            Side
-  qty             Decimal
-  type            OrderType
-  limitPrice      Decimal?
-  status          OrderStatus
-  createdAt       DateTime     @default(now())
-  fills           Fill[]
-  @@index([instrumentId, createdAt])
-  @@map("orders")
-}
-
-model Fill {
-  id         Int         @id @default(autoincrement())
-  orderId    Int
-  order      TradeOrder  @relation(fields: [orderId], references: [id])
-  price      Decimal
-  qty        Decimal
-  fee        Decimal     @default(0)
-  tax        Decimal     @default(0)
-  filledAt   DateTime    @default(now())
-  @@index([orderId, filledAt])
-  @@map("fills")
-}
-
-model Position {
-  id            Int         @id @default(autoincrement())
-  instrumentId  Int
-  instrument    Instrument  @relation(fields: [instrumentId], references: [id])
-  qty           Decimal
-  avgPrice      Decimal
-  updatedAt     DateTime    @default(now())
-  @@unique([instrumentId])
-  @@map("positions")
-}
-
-model Trade {
-  id            Int         @id @default(autoincrement())
-  instrumentId  Int
-  instrument    Instrument  @relation(fields: [instrumentId], references: [id])
-  entryTime     DateTime
-  exitTime      DateTime?
-  entryPrice    Decimal
-  exitPrice     Decimal?
-  qty           Decimal
-  grossPnl      Decimal?
-  netPnl        Decimal?
-  costs         Decimal?    @default(0)
-  @@index([instrumentId, entryTime])
-  @@map("trades")
 }
