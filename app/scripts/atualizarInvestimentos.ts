@@ -16,10 +16,14 @@ async function aplicarRendimentos() {
         if (!inv.ativo) continue;
 
         // Verifica se já aplicou hoje
-        const jaRodouHoje = await prisma.rendimentoDiario.findFirst({
+        const jaRodouHoje = await prisma.rendimentoDiario.findUnique({
           where: {
-            investimentoId: inv.id,
-            dateKey: hoje,
+            // Usando o índice único composto (userId, investimentoId, dateKey)
+            userId_investimentoId_dateKey: {
+              userId: usuario.id,
+              investimentoId: inv.id,
+              dateKey: hoje,
+            },
           },
         });
         if (jaRodouHoje) continue;
