@@ -15,10 +15,9 @@ async function aplicarRendimentos() {
       for (const inv of usuario.investimentos) {
         if (!inv.ativo) continue;
 
-        // Verifica se já aplicou hoje
+        // Verifica se já aplicou hoje usando o índice composto
         const jaRodouHoje = await prisma.rendimentoDiario.findUnique({
           where: {
-            // Usando o índice único composto (userId, investimentoId, dateKey)
             userId_investimentoId_dateKey: {
               userId: usuario.id,
               investimentoId: inv.id,
@@ -26,6 +25,7 @@ async function aplicarRendimentos() {
             },
           },
         });
+
         if (jaRodouHoje) continue;
 
         const valor = Number(inv.valor);
