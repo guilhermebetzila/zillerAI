@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: NextRequest, context: { params: { id: string } }) {
+export async function POST(
+  req: NextRequest,
+  context: { params: Record<string, string> } // 👈 aqui está o ajuste
+) {
   try {
     const body = await req.json();
-    const id = context.params.id; // 👈 Pega o id daqui
+    const id = context.params.id; // 👈 continua igual
 
     const saque = await prisma.saque.update({
       where: { id: Number(id) },
