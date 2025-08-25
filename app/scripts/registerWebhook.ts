@@ -1,6 +1,5 @@
 import "dotenv/config";
 import https from "https";
-import fs from "fs";
 import axios from "axios";
 
 // 🔹 Variáveis do .env
@@ -8,19 +7,19 @@ const payerKey = process.env.EFI_PAYER_PIX_KEY!;
 const baseUrl = process.env.EFI_BASE_URL || "https://pix.api.efipay.com.br";
 const clientId = process.env.EFI_CLIENT_ID!;
 const clientSecret = process.env.EFI_CLIENT_SECRET!;
-const certPath = process.env.EFI_CERT_P12_PATH!;
+const certBase64 = process.env.EFI_CERT_P12_BASE64!;
 const certPassword = process.env.EFI_CERT_PASSWORD || "";
 
 // 🔹 URL do webhook (Vercel)
 const webhookUrl = process.env.WEBHOOK_URL || "https://ziller.club/api/efi/webhook";
 
-// 🔹 Validações
+// 🔹 Validações básicas
 if (!payerKey) throw new Error("❌ EFI_PAYER_PIX_KEY não definida no .env");
 if (!clientId || !clientSecret) throw new Error("❌ EFI_CLIENT_ID ou EFI_CLIENT_SECRET não definidos no .env");
-if (!fs.existsSync(certPath)) throw new Error(`❌ Certificado P12 não encontrado em: ${certPath}`);
+if (!certBase64) throw new Error("❌ EFI_CERT_P12_BASE64 não definida no .env");
 
-// 🔹 Carrega certificado P12
-const pfxBuffer = fs.readFileSync(certPath);
+// 🔹 Carrega certificado P12 a partir do Base64
+const pfxBuffer = Buffer.from(certBase64, "base64");
 console.log("✅ Certificado carregado:", pfxBuffer.length, "bytes");
 
 // 🔹 HTTPS Agent com mTLS
@@ -40,7 +39,8 @@ interface TokenResponse {
 async function registerWebhook() {
   try {
     console.log("🔹 Obtendo token OAuth...");
-    const tokenResp = await axios.post(`${baseUrl}/oauth/token`,
+    const tokenResp = await axios.post<TokenResponse>(
+      `${baseUrl}/oauth/token`,
       "grant_type=client_credentials&scope=pix.webhook.write",
       {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -49,7 +49,7 @@ async function registerWebhook() {
       }
     );
 
-    const accessToken = (tokenResp.data as TokenResponse).access_token;
+    const accessToken = tokenResp.data.access_token;
     console.log("✅ Token obtido:", accessToken.substring(0, 10) + "...");
 
     console.log(`🔹 Registrando webhook na Efí: ${webhookUrl}`);
@@ -62,7 +62,7 @@ async function registerWebhook() {
           "Content-Type": "application/json",
         },
         httpsAgent,
-        validateStatus: () => true, // evita crash em 400/308
+        validateStatus: () => true,
       }
     );
 
