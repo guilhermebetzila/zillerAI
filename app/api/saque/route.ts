@@ -32,11 +32,11 @@ export async function POST(req: Request) {
     const { userId, valor, metodo, chavePix, carteiraUsdt } = await req.json();
 
     // 🔹 Validações básicas
-    const numericValor = Number(valor);
-    if (isNaN(numericValor) || numericValor <= 0) throw new Error("Valor inválido");
+    const valorNumber = Number(valor);
+    if (!valorNumber || valorNumber <= 0) throw new Error("Valor inválido");
 
-    const chavePixTrimmed = chavePix?.trim() || null;
-    const carteiraUsdtTrimmed = carteiraUsdt?.trim() || null;
+    const chavePixTrimmed = chavePix?.trim() || "";
+    const carteiraUsdtTrimmed = carteiraUsdt?.trim() || "";
 
     if (metodo === "PIX" && !chavePixTrimmed) throw new Error("Chave PIX inválida");
     if (metodo === "USDT" && !carteiraUsdtTrimmed) throw new Error("Carteira USDT inválida");
@@ -44,12 +44,12 @@ export async function POST(req: Request) {
     // 🔹 Consulta usuário
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
-    if (Number(user.saldo) < numericValor) return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
+    if (Number(user.saldo) < valorNumber) return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
 
     // 🔹 Bloqueia saldo para saque
     await prisma.user.update({
       where: { id: userId },
-      data: { saldo: Number(user.saldo) - numericValor },
+      data: { saldo: Number(user.saldo) - valorNumber },
     });
 
     // 🔹 Obtem token OAuth Efí
@@ -65,16 +65,12 @@ export async function POST(req: Request) {
 
     const accessToken = tokenResp.data.access_token;
 
-    // 🔹 Cria pagamento PIX (somente se método PIX)
+    // 🔹 Cria pagamento PIX (se método PIX)
     let txId: string | null = null;
     if (metodo === "PIX") {
       const pixResp = await axios.post(
         `${baseUrl}/v2/pix/${payerKey}/cob`,
-        {
-          chave: chavePixTrimmed,
-          valor: numericValor,
-          infoAdicional: "Saque plataforma",
-        },
+        { chave: chavePixTrimmed, valor: valorNumber, infoAdicional: "Saque plataforma" },
         { headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, httpsAgent }
       );
       txId = pixResp.data.txid || null;
@@ -84,10 +80,10 @@ export async function POST(req: Request) {
     await prisma.saque.create({
       data: {
         userId,
-        valor: numericValor,
+        valor: valorNumber,
         tipo: metodo,
         chavePix: metodo === "PIX" ? chavePixTrimmed : null,
-        status: "PROCESSANDO",
+        status: "processando", // ⚡ compatível com o enum atual
         criadoEm: new Date(),
         txHash: txId,
       },
