@@ -11,8 +11,8 @@ const clientSecret: string = process.env.EFI_CLIENT_SECRET as string;
 const certPath: string = process.env.EFI_CERT_P12_PATH as string;
 const certPassword: string = process.env.EFI_CERT_PASSWORD || "";
 
-// 🔹 URL final do webhook (tem que responder 200 em POST!)
-const webhookUrl: string = "https://ziller.club/api/efi/webhook/"; // ✅ trailing slash
+// 🔹 URL final do webhook (sem barra no fim!)
+const webhookUrl: string = "https://77c67721417f.ngrok-free.app/api/efi/webhook";
 
 // 🔹 Valida variáveis essenciais
 if (!payerKey) throw new Error("❌ EFI_PAYER_PIX_KEY não definida no .env");
@@ -53,9 +53,7 @@ async function registerWebhook() {
       }
     );
 
-    const data: TokenResponse = tokenResp.data;
-    const accessToken = data.access_token;
-
+    const accessToken = tokenResp.data.access_token;
     if (!accessToken) throw new Error("❌ Não foi possível obter access token");
     console.log("✅ Token obtido:", accessToken.substring(0, 10) + "...");
 
@@ -70,10 +68,12 @@ async function registerWebhook() {
           "Content-Type": "application/json",
         },
         httpsAgent,
+        validateStatus: (status) => status < 500, // mostra erros sem crash
       }
     );
 
-    console.log("✅ Webhook registrado com sucesso:", registerResp.data);
+    console.log("✅ Webhook registrado. Resposta completa:");
+    console.log(registerResp.status, registerResp.data);
 
   } catch (err: any) {
     if (axios.isAxiosError(err)) {
@@ -88,3 +88,4 @@ async function registerWebhook() {
 }
 
 registerWebhook();
+
