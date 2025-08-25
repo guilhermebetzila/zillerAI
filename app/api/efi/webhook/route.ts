@@ -1,18 +1,34 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-// 🔹 Recebe notificações de PIX da Efí
+// 🔹 POST: recebe notificações de PIX da Efí
 export async function POST(req: Request) {
   try {
-    // Parse do corpo da requisição
     const body: any = await req.json();
     console.log("📩 Webhook recebido da Efí:", body);
 
-    // TODO: Aqui você pode:
-    // - Salvar no banco de dados
-    // - Enviar para uma fila de processamento
-    // - Atualizar saldo do usuário
-    // Exemplo:
-    // await prisma.saque.create({ data: { ... } });
+    const { txid, status } = body;
+
+    if (!txid) {
+      console.warn("⚠️ txid não informado no webhook");
+      return NextResponse.json({ ok: false, error: "txid ausente" }, { status: 400 });
+    }
+
+    // 🔹 Atualiza saque baseado no status
+    let saque;
+    if (status === "CONCLUIDO") {
+      saque = await prisma.saque.updateMany({
+        where: { txHash: txid, status: "processando" },
+        data: { status: "concluido", processadoEm: new Date() },
+      });
+      console.log(`✅ Saque(s) concluído(s):`, saque.count);
+    } else if (status === "REJEITADO" || status === "CANCELADO") {
+      saque = await prisma.saque.updateMany({
+        where: { txHash: txid, status: "processando" },
+        data: { status: "rejeitado", processadoEm: new Date() },
+      });
+      console.log(`⚠️ Saque(s) rejeitado(s):`, saque.count);
+    }
 
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (err: any) {

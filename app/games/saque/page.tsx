@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 import LayoutWrapper from "@/components/LayoutWrapper";
@@ -38,7 +38,7 @@ export default function SaquePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: 1, // você pode substituir pelo ID do usuário logado
+          userId: 1, // substituir pelo ID do usuário logado
           valor: Number(valor),
           metodo,
           chavePix: metodo === "PIX" ? chavePix.trim() : null,
@@ -72,6 +72,7 @@ export default function SaquePage() {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Valor */}
           <div>
             <label className="block text-sm font-semibold mb-2 text-gray-700">Valor (R$)</label>
             <input
@@ -86,6 +87,7 @@ export default function SaquePage() {
             />
           </div>
 
+          {/* Método */}
           <div>
             <label className="block text-sm font-semibold mb-2 text-gray-700">Método de Saque</label>
             <select
@@ -98,6 +100,7 @@ export default function SaquePage() {
             </select>
           </div>
 
+          {/* Chave PIX */}
           {metodo === "PIX" && (
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-700">Chave PIX</label>
@@ -112,6 +115,7 @@ export default function SaquePage() {
             </div>
           )}
 
+          {/* Carteira USDT */}
           {metodo === "USDT" && (
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-700">
@@ -128,6 +132,7 @@ export default function SaquePage() {
             </div>
           )}
 
+          {/* Botão */}
           <button
             type="submit"
             disabled={loading}
@@ -137,6 +142,7 @@ export default function SaquePage() {
           </button>
         </form>
 
+        {/* Mensagem */}
         {mensagem && (
           <p className="mt-4 text-center text-gray-800 font-medium">{mensagem}</p>
         )}
