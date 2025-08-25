@@ -1,20 +1,27 @@
 import { NextResponse } from "next/server";
 
-// POST: Efí vai chamar quando cair um PIX
+// 🔹 Recebe notificações de PIX da Efí
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    // Parse do corpo da requisição
+    const body: any = await req.json();
     console.log("📩 Webhook recebido da Efí:", body);
 
-    // ⚡ Aqui você pode salvar no banco ou enviar para fila
+    // TODO: Aqui você pode:
+    // - Salvar no banco de dados
+    // - Enviar para uma fila de processamento
+    // - Atualizar saldo do usuário
+    // Exemplo:
+    // await prisma.saque.create({ data: { ... } });
+
     return NextResponse.json({ ok: true }, { status: 200 });
-  } catch (err) {
-    console.error("❌ Erro ao processar webhook:", err);
-    return NextResponse.json({ ok: false }, { status: 500 });
+  } catch (err: any) {
+    console.error("❌ Erro ao processar webhook:", err.message || err);
+    return NextResponse.json({ ok: false, error: err.message || "Erro interno" }, { status: 500 });
   }
 }
 
-// GET opcional: só para teste rápido no navegador
+// 🔹 GET opcional para teste do endpoint
 export async function GET() {
   return NextResponse.json({ status: "Webhook ativo 🚀" }, { status: 200 });
 }

@@ -1,95 +1,92 @@
-// app/api/saque/route.ts
 import { NextResponse } from "next/server";
+import "dotenv/config";
+import https from "https";
+import fs from "fs";
+import axios from "axios";
 import { prisma } from "@/lib/prisma";
-import { StatusSaque } from "@prisma/client";
-import { efiSendPix } from "@/lib/efi";
+
+// 🔹 Certificado e credenciais obrigatórias
+const certPath = process.env.EFI_CERT_P12_PATH!;
+const certPassword = process.env.EFI_CERT_PASSWORD || "";
+const payerKey = process.env.EFI_PAYER_PIX_KEY!;
+const clientId = process.env.EFI_CLIENT_ID!;
+const clientSecret = process.env.EFI_CLIENT_SECRET!;
+const baseUrl = process.env.EFI_BASE_URL || "https://pix.api.efipay.com.br";
+
+// 🔹 Verifica se o certificado existe
+if (!fs.existsSync(certPath)) throw new Error(`❌ Certificado P12 não encontrado: ${certPath}`);
+
+// 🔹 Cria HTTPS Agent com mTLS
+const pfxBuffer = fs.readFileSync(certPath);
+const httpsAgent = new https.Agent({ pfx: pfxBuffer, passphrase: certPassword || undefined });
+
+interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  scope: string;
+}
 
 export async function POST(req: Request) {
   try {
     const { userId, valor, metodo, chavePix, carteiraUsdt } = await req.json();
 
-    if (!userId || !valor || !metodo) {
-      return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
-    }
+    // 🔹 Validações básicas
+    if (!valor || valor <= 0) throw new Error("Valor inválido");
+    if (metodo === "PIX" && !chavePix) throw new Error("Chave PIX inválida");
+    if (metodo === "USDT" && !carteiraUsdt) throw new Error("Carteira USDT inválida");
 
-    const usuario = await prisma.user.findUnique({
-      where: { id: Number(userId) },
-      select: { saldo: true },
+    // 🔹 Consulta usuário
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
+    if (user.saldo < valor) return NextResponse.json({ error: "Saldo insuficiente" }, { status: 400 });
+
+    // 🔹 Bloqueia saldo para saque
+    await prisma.user.update({
+      where: { id: userId },
+      data: { saldo: user.saldo - valor },
     });
 
-    if (!usuario) {
-      return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
+    // 🔹 Obtem token OAuth Efí
+    const tokenResp = await axios.post<TokenResponse>(
+      `${baseUrl}/oauth/token`,
+      "grant_type=client_credentials&scope=pix.write",
+      {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        httpsAgent,
+        auth: { username: clientId, password: clientSecret },
+      }
+    );
+
+    const accessToken = tokenResp.data.access_token;
+
+    // 🔹 Cria pagamento PIX (se método PIX)
+    let txId: string | null = null;
+    if (metodo === "PIX") {
+      const pixResp = await axios.post(
+        `${baseUrl}/v2/pix/${payerKey}/cob`,
+        { chave: chavePix, valor, infoAdicional: "Saque plataforma" },
+        { headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" }, httpsAgent }
+      );
+      txId = pixResp.data.txid || null;
     }
 
-    const valorNum = Number(valor);
-    if (isNaN(valorNum) || valorNum <= 0) {
-      return NextResponse.json({ error: "Valor inválido." }, { status: 400 });
-    }
-
-    if (Number(usuario.saldo) < valorNum) {
-      return NextResponse.json({ error: "Saldo insuficiente." }, { status: 400 });
-    }
-
-    // 1️⃣ Cria o registro de saque no banco com status pendente
-    const saque = await prisma.saque.create({
+    // 🔹 Salva saque no banco
+    await prisma.saque.create({
       data: {
-        userId: Number(userId),
-        valor: valorNum,
+        userId,
+        valor,
         tipo: metodo,
         chavePix: metodo === "PIX" ? chavePix : null,
-        txHash: metodo === "USDT" ? carteiraUsdt : null,
-        status: StatusSaque.pendente,
+        status: "PROCESSANDO",
+        criadoEm: new Date(),
+        txHash: txId,
       },
     });
 
-    // 2️⃣ Debita o saldo do usuário
-    await prisma.user.update({
-      where: { id: Number(userId) },
-      data: { saldo: Number(usuario.saldo) - valorNum },
-    });
-
-    // 3️⃣ Se for PIX, enviar via EFI
-    if (metodo === "PIX") {
-      try {
-        const respPix = await efiSendPix({
-          idEnvio: `saque-${saque.id}`,           // idempotência
-          amount: valorNum,
-          payerKey: process.env.EFI_PAYER_KEY!,   // sua chave PIX da EFI
-          recipientKey: chavePix,
-          description: `Saque de R$ ${valorNum} para usuário ${userId}`,
-        });
-
-        // 4️⃣ Atualiza o saque como concluído
-        await prisma.saque.update({
-          where: { id: saque.id },
-          data: {
-            status: StatusSaque.concluido,
-            txHash: respPix.e2eId,
-            processadoEm: new Date(),
-          },
-        });
-      } catch (err) {
-        console.error("Erro ao enviar PIX EFI:", err);
-
-        // 5️⃣ Se falhar, devolve o saldo e marca saque como rejeitado
-        await prisma.user.update({
-          where: { id: Number(userId) },
-          data: { saldo: { increment: valorNum } },
-        });
-
-        await prisma.saque.update({
-          where: { id: saque.id },
-          data: { status: StatusSaque.rejeitado, processadoEm: new Date() },
-        });
-
-        return NextResponse.json({ error: "Falha ao enviar PIX, saldo devolvido." }, { status: 500 });
-      }
-    }
-
-    // 6️⃣ Se USDT ou PIX concluído, retorna o saque
-    return NextResponse.json(saque, { status: 201 });
-  } catch (err) {
-    console.error("Erro ao criar pedido de saque:", err);
-    return NextResponse.json({ error: "Erro interno." }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  } catch (err: any) {
+    console.error("❌ Erro ao processar saque:", err.message || err);
+    return NextResponse.json({ error: err.message || "Erro desconhecido" }, { status: 500 });
   }
 }

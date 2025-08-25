@@ -16,20 +16,38 @@ export default function SaquePage() {
     setLoading(true);
     setMensagem("");
 
+    // 🔹 Validação básica antes de enviar
+    if (!valor || Number(valor) <= 0) {
+      setMensagem("❌ Informe um valor válido");
+      setLoading(false);
+      return;
+    }
+    if (metodo === "PIX" && !chavePix.trim()) {
+      setMensagem("❌ Informe uma chave PIX válida");
+      setLoading(false);
+      return;
+    }
+    if (metodo === "USDT" && !carteiraUsdt.trim()) {
+      setMensagem("❌ Informe uma carteira USDT válida");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/saque", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: 1,
-          valor,
+          userId: 1, // você pode substituir pelo ID do usuário logado
+          valor: Number(valor),
           metodo,
-          chavePix: metodo === "PIX" ? chavePix : null,
-          carteiraUsdt: metodo === "USDT" ? carteiraUsdt : null,
+          chavePix: metodo === "PIX" ? chavePix.trim() : null,
+          carteiraUsdt: metodo === "USDT" ? carteiraUsdt.trim() : null,
         }),
       });
 
       const data = await res.json();
+
       if (res.ok) {
         setMensagem("✅ Pedido de saque enviado com sucesso!");
         setValor("");
@@ -38,8 +56,9 @@ export default function SaquePage() {
       } else {
         setMensagem(`❌ Erro: ${data.error || "Falha ao solicitar saque"}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       setMensagem("❌ Erro inesperado. Tente novamente.");
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -48,14 +67,11 @@ export default function SaquePage() {
   return (
     <LayoutWrapper>
       <div className="max-w-md mx-auto mt-12 p-8 bg-white rounded-3xl shadow-xl border border-gray-100">
-        {/* Título */}
         <h1 className="text-3xl font-extrabold text-center text-gray-900 mb-6">
           Solicitar Saque
         </h1>
 
-        {/* Formulário */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Valor */}
           <div>
             <label className="block text-sm font-semibold mb-2 text-gray-700">Valor (R$)</label>
             <input
@@ -70,7 +86,6 @@ export default function SaquePage() {
             />
           </div>
 
-          {/* Método */}
           <div>
             <label className="block text-sm font-semibold mb-2 text-gray-700">Método de Saque</label>
             <select
@@ -83,7 +98,6 @@ export default function SaquePage() {
             </select>
           </div>
 
-          {/* Chave PIX */}
           {metodo === "PIX" && (
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-700">Chave PIX</label>
@@ -98,10 +112,11 @@ export default function SaquePage() {
             </div>
           )}
 
-          {/* Carteira USDT */}
           {metodo === "USDT" && (
             <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-700">Carteira USDT (BEP20 ou ERC20)</label>
+              <label className="block text-sm font-semibold mb-2 text-gray-700">
+                Carteira USDT (BEP20 ou ERC20)
+              </label>
               <input
                 type="text"
                 value={carteiraUsdt}
@@ -113,7 +128,6 @@ export default function SaquePage() {
             </div>
           )}
 
-          {/* Botão de enviar */}
           <button
             type="submit"
             disabled={loading}
@@ -123,7 +137,6 @@ export default function SaquePage() {
           </button>
         </form>
 
-        {/* Mensagem de retorno */}
         {mensagem && (
           <p className="mt-4 text-center text-gray-800 font-medium">{mensagem}</p>
         )}

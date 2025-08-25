@@ -4,17 +4,17 @@ import fs from "fs";
 import axios from "axios";
 
 // 🔹 Variáveis do .env
-const payerKey: string = process.env.EFI_PAYER_PIX_KEY as string;
-const baseUrl: string = process.env.EFI_BASE_URL || "https://pix.api.efipay.com.br";
-const clientId: string = process.env.EFI_CLIENT_ID as string;
-const clientSecret: string = process.env.EFI_CLIENT_SECRET as string;
-const certPath: string = process.env.EFI_CERT_P12_PATH as string;
-const certPassword: string = process.env.EFI_CERT_PASSWORD || "";
+const payerKey = process.env.EFI_PAYER_PIX_KEY!;
+const baseUrl = process.env.EFI_BASE_URL || "https://pix.api.efipay.com.br";
+const clientId = process.env.EFI_CLIENT_ID!;
+const clientSecret = process.env.EFI_CLIENT_SECRET!;
+const certPath = process.env.EFI_CERT_P12_PATH!;
+const certPassword = process.env.EFI_CERT_PASSWORD || "";
 
-// 🔹 URL final do webhook (sem barra no fim!)
-const webhookUrl: string = "https://77c67721417f.ngrok-free.app/api/efi/webhook";
+// 🔹 URL do webhook (Vercel)
+const webhookUrl = process.env.WEBHOOK_URL || "https://ziller.club/api/efi/webhook";
 
-// 🔹 Valida variáveis essenciais
+// 🔹 Validações
 if (!payerKey) throw new Error("❌ EFI_PAYER_PIX_KEY não definida no .env");
 if (!clientId || !clientSecret) throw new Error("❌ EFI_CLIENT_ID ou EFI_CLIENT_SECRET não definidos no .env");
 if (!fs.existsSync(certPath)) throw new Error(`❌ Certificado P12 não encontrado em: ${certPath}`);
@@ -23,12 +23,11 @@ if (!fs.existsSync(certPath)) throw new Error(`❌ Certificado P12 não encontra
 const pfxBuffer = fs.readFileSync(certPath);
 console.log("✅ Certificado carregado:", pfxBuffer.length, "bytes");
 
-// 🔹 Cria HTTPS Agent com mTLS
+// 🔹 HTTPS Agent com mTLS
 const httpsAgent = new https.Agent({
   pfx: pfxBuffer,
   passphrase: certPassword || undefined,
 });
-console.log("✅ HTTPS Agent criado");
 
 // 🔹 Interface do token OAuth
 interface TokenResponse {
@@ -38,25 +37,10 @@ interface TokenResponse {
   scope: string;
 }
 
-// 🔹 Função principal
 async function registerWebhook() {
   try {
-    console.log("🔹 Verificando URL do webhook:", webhookUrl);
-
-    // Testa a URL antes de registrar
-    const testResp = await axios.get(webhookUrl, { httpsAgent, validateStatus: () => true });
-    if (testResp.status >= 300 && testResp.status < 400) {
-      console.warn(`⚠️ Atenção: o webhook retornou redirecionamento ${testResp.status}. Ajuste a barra final na URL.`);
-    } else if (testResp.status !== 200) {
-      console.warn(`⚠️ Atenção: o webhook retornou status ${testResp.status}. Verifique se a rota Next.js está correta.`);
-    } else {
-      console.log("✅ Webhook acessível. Status:", testResp.status);
-    }
-
     console.log("🔹 Obtendo token OAuth...");
-
-    const tokenResp = await axios.post<TokenResponse>(
-      `${baseUrl}/oauth/token`,
+    const tokenResp = await axios.post(`${baseUrl}/oauth/token`,
       "grant_type=client_credentials&scope=pix.webhook.write",
       {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -65,12 +49,10 @@ async function registerWebhook() {
       }
     );
 
-    const accessToken = tokenResp.data.access_token;
-    if (!accessToken) throw new Error("❌ Não foi possível obter access token");
+    const accessToken = (tokenResp.data as TokenResponse).access_token;
     console.log("✅ Token obtido:", accessToken.substring(0, 10) + "...");
 
     console.log(`🔹 Registrando webhook na Efí: ${webhookUrl}`);
-
     const registerResp = await axios.put(
       `${baseUrl}/v2/webhook/${payerKey}`,
       { webhookUrl },
@@ -80,22 +62,15 @@ async function registerWebhook() {
           "Content-Type": "application/json",
         },
         httpsAgent,
-        validateStatus: (status) => status < 500,
+        validateStatus: () => true, // evita crash em 400/308
       }
     );
 
-    console.log("✅ Webhook registrado. Resposta completa:");
-    console.log(registerResp.status, registerResp.data);
+    console.log("✅ Webhook registrado. Status:", registerResp.status);
+    console.log(registerResp.data);
 
   } catch (err: any) {
-    if (axios.isAxiosError(err)) {
-      console.error("❌ Erro Axios:");
-      console.error("Status:", err.response?.status);
-      console.error("Data:", err.response?.data);
-      console.error("Mensagem:", err.message);
-    } else {
-      console.error("❌ Erro:", err.message || err);
-    }
+    console.error("❌ Erro ao registrar webhook:", err.response?.data || err.message);
   }
 }
 
