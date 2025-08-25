@@ -7,7 +7,6 @@ export async function POST(req: Request) {
     console.log("📩 Webhook recebido da Efí:", body);
 
     // ⚡ Aqui você pode salvar no banco ou enviar para fila
-    // Por enquanto só retorna sucesso
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (err) {
     console.error("❌ Erro ao processar webhook:", err);

@@ -41,6 +41,18 @@ interface TokenResponse {
 // 🔹 Função principal
 async function registerWebhook() {
   try {
+    console.log("🔹 Verificando URL do webhook:", webhookUrl);
+
+    // Testa a URL antes de registrar
+    const testResp = await axios.get(webhookUrl, { httpsAgent, validateStatus: () => true });
+    if (testResp.status >= 300 && testResp.status < 400) {
+      console.warn(`⚠️ Atenção: o webhook retornou redirecionamento ${testResp.status}. Ajuste a barra final na URL.`);
+    } else if (testResp.status !== 200) {
+      console.warn(`⚠️ Atenção: o webhook retornou status ${testResp.status}. Verifique se a rota Next.js está correta.`);
+    } else {
+      console.log("✅ Webhook acessível. Status:", testResp.status);
+    }
+
     console.log("🔹 Obtendo token OAuth...");
 
     const tokenResp = await axios.post<TokenResponse>(
@@ -68,7 +80,7 @@ async function registerWebhook() {
           "Content-Type": "application/json",
         },
         httpsAgent,
-        validateStatus: (status) => status < 500, // mostra erros sem crash
+        validateStatus: (status) => status < 500,
       }
     );
 
@@ -88,4 +100,3 @@ async function registerWebhook() {
 }
 
 registerWebhook();
-
