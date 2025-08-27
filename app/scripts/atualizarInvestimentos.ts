@@ -1,5 +1,4 @@
-// app/scripts/atualizarInvestimentos.ts
-import { prisma } from "./prisma";
+import { prisma } from "./prisma.js";
 import { Decimal } from "@prisma/client/runtime/library";
 
 async function atualizarInvestimentos() {
@@ -58,13 +57,18 @@ async function atualizarInvestimentos() {
         data: { rendimentoAcumulado: { increment: rendimento } },
       });
     } catch (err) {
-      console.error(`❌ Erro ao atualizar investimento ${investimento.id} do usuário ${investimento.userId}:`, err);
+      console.error(
+        `❌ Erro ao atualizar investimento ${investimento.id} do usuário ${investimento.userId}:`,
+        err
+      );
     }
   }
 
   console.log("🏁 Rendimentos atualizados com sucesso!");
+  await prisma.$disconnect();
 }
 
-atualizarInvestimentos()
-  .catch(console.error)
-  .finally(() => prisma.$disconnect());
+// 🚀 Executa se for chamado via CLI
+if (import.meta.url === `file://${process.argv[1]}`) {
+  atualizarInvestimentos();
+}

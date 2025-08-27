@@ -1,5 +1,4 @@
-// app/scripts/calcularRendimentosDiarios.ts
-import { prisma } from "./prisma";
+import { prisma } from "./prisma.js";
 import { Decimal } from "@prisma/client/runtime/library";
 import fs from "fs";
 
@@ -24,7 +23,7 @@ async function calcularRendimentosDiarios() {
     for (const user of usuarios) {
       try {
         const totalInvestido = user.investimentos.reduce(
-          (soma, inv) => soma.add(inv.valor).add(inv.rendimentoAcumulado),
+          (soma: Decimal, inv: typeof user.investimentos[number]) => soma.add(inv.valor).add(inv.rendimentoAcumulado),
           new Decimal(0)
         );
 
@@ -82,21 +81,19 @@ async function calcularRendimentosDiarios() {
           });
         }
 
-        // Adiciona rendimento ao saldo do usuário
         await prisma.user.update({
           where: { id: user.id },
           data: { saldo: { increment: rendimento } },
         });
 
-        // Atualiza rendimento acumulado do investimento dummy
         await prisma.investimento.update({
           where: { id: dummy.id },
           data: { rendimentoAcumulado: dummy.rendimentoAcumulado.add(rendimento) },
         });
 
-        // ------------------- Bônus residual -------------------
+        // Bônus residual
         if (user.indicadoPorId) {
-          const bonusResidualRate = new Decimal(0.05); // 5%
+          const bonusResidualRate = new Decimal(0.05);
           const bonusResidual = rendimento.mul(bonusResidualRate);
 
           await prisma.user.update({
@@ -104,11 +101,7 @@ async function calcularRendimentosDiarios() {
             data: { saldo: { increment: bonusResidual } },
           });
 
-          log(
-            `💎 Bonus residual: Usuário ${user.indicadoPorId} recebeu ${bonusResidual.toFixed(
-              2
-            )} USDT do rendimento do indicado ${user.id}`
-          );
+          log(`💎 Bonus residual: Usuário ${user.indicadoPorId} recebeu ${bonusResidual.toFixed(2)} USDT do indicado ${user.id}`);
         }
       } catch (err) {
         log(`❌ Erro ao processar usuário ${user.id}: ${err}`);
@@ -123,4 +116,7 @@ async function calcularRendimentosDiarios() {
   }
 }
 
-calcularRendimentosDiarios();
+// 🚀 Executa se for chamado via CLI
+if (import.meta.url === `file://${process.argv[1]}`) {
+  calcularRendimentosDiarios();
+}

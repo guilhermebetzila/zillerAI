@@ -1,5 +1,4 @@
-// app/scripts/rendimento.ts
-import { prisma } from "./prisma";
+import { prisma } from "./prisma.js";
 import { Decimal } from "@prisma/client/runtime/library";
 
 const TAXA_DIARIA = new Decimal(0.025);
@@ -11,7 +10,8 @@ export async function gerarRendimentoDiario() {
   for (const u of usuarios) {
     try {
       const totalInvestido = u.investimentos.reduce(
-        (soma, inv) => soma.add(inv.valor).add(inv.rendimentoAcumulado),
+        (soma: Decimal, inv: typeof u.investimentos[number]) =>
+          soma.add(inv.valor).add(inv.rendimentoAcumulado),
         new Decimal(0)
       );
 
@@ -83,10 +83,10 @@ export async function gerarRendimentoDiario() {
   }
 
   console.log("🏁 Rendimento diário processado com sucesso!");
+  await prisma.$disconnect();
 }
 
-if (require.main === module) {
-  gerarRendimentoDiario()
-    .catch(console.error)
-    .finally(() => prisma.$disconnect());
+// 🚀 Executa se for chamado via CLI
+if (import.meta.url === `file://${process.argv[1]}`) {
+  gerarRendimentoDiario();
 }
