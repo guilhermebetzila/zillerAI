@@ -1,0 +1,180 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------- MODELOS PRINCIPAIS -----------------
+
+model User {
+  id                 Int                  @id @default(autoincrement())
+  email              String               @unique
+  nome               String
+  senha              String
+  saldo              Decimal              @default(0)
+  valorInvestido     Decimal              @default(0)
+  indicadoPorId      Int?
+  cpf                String               @unique
+  pontos             Int                  @default(0)
+  graduacaoId        Int?
+  lastLogin          DateTime?
+  carteira           String?              @unique
+  photoUrl           String?              // <-- FOTO DE PERFIL
+  depositos          Deposito[]
+  investimentos      Investimento[]
+  onChainDeposits    OnChainDeposit[]
+  rendimentos        RendimentoDiario[]
+  saques             Saque[]
+  graduacao          Graduacao?           @relation(fields: [graduacaoId], references: [id])
+  withdrawalRequests WithdrawalRequest[]
+
+  // Indicação
+  indicadoPor User?  @relation("Indicacoes", fields: [indicadoPorId], references: [id])
+  indicados   User[] @relation("Indicacoes")
+
+  // 👇 Bônus residual acumulado
+  bonusResidual      Decimal              @default(0)
+}
+
+model Saque {
+  id           Int         @id @default(autoincrement())
+  userId       Int
+  user         User        @relation(fields: [userId], references: [id])
+  valor        Decimal
+  metodo       String      @default("PIX") // "PIX" ou "USDT"
+  chave        String?     // Chave PIX ou carteira USDT
+  descricao    String?
+  status       StatusSaque @default(pendente)
+  responseApi  String?     // JSON de resposta Binance Pay (para USDT)
+  criadoEm     DateTime    @default(now())
+  processadoEm DateTime?
+  endToEndId   String?     @unique
+  txHash       String?     @unique
+  txId         String?     // <-- novo campo para salvar txId do PIX
+}
+
+// ----------------- OUTROS MODELOS EXISTENTES -----------------
+
+model Deposito {
+  id       Int            @id @default(autoincrement())
+  valor    Decimal
+  criadoEm DateTime       @default(now())
+  userId   Int
+  status   StatusDeposito @default(pendente)
+  metodo   String         @default("manual")
+  user     User           @relation(fields: [userId], references: [id])
+}
+
+model Investimento {
+  id                  Int      @id @default(autoincrement())
+  valor               Decimal
+  criadoEm            DateTime @default(now())
+  userId              Int
+  percentualDiario    Decimal  @default(0.025)
+  rendimentoAcumulado Decimal  @default(0)
+  ativo               Boolean  @default(true)
+  limite              Decimal  @default(0)
+  user                User     @relation(fields: [userId], references: [id])
+  rendimentos         RendimentoDiario[]
+}
+
+model RendimentoDiario {
+  id             Int           @id @default(autoincrement())
+  userId         Int
+  investimentoId Int
+  dateKey        String        // ex: "2025-08-24"
+  base           Decimal
+  rate           Decimal
+  amount         Decimal
+  createdAt      DateTime      @default(now())
+  user           User          @relation(fields: [userId], references: [id])
+  investimento   Investimento  @relation(fields: [investimentoId], references: [id])
+
+  @@unique([userId, investimentoId, dateKey], name: "userId_investimentoId_dateKey")
+}
+
+model Graduacao {
+  id     Int    @id @default(autoincrement())
+  nome   String
+  pontos Int    @unique
+  users  User[]
+}
+
+model OnChainDeposit {
+  id           Int            @id @default(autoincrement())
+  txHash       String         @unique
+  from         String
+  to           String
+  amount       Decimal
+  createdAt    DateTime       @default(now())
+  confirmadoEm DateTime?
+  userId       Int?
+  status       StatusDeposito @default(pendente)
+  user         User?          @relation(fields: [userId], references: [id])
+}
+
+model WithdrawalRequest {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  amount      Decimal
+  pixKey      String
+  description String?
+  status      String   @default("PENDING")
+  idEnvio     String?
+  createdAt   DateTime @default(now())
+}
+
+// ----------------- ENUMS -----------------
+
+enum StatusDeposito {
+  pendente
+  confirmado
+  cancelado
+  aguardando
+  em_analise
+}
+
+enum StatusSaque {
+  pendente
+  processando
+  concluido
+  rejeitado
+}
+
+enum Venue {
+  ALPACA
+  OANDA
+  B3_SIM
+}
+
+enum SignalSide {
+  long
+  short
+  flat
+}
+
+enum Side {
+  buy
+  sell
+}
+
+enum OrderType {
+  market
+  limit
+  stop
+  stop_limit
+}
+
+enum OrderStatus {
+  new
+  accepted
+  partially_filled
+  filled
+  canceled
+  rejected
+}

@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npx prisma generate && npm run build",
+  "outputDirectory": ".next",
+  "crons": [
+    {
+      "path": "/api/depositos/usdt/verificar",
+      "schedule": "0 0 * * *"
+    },
+    {
+     "path": "/api/rendimentos/processar",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}
