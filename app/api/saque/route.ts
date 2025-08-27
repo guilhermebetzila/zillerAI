@@ -18,8 +18,10 @@ export async function POST(req: Request) {
       );
     }
 
+    const userIdNum = Number(userId); // ✅ força para inteiro
+
     // Busca usuário
-    const usuario = await prisma.user.findUnique({ where: { id: userId } });
+    const usuario = await prisma.user.findUnique({ where: { id: userIdNum } });
     if (!usuario) {
       return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
@@ -30,14 +32,14 @@ export async function POST(req: Request) {
 
     // Atualiza saldo do usuário
     await prisma.user.update({
-      where: { id: userId },
+      where: { id: userIdNum },
       data: { saldo: { decrement: valor } },
     });
 
     // Registra saque no banco
     const saque = await prisma.saque.create({
       data: {
-        userId,
+        userId: userIdNum, // ✅ garante inteiro
         valor,
         status: StatusSaque.pendente,
       },
