@@ -10,16 +10,16 @@ const p12Der = forge.util.decode64(p12Base64);
 const p12Asn1 = forge.asn1.fromDer(p12Der);
 const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, process.env.EFI_CERT_PASSWORD || "");
 
-// Chave privada
+// Extrair chave privada
 const keyBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })[forge.pki.oids.pkcs8ShroudedKeyBag];
-if (!keyBags || keyBags.length === 0) throw new Error("❌ Nenhuma chave privada encontrada");
+if (!keyBags || keyBags.length === 0) throw new Error("❌ Nenhuma chave privada encontrada no P12");
 const privateKeyPem = forge.pki.privateKeyToPem(keyBags[0].key);
 
-// Certificado
+// Extrair certificado
 const certObj = p12.getBags({ bagType: forge.pki.oids.certBag })[forge.pki.oids.certBag][0];
 const certPem = forge.pki.certificateToPem(certObj.cert);
 
-// HTTPS Agent
+// Configurar HTTPS Agent
 const httpsAgent = new https.Agent({
   cert: certPem,
   key: privateKeyPem,
@@ -60,9 +60,9 @@ export async function POST(req) {
     }
 
     const token = await getToken();
-
     console.log("🔑 Token gerado:", token);
 
+    // Rota oficial de saque PIX
     const url = `${process.env.EFI_BASE_URL}/pix/saques`;
     console.log("🌐 URL PIX Saque:", url);
 

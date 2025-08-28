@@ -30,7 +30,6 @@ export default function SaquePage() {
       setLoading(false);
       return;
     }
-
     if (!session?.user?.id) {
       setMensagem("❌ Usuário não autenticado. Faça login novamente.");
       setLoading(false);
@@ -51,7 +50,7 @@ export default function SaquePage() {
       const data = await res.json();
 
       if (res.ok) {
-        setMensagem("✅ Pedido de saque enviado com sucesso!");
+        setMensagem("✅ Saque PIX enviado com sucesso!");
         setTxId(data.txId || null);
         setStatus(data.status || null);
         setValor("");
