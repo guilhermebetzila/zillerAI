@@ -1,13 +1,13 @@
 'use client';
 
 import { motion } from "framer-motion";
-import MarketDemo from "@/components/MarketDemo";
-import Sidebar from "@/components/Sidebar";
-import GraficoFinanceiro from "@/components/GraficoFinanceiro";
-import GraficoFundamentalista from "@/components/GraficoFundamentalista";
-import GraficoDecisoes from "@/components/GraficoDecisoes";
-import GraficoBookOfertas from "@/components/GraficoBookOfertas";
-import LogsTempoReal from "@/components/LogsTempoReal";
+import MarketDemo from '@components/MarketDemo';
+import Sidebar from '@components/Sidebar';
+import GraficoFinanceiro from '@components/GraficoFinanceiro';
+import GraficoFundamentalista from '@components/GraficoFundamentalista';
+import GraficoDecisoes from '@components/GraficoDecisoes';
+import GraficoBookOfertas from '@components/GraficoBookOfertas';
+import LogsTempoReal from '@components/LogsTempoReal';
 
 export default function ZillerPage() {
   return (
