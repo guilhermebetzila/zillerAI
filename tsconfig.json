@@ -34,6 +34,6 @@
     "server.ts",
     "app/scripts/iniciarAutomatico.ts",
     "app/scripts/atualizarInvestimentos.ts"
-  ],
+, "app/api/efipay/saque/route.js"  ],
   "exclude": ["node_modules", "prisma/seed.ts"]
 }
