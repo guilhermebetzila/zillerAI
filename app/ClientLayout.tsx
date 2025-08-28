@@ -5,7 +5,11 @@ import { SessionProvider } from 'next-auth/react';
 import { AuthProvider } from '@context/AuthContext';
 import { SidebarProvider } from '@context/sidebar-context';
 
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
+interface ClientLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function ClientLayout({ children }: ClientLayoutProps) {
   return (
     <SessionProvider>
       <AuthProvider>
@@ -16,4 +20,3 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     </SessionProvider>
   );
 }
-
