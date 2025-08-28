@@ -40,7 +40,7 @@ async function getToken() {
       `${process.env.EFI_BASE_URL}/oauth/token`,
       new URLSearchParams({
         grant_type: "client_credentials",
-        scope: "cob.write cob.read pix.read pix.write" // ✅ solicita os escopos PIX corretos
+        scope: "pix.write pix.read" // ✅ escopos necessários para saque
       }).toString(),
       {
         httpsAgent,
