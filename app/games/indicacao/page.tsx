@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@ui/button'; // corrigido
 import { useAuth } from '@/hooks/context/AuthContext';
 import { useEffect, useState } from 'react';
 
@@ -36,12 +36,12 @@ export default function IndicacaoPage() {
 
   const copiarLink = async () => {
     try {
-      await navigator.clipboard.writeText(linkConvite)
-      alert('Link copiado com sucesso!')
+      await navigator.clipboard.writeText(linkConvite);
+      alert('Link copiado com sucesso!');
     } catch (err) {
-      alert('Erro ao copiar o link')
+      alert('Erro ao copiar o link');
     }
-  }
+  };
 
   return (
     <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 text-center">
@@ -78,5 +78,5 @@ export default function IndicacaoPage() {
         </Button>
       </div>
     </main>
-  )
+  );
 }
