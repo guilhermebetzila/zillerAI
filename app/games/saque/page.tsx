@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from "react";
-import LayoutWrapper from "@/components/LayoutWrapper";
-import { useSession } from "next-auth/react";
+import LayoutWrapper from '@components/LayoutWrapper';
+import { useSession } from 'next-auth/react';
 
 export default function SaquePage() {
   const { data: session } = useSession();
@@ -48,7 +48,6 @@ export default function SaquePage() {
       const data = await res.json();
       setRespostaEfipay(data);
 
-      // Interpretação amigável da resposta
       if (res.ok && data.success) {
         setMensagem("✅ Saque PIX enviado com sucesso!");
         setValor("");

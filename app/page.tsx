@@ -1,9 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@ui/button';
 import Image from 'next/image';
-import EsteiraSaques from '@/components/EsteiraSaques';
+import EsteiraSaques from '@components/EsteiraSaques';
 import { useState } from 'react';
 
 export default function Home() {

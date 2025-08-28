@@ -1,30 +1,30 @@
-'use client'
+'use client';
 
-import { useState } from "react"
-import { Carousel } from "@/components/ui/carousel" // OU use export default e remova as chaves
-import CategoryFilter from "@/components/ui/CategoryFilter" // Use o nome certo com maiúscula
+import { useState } from "react";
+import { Carousel } from '@ui/carousel';
+import CategoryFilter from '@ui/CategoryFilter';
 
 type User = {
-  id: number
-  name: string | null
-  email: string
-}
+  id: number;
+  name: string | null;
+  email: string;
+};
 
 export default function PerfilPage() {
-  const [selected, setSelected] = useState("Todos")
-  const categories = ["Todos", "Esporte", "Cassino", "Slots"]
+  const [selected, setSelected] = useState("Todos");
+  const categories = ["Todos", "Esporte", "Cassino", "Slots"];
 
   const [users] = useState<User[]>([
     { id: 1, name: "João", email: "joao@example.com" },
     { id: 2, name: null, email: "ana@example.com" },
     { id: 3, name: "Carlos", email: "carlos@example.com" },
-  ])
+  ]);
 
   return (
     <main className="p-6 text-white">
       <h1 className="text-3xl font-bold mb-6">👤 Lista de Usuários</h1>
 
-      <Carousel /> {/* Corrigido aqui */}
+      <Carousel />
 
       <CategoryFilter
         selected={selected}
@@ -49,5 +49,5 @@ export default function PerfilPage() {
         </ul>
       )}
     </main>
-  )
+  );
 }
