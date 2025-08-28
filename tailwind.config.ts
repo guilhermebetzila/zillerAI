@@ -1,4 +1,8 @@
-const config = {
+import type { Config } from "tailwindcss";
+import tailwindAnimate from "tailwindcss-animate";
+import scrollbarHide from "tailwind-scrollbar-hide";
+
+const config: Config = {
   darkMode: "class",
   content: [
     "./app/**/*.{ts,tsx}",
@@ -51,27 +55,16 @@ const config = {
           foreground: "hsl(var(--card-foreground))",
         },
         bet: {
-          green: {
-            700: "#15803d",
-            800: "#166534",
-          },
-          yellow: {
-            400: "#facc15",
-            500: "#eab308",
-          },
-          cyan: {
-            400: "#22d3ee",
-            600: "#0891b2",
-          },
+          green: { 700: "#15803d", 800: "#166534" },
+          yellow: { 400: "#facc15", 500: "#eab308" },
+          cyan: { 400: "#22d3ee", 600: "#0891b2" },
         },
       },
-
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
@@ -82,17 +75,13 @@ const config = {
           to: { height: "0" },
         },
       },
-
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
   },
-  plugins: [
-    require("tailwindcss-animate"),
-    require("tailwind-scrollbar-hide"),
-  ],
+  plugins: [tailwindAnimate, scrollbarHide],
 };
 
 export default config;

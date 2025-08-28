@@ -22,7 +22,6 @@ export default function SaquePage() {
     setTxId(null);
     setStatus(null);
 
-    // Validação básica
     if (!valor || Number(valor) <= 0) {
       setMensagem("❌ Informe um valor válido");
       setLoading(false);
@@ -46,22 +45,22 @@ export default function SaquePage() {
     }
 
     try {
-      const res = await fetch("/api/saque", {
+      const res = await fetch("/api/efipay/saque", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: session.user.id, // agora pega o usuário logado
+          userId: session.user.id,
           valor: Number(valor),
           metodo,
-          chavePix: metodo === "PIX" ? chavePix.trim() : null,
-          carteiraUsdt: metodo === "USDT" ? carteiraUsdt.trim() : null,
+          chavePix: metodo === "PIX" ? chavePix.trim() : undefined,
+          carteiraUsdt: metodo === "USDT" ? carteiraUsdt.trim() : undefined,
         }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        setMensagem(`✅ Pedido de saque enviado com sucesso!`);
+        setMensagem("✅ Pedido de saque enviado com sucesso!");
         setTxId(data.txId || null);
         setStatus(data.status || null);
         setValor("");
@@ -86,7 +85,6 @@ export default function SaquePage() {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Valor */}
           <div>
             <label className="block text-sm font-semibold mb-2 text-gray-700">Valor (R$)</label>
             <input
@@ -101,7 +99,6 @@ export default function SaquePage() {
             />
           </div>
 
-          {/* Método */}
           <div>
             <label className="block text-sm font-semibold mb-2 text-gray-700">Método de Saque</label>
             <select
@@ -114,7 +111,6 @@ export default function SaquePage() {
             </select>
           </div>
 
-          {/* Chave PIX */}
           {metodo === "PIX" && (
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-700">Chave PIX</label>
@@ -129,7 +125,6 @@ export default function SaquePage() {
             </div>
           )}
 
-          {/* Carteira USDT */}
           {metodo === "USDT" && (
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-700">
@@ -146,7 +141,6 @@ export default function SaquePage() {
             </div>
           )}
 
-          {/* Botão */}
           <button
             type="submit"
             disabled={loading}
@@ -156,7 +150,6 @@ export default function SaquePage() {
           </button>
         </form>
 
-        {/* Mensagens */}
         {mensagem && <p className="mt-4 text-center text-gray-800 font-medium">{mensagem}</p>}
         {txId && <p className="mt-2 text-center text-gray-700 font-medium">TXID: {txId}</p>}
         {status && <p className="mt-2 text-center text-gray-700 font-medium">Status: {status}</p>}

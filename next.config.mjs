@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  distDir: '.next',
+  distDir: ".next",
   trailingSlash: true,
   images: {
-    domains: ['blob.v0.dev'],
+    domains: ["blob.v0.dev"],
   },
   env: {
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
