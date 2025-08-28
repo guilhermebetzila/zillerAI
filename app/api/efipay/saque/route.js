@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import https from "https";
 import axios from "axios";
-import forge from "node-forge";
 
 // ========= FUNÇÃO PARA GERAR TOKEN =========
 async function gerarToken() {
@@ -39,7 +38,10 @@ export async function POST(req) {
     const { valor, chavePix, userId } = await req.json();
 
     if (!valor || !chavePix) {
-      return NextResponse.json({ error: "Valor e chave PIX são obrigatórios" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Valor e chave PIX são obrigatórios" },
+        { status: 400 }
+      );
     }
 
     const { token, httpsAgent } = await gerarToken();
@@ -74,6 +76,16 @@ export async function POST(req) {
     });
   } catch (error) {
     console.error("❌ Erro ao enviar PIX:", error.response?.data || error.message);
+
+    // Só loga se a chave não existir, mas não quebra o fluxo
+    if (error.response?.data?.nome === "nao_encontrado") {
+      return NextResponse.json({
+        success: false,
+        message: "Chave PIX não encontrada no Efipay",
+        details: error.response.data,
+      });
+    }
+
     return NextResponse.json(
       { error: "Erro ao processar saque PIX", details: error.response?.data || error.message },
       { status: 500 }
