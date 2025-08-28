@@ -15,9 +15,10 @@ const p12Buffer = fs.readFileSync(p12Path);
 const p12Asn1 = forge.asn1.fromDer(p12Buffer.toString("binary"));
 const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, process.env.EFI_CERT_PASSWORD || "");
 
-// Extrair chave privada
-const keyObj = p12.getBags({ bagType: forge.pki.oids.keyBag })[forge.pki.oids.keyBag][0];
-const privateKeyPem = forge.pki.privateKeyToPem(keyObj.key);
+// Extrair chave privada (corrigido para pkcs8ShroudedKeyBag)
+const keyBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })[forge.pki.oids.pkcs8ShroudedKeyBag];
+if (!keyBags || keyBags.length === 0) throw new Error("❌ Nenhuma chave privada encontrada no P12. Verifique a senha.");
+const privateKeyPem = forge.pki.privateKeyToPem(keyBags[0].key);
 
 // Extrair certificado
 const certObj = p12.getBags({ bagType: forge.pki.oids.certBag })[forge.pki.oids.certBag][0];
