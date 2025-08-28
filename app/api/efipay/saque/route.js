@@ -1,4 +1,3 @@
-// app/api/efipay/saque/route.js
 import https from "https";
 import axios from "axios";
 import forge from "node-forge";
@@ -32,18 +31,23 @@ const basicAuth = Buffer.from(`${process.env.EFI_CLIENT_ID}:${process.env.EFI_CL
 
 // Função para gerar token
 async function getToken() {
-  const response = await axios.post(
-    `${process.env.EFI_BASE_URL}/oauth/token`,
-    new URLSearchParams({ grant_type: "client_credentials", scope: "pix.write pix.read" }).toString(),
-    {
-      httpsAgent,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": `Basic ${basicAuth}`,
-      },
-    }
-  );
-  return response.data.access_token;
+  try {
+    const response = await axios.post(
+      `${process.env.EFI_BASE_URL}/oauth/token`,
+      new URLSearchParams({ grant_type: "client_credentials", scope: "pix.write pix.read" }).toString(),
+      {
+        httpsAgent,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Authorization": `Basic ${basicAuth}`,
+        },
+      }
+    );
+    return response.data.access_token;
+  } catch (err) {
+    console.error("❌ Erro ao gerar token Efipay:", err.response?.data || err.message);
+    throw new Error("Erro ao gerar token Efipay");
+  }
 }
 
 // Handler POST
@@ -57,8 +61,13 @@ export async function POST(req) {
 
     const token = await getToken();
 
+    console.log("🔑 Token gerado:", token);
+
+    const url = `${process.env.EFI_BASE_URL}/pix/saques`;
+    console.log("🌐 URL PIX Saque:", url);
+
     const saqueRes = await axios.post(
-      `${process.env.EFI_BASE_URL}/pix/saques`,
+      url,
       {
         valor,
         chave: chavePix,
@@ -69,6 +78,8 @@ export async function POST(req) {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       }
     );
+
+    console.log("✅ Resposta PIX:", saqueRes.data);
 
     return new Response(JSON.stringify({
       txId: saqueRes.data.txId || null,

@@ -7,9 +7,7 @@ import { useSession } from "next-auth/react";
 export default function SaquePage() {
   const { data: session } = useSession();
   const [valor, setValor] = useState("");
-  const [metodo, setMetodo] = useState<"PIX" | "USDT">("PIX");
   const [chavePix, setChavePix] = useState("");
-  const [carteiraUsdt, setCarteiraUsdt] = useState("");
   const [loading, setLoading] = useState(false);
   const [mensagem, setMensagem] = useState("");
   const [txId, setTxId] = useState<string | null>(null);
@@ -27,13 +25,8 @@ export default function SaquePage() {
       setLoading(false);
       return;
     }
-    if (metodo === "PIX" && !chavePix.trim()) {
+    if (!chavePix.trim()) {
       setMensagem("❌ Informe uma chave PIX válida");
-      setLoading(false);
-      return;
-    }
-    if (metodo === "USDT" && !carteiraUsdt.trim()) {
-      setMensagem("❌ Informe uma carteira USDT válida");
       setLoading(false);
       return;
     }
@@ -51,9 +44,7 @@ export default function SaquePage() {
         body: JSON.stringify({
           userId: session.user.id,
           valor: Number(valor),
-          metodo,
-          chavePix: metodo === "PIX" ? chavePix.trim() : undefined,
-          carteiraUsdt: metodo === "USDT" ? carteiraUsdt.trim() : undefined,
+          chavePix: chavePix.trim(),
         }),
       });
 
@@ -65,7 +56,6 @@ export default function SaquePage() {
         setStatus(data.status || null);
         setValor("");
         setChavePix("");
-        setCarteiraUsdt("");
       } else {
         setMensagem(`❌ Erro: ${data.error || "Falha ao solicitar saque"}`);
       }
@@ -81,7 +71,7 @@ export default function SaquePage() {
     <LayoutWrapper>
       <div className="max-w-md mx-auto mt-12 p-8 bg-white rounded-3xl shadow-xl border border-gray-100">
         <h1 className="text-3xl font-extrabold text-center text-gray-900 mb-6">
-          Solicitar Saque
+          Solicitar Saque PIX
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -100,46 +90,16 @@ export default function SaquePage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-2 text-gray-700">Método de Saque</label>
-            <select
-              value={metodo}
-              onChange={(e) => setMetodo(e.target.value as "PIX" | "USDT")}
+            <label className="block text-sm font-semibold mb-2 text-gray-700">Chave PIX</label>
+            <input
+              type="text"
+              value={chavePix}
+              onChange={(e) => setChavePix(e.target.value)}
+              required
               className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-black transition"
-            >
-              <option value="PIX">PIX</option>
-              <option value="USDT">USDT</option>
-            </select>
+              placeholder="Digite sua chave PIX"
+            />
           </div>
-
-          {metodo === "PIX" && (
-            <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-700">Chave PIX</label>
-              <input
-                type="text"
-                value={chavePix}
-                onChange={(e) => setChavePix(e.target.value)}
-                required
-                className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-black transition"
-                placeholder="Digite sua chave PIX"
-              />
-            </div>
-          )}
-
-          {metodo === "USDT" && (
-            <div>
-              <label className="block text-sm font-semibold mb-2 text-gray-700">
-                Carteira USDT (BEP20 ou ERC20)
-              </label>
-              <input
-                type="text"
-                value={carteiraUsdt}
-                onChange={(e) => setCarteiraUsdt(e.target.value)}
-                required
-                className="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-black transition"
-                placeholder="Digite a carteira que receberá os fundos"
-              />
-            </div>
-          )}
 
           <button
             type="submit"
