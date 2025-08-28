@@ -16,11 +16,12 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["app/*"],
       "@app/*": ["app/*"],
       "@components/*": ["components/*"],
       "@lib/*": ["lib/*"],
-      "@hooks/*": ["hooks/*"]
+      "@hooks/*": ["app/hooks/*"],      // ✅ agora aponta para app/hooks
+      "@context/*": ["app/hooks/context/*"]  // ✅ ajustado
     },
     "typeRoots": ["./types", "./node_modules/@types"],
     "plugins": [{ "name": "next" }]
