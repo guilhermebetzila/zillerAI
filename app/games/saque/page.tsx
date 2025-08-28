@@ -48,12 +48,15 @@ export default function SaquePage() {
       const data = await res.json();
       setRespostaEfipay(data);
 
-      if (res.ok) {
+      // Interpretação amigável da resposta
+      if (res.ok && data.success) {
         setMensagem("✅ Saque PIX enviado com sucesso!");
         setValor("");
         setChavePix("");
+      } else if (data.details?.nome === "nao_encontrado") {
+        setMensagem("❌ Chave PIX não encontrada na Efipay. Peça para o usuário cadastrar a chave na plataforma Efipay.");
       } else {
-        setMensagem(`❌ Erro: ${data.error || "Falha ao solicitar saque"}`);
+        setMensagem(`❌ Erro: ${data.error || data.message || "Falha ao solicitar saque"}`);
       }
     } catch (error: any) {
       setMensagem("❌ Erro inesperado. Tente novamente.");
@@ -110,7 +113,7 @@ export default function SaquePage() {
 
         {respostaEfipay && (
           <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700">
-            <strong>Resposta Efipay:</strong>
+            <strong>Resposta Efipay (detalhes técnicos):</strong>
             <pre className="overflow-x-auto">{JSON.stringify(respostaEfipay, null, 2)}</pre>
           </div>
         )}
