@@ -51,8 +51,8 @@ export default function SaquePage() {
 
       if (res.ok) {
         setMensagem("✅ Saque PIX enviado com sucesso!");
-        setTxId(data?.data?.txid || null);   // ← pega txid correto da API
-        setStatus(data?.data?.status || null); // ← pega status correto
+        setTxId(data.txId || null);
+        setStatus(data.status || null);
         setValor("");
         setChavePix("");
       } else {
