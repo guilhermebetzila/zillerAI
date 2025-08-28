@@ -2,31 +2,26 @@ import { NextResponse } from "next/server";
 import https from "https";
 import axios from "axios";
 import forge from "node-forge";
-import fs from "fs";
-import path from "path";
 
 // ========= FUNÇÃO PARA GERAR TOKEN =========
 async function gerarToken() {
-  // Caminho absoluto para o P12
-  const p12Path = path.resolve(process.cwd(), process.env.EFI_CERT_P12_PATH);
-  const p12Buffer = fs.readFileSync(p12Path);
+  // Decodifica P12 do Base64 (Vercel)
+  if (!process.env.EFI_CERT_P12_BASE64) {
+    throw new Error("Variável EFI_CERT_P12_BASE64 não definida no ambiente");
+  }
 
-  const p12Asn1 = forge.asn1.fromDer(p12Buffer.toString("binary"));
+  const p12Der = Buffer.from(process.env.EFI_CERT_P12_BASE64, "base64");
+  const p12Asn1 = forge.asn1.fromDer(p12Der.toString("binary"));
   const p12 = forge.pkcs12.pkcs12FromAsn1(
     p12Asn1,
     process.env.EFI_CERT_PASSWORD || ""
   );
 
-  const keyObj = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })
-    [forge.pki.oids.pkcs8ShroudedKeyBag][0].key;
-  const certObj = p12.getBags({ bagType: forge.pki.oids.certBag })
-    [forge.pki.oids.certBag][0].cert;
-
-  const privateKeyPem = forge.pki.privateKeyToPem(keyObj);
-  const certificatePem = forge.pki.certificateToPem(certObj);
+  const keyObj = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })[forge.pki.oids.pkcs8ShroudedKeyBag][0].key;
+  const certObj = p12.getBags({ bagType: forge.pki.oids.certBag })[forge.pki.oids.certBag][0].cert;
 
   const httpsAgent = new https.Agent({
-    pfx: p12Buffer,
+    pfx: p12Der,
     passphrase: process.env.EFI_CERT_PASSWORD || "",
     rejectUnauthorized: false, // ⚠️ true em produção
   });
@@ -66,7 +61,7 @@ export async function POST(req) {
     const { token, httpsAgent } = await gerarToken();
 
     const payload = {
-      valor: Number(valor).toFixed(2),
+      valor: Number(valor).toFixed(2), // string formatada
       favorecido: { chave: chavePix },
       infoPagador: `Saque do usuário ${userId || "N/A"}`,
     };
