@@ -3,10 +3,14 @@ import https from "https";
 import axios from "axios";
 import forge from "node-forge";
 import fs from "fs";
+import path from "path";
 
 // ========= FUNÇÃO PARA GERAR TOKEN =========
 async function gerarToken() {
-  const p12Buffer = fs.readFileSync(process.env.EFI_CERT_P12_PATH);
+  // Caminho absoluto para o P12
+  const p12Path = path.resolve(process.cwd(), process.env.EFI_CERT_P12_PATH);
+  const p12Buffer = fs.readFileSync(p12Path);
+
   const p12Asn1 = forge.asn1.fromDer(p12Buffer.toString("binary"));
   const p12 = forge.pkcs12.pkcs12FromAsn1(
     p12Asn1,
@@ -62,7 +66,7 @@ export async function POST(req) {
     const { token, httpsAgent } = await gerarToken();
 
     const payload = {
-      valor: Number(valor).toFixed(2), // string formatada
+      valor: Number(valor).toFixed(2),
       favorecido: { chave: chavePix },
       infoPagador: `Saque do usuário ${userId || "N/A"}`,
     };
