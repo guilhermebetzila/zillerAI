@@ -1,13 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  distDir: '.next', // diretório padrão de build
+  // Diretório de build
+  distDir: '.next',
 
+  // Forçar barra no final das URLs
   trailingSlash: true,
 
+  // Domínios permitidos para <Image />
   images: {
     domains: ['blob.v0.dev'],
   },
 
+  // Variáveis de ambiente públicas
   env: {
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
     NEXT_PUBLIC_SOCKET_URL: process.env.NEXT_PUBLIC_SOCKET_URL,
@@ -15,4 +19,5 @@ const nextConfig = {
   },
 };
 
+// Exportar configuração usando CommonJS
 module.exports = nextConfig;
