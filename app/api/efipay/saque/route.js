@@ -5,25 +5,18 @@ import forge from "node-forge";
 
 // ========= FUNÇÃO PARA GERAR TOKEN =========
 async function gerarToken() {
-  // Decodifica P12 do Base64 (Vercel)
   if (!process.env.EFI_CERT_P12_BASE64) {
     throw new Error("Variável EFI_CERT_P12_BASE64 não definida no ambiente");
   }
 
   const p12Der = Buffer.from(process.env.EFI_CERT_P12_BASE64, "base64");
   const p12Asn1 = forge.asn1.fromDer(p12Der.toString("binary"));
-  const p12 = forge.pkcs12.pkcs12FromAsn1(
-    p12Asn1,
-    process.env.EFI_CERT_PASSWORD || ""
-  );
-
-  const keyObj = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })[forge.pki.oids.pkcs8ShroudedKeyBag][0].key;
-  const certObj = p12.getBags({ bagType: forge.pki.oids.certBag })[forge.pki.oids.certBag][0].cert;
+  const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, process.env.EFI_CERT_PASSWORD || "");
 
   const httpsAgent = new https.Agent({
     pfx: p12Der,
     passphrase: process.env.EFI_CERT_PASSWORD || "",
-    rejectUnauthorized: false, // ⚠️ true em produção
+    rejectUnauthorized: false,
   });
 
   const tokenResponse = await axios.post(
@@ -42,8 +35,36 @@ async function gerarToken() {
   );
 
   console.log("🔑 Token gerado:", tokenResponse.data?.access_token);
-
   return { token: tokenResponse.data?.access_token, httpsAgent };
+}
+
+// ========= FUNÇÃO PARA CADASTRAR CHAVE SECUNDÁRIA =========
+async function cadastrarChaveSecundaria(chavePix, token, httpsAgent) {
+  const payload = {
+    chave: chavePix,
+    tipo: "EMAIL", // ou CPF/CNPJ conforme necessário
+    conta: { codigoBanco: "817388", tipo: "CONTA_CORRENTE" } // ajustes conforme sua conta
+  };
+
+  try {
+    const res = await axios.post(
+      `${process.env.EFI_BASE_URL}/v2/pix/conta-secundaria`,
+      payload,
+      {
+        httpsAgent,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("✅ Chave secundária cadastrada:", res.data);
+    return true;
+  } catch (error) {
+    console.error("❌ Erro ao cadastrar chave secundária:", error.response?.data || error.message);
+    return false;
+  }
 }
 
 // ========= ENDPOINT DE SAQUE =========
@@ -52,16 +73,16 @@ export async function POST(req) {
     const { valor, chavePix, userId } = await req.json();
 
     if (!valor || !chavePix) {
-      return NextResponse.json(
-        { error: "Valor e chave PIX são obrigatórios" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Valor e chave PIX são obrigatórios" }, { status: 400 });
     }
 
     const { token, httpsAgent } = await gerarToken();
 
+    // Primeiro cadastramos a chave secundária (garante que a conta existe)
+    await cadastrarChaveSecundaria(chavePix, token, httpsAgent);
+
     const payload = {
-      valor: Number(valor).toFixed(2), // string formatada
+      valor: Number(valor).toFixed(2),
       favorecido: { chave: chavePix },
       infoPagador: `Saque do usuário ${userId || "N/A"}`,
     };
@@ -90,12 +111,8 @@ export async function POST(req) {
     });
   } catch (error) {
     console.error("❌ Erro no saque PIX:", error.response?.data || error.message);
-
     return NextResponse.json(
-      {
-        error: "Erro ao processar saque PIX",
-        details: error.response?.data || error.message,
-      },
+      { error: "Erro ao processar saque PIX", details: error.response?.data || error.message },
       { status: 500 }
     );
   }
