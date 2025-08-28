@@ -1,25 +1,22 @@
 // app/api/efipay/saque/route.js
-import 'dotenv/config';
-import fs from "fs";
 import https from "https";
 import axios from "axios";
 import forge from "node-forge";
 
-// Caminho do certificado P12
-const p12Path = process.env.EFI_CERT_P12_PATH;
-if (!p12Path) throw new Error("❌ EFI_CERT_P12_PATH não definido no .env");
+// Decodificar P12 do ENV
+const p12Base64 = process.env.EFI_CERT_P12_BASE64;
+if (!p12Base64) throw new Error("❌ EFI_CERT_P12_BASE64 não definido");
 
-// Carregar P12
-const p12Buffer = fs.readFileSync(p12Path);
-const p12Asn1 = forge.asn1.fromDer(p12Buffer.toString("binary"));
+const p12Der = forge.util.decode64(p12Base64);
+const p12Asn1 = forge.asn1.fromDer(p12Der);
 const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, process.env.EFI_CERT_PASSWORD || "");
 
-// Extrair chave privada
+// Chave privada
 const keyBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })[forge.pki.oids.pkcs8ShroudedKeyBag];
-if (!keyBags || keyBags.length === 0) throw new Error("❌ Nenhuma chave privada encontrada no P12");
+if (!keyBags || keyBags.length === 0) throw new Error("❌ Nenhuma chave privada encontrada");
 const privateKeyPem = forge.pki.privateKeyToPem(keyBags[0].key);
 
-// Extrair certificado
+// Certificado
 const certObj = p12.getBags({ bagType: forge.pki.oids.certBag })[forge.pki.oids.certBag][0];
 const certPem = forge.pki.certificateToPem(certObj.cert);
 
@@ -49,7 +46,7 @@ async function getToken() {
   return response.data.access_token;
 }
 
-// Handler POST (somente PIX)
+// Handler POST
 export async function POST(req) {
   try {
     const { userId, valor, chavePix } = await req.json();
@@ -60,18 +57,18 @@ export async function POST(req) {
 
     const token = await getToken();
 
-    // Dados do saque PIX
-    const url = `${process.env.EFI_BASE_URL}/pix/saques`;
-    const body = {
-      valor,
-      chave: chavePix,
-      descricao: `Saque usuário ${userId}`,
-    };
-
-    const saqueRes = await axios.post(url, body, {
-      httpsAgent,
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    });
+    const saqueRes = await axios.post(
+      `${process.env.EFI_BASE_URL}/pix/saques`,
+      {
+        valor,
+        chave: chavePix,
+        descricao: `Saque usuário ${userId}`,
+      },
+      {
+        httpsAgent,
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      }
+    );
 
     return new Response(JSON.stringify({
       txId: saqueRes.data.txId || null,
