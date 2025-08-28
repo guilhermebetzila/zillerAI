@@ -1,4 +1,5 @@
 'use client';
+
 import { useState } from "react";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { useSession } from "next-auth/react";
@@ -9,15 +10,13 @@ export default function SaquePage() {
   const [chavePix, setChavePix] = useState("");
   const [loading, setLoading] = useState(false);
   const [mensagem, setMensagem] = useState("");
-  const [txId, setTxId] = useState<string | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
+  const [respostaEfipay, setRespostaEfipay] = useState<any>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMensagem("");
-    setTxId(null);
-    setStatus(null);
+    setRespostaEfipay(null);
 
     if (!valor || Number(valor) <= 0) {
       setMensagem("❌ Informe um valor válido");
@@ -47,11 +46,10 @@ export default function SaquePage() {
       });
 
       const data = await res.json();
+      setRespostaEfipay(data);
 
       if (res.ok) {
         setMensagem("✅ Saque PIX enviado com sucesso!");
-        setTxId(data.txId || null);
-        setStatus(data.status || null);
         setValor("");
         setChavePix("");
       } else {
@@ -109,8 +107,13 @@ export default function SaquePage() {
         </form>
 
         {mensagem && <p className="mt-4 text-center text-gray-800 font-medium">{mensagem}</p>}
-        {txId && <p className="mt-2 text-center text-gray-700 font-medium">TXID: {txId}</p>}
-        {status && <p className="mt-2 text-center text-gray-700 font-medium">Status: {status}</p>}
+
+        {respostaEfipay && (
+          <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700">
+            <strong>Resposta Efipay:</strong>
+            <pre className="overflow-x-auto">{JSON.stringify(respostaEfipay, null, 2)}</pre>
+          </div>
+        )}
       </div>
     </LayoutWrapper>
   );

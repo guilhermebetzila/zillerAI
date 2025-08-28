@@ -10,9 +10,6 @@ async function gerarToken() {
   }
 
   const p12Der = Buffer.from(process.env.EFI_CERT_P12_BASE64, "base64");
-  const p12Asn1 = forge.asn1.fromDer(p12Der.toString("binary"));
-  const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, process.env.EFI_CERT_PASSWORD || "");
-
   const httpsAgent = new https.Agent({
     pfx: p12Der,
     passphrase: process.env.EFI_CERT_PASSWORD || "",
@@ -28,43 +25,12 @@ async function gerarToken() {
         password: process.env.EFI_CLIENT_SECRET,
       },
       httpsAgent,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
     }
   );
 
   console.log("🔑 Token gerado:", tokenResponse.data?.access_token);
   return { token: tokenResponse.data?.access_token, httpsAgent };
-}
-
-// ========= FUNÇÃO PARA CADASTRAR CHAVE SECUNDÁRIA =========
-async function cadastrarChaveSecundaria(chavePix, token, httpsAgent) {
-  const payload = {
-    chave: chavePix,
-    tipo: "EMAIL", // ou CPF/CNPJ conforme necessário
-    conta: { codigoBanco: "817388", tipo: "CONTA_CORRENTE" } // ajustes conforme sua conta
-  };
-
-  try {
-    const res = await axios.post(
-      `${process.env.EFI_BASE_URL}/v2/pix/conta-secundaria`,
-      payload,
-      {
-        httpsAgent,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    console.log("✅ Chave secundária cadastrada:", res.data);
-    return true;
-  } catch (error) {
-    console.error("❌ Erro ao cadastrar chave secundária:", error.response?.data || error.message);
-    return false;
-  }
 }
 
 // ========= ENDPOINT DE SAQUE =========
@@ -78,17 +44,14 @@ export async function POST(req) {
 
     const { token, httpsAgent } = await gerarToken();
 
-    // Primeiro cadastramos a chave secundária (garante que a conta existe)
-    await cadastrarChaveSecundaria(chavePix, token, httpsAgent);
-
     const payload = {
       valor: Number(valor).toFixed(2),
       favorecido: { chave: chavePix },
       infoPagador: `Saque do usuário ${userId || "N/A"}`,
     };
 
-    console.log("🌐 URL PIX Saque:", `${process.env.EFI_BASE_URL}/v2/pix/envio`);
-    console.log("📦 Payload PIX Saque:", payload);
+    console.log("🌐 Tentando enviar PIX para Efipay...");
+    console.log("📦 Payload PIX:", payload);
 
     const saqueRes = await axios.post(
       `${process.env.EFI_BASE_URL}/v2/pix/envio`,
@@ -102,7 +65,7 @@ export async function POST(req) {
       }
     );
 
-    console.log("✅ Saque PIX enviado:", saqueRes.data);
+    console.log("✅ Resposta Efipay:", saqueRes.data);
 
     return NextResponse.json({
       success: true,
@@ -110,7 +73,7 @@ export async function POST(req) {
       status: saqueRes.data.status || "PENDING",
     });
   } catch (error) {
-    console.error("❌ Erro no saque PIX:", error.response?.data || error.message);
+    console.error("❌ Erro ao enviar PIX:", error.response?.data || error.message);
     return NextResponse.json(
       { error: "Erro ao processar saque PIX", details: error.response?.data || error.message },
       { status: 500 }
