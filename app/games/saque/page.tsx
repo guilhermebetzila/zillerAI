@@ -16,7 +16,7 @@ export default function SaquePage() {
   useEffect(() => {
     async function fetchSaldo() {
       try {
-        const res = await axios.get("/api/usuario/saldo"); // ajuste a rota conforme seu backend
+        const res = await axios.get("/api/auth/usuario/saldo"); // ✅ rota ajustada
         setSaldo(res.data.saldo);
       } catch (err) {
         console.error("Erro ao buscar saldo:", err);
@@ -25,6 +25,7 @@ export default function SaquePage() {
     fetchSaldo();
   }, []);
 
+  // Salvar chave Pix ou carteira USDT
   const handleSalvarMetodo = async () => {
     try {
       if (metodo === "pix" && !pix) {
@@ -36,18 +37,19 @@ export default function SaquePage() {
         return;
       }
 
-      await axios.post("/api/usuario/cadastrar-metodo", {
+      await axios.post("/api/auth/usuario/cadastrar-metodo", {
         metodo,
         valor: metodo === "pix" ? pix : usdt,
-      });
+      }); // ✅ rota ajustada
 
       alert(`${metodo.toUpperCase()} cadastrado com sucesso!`);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error(err.response?.data || err.message);
       alert("Erro ao cadastrar método de saque.");
     }
   };
 
+  // Solicitar saque
   const handleSaque = async () => {
     if (!valor || Number(valor) <= 0) {
       alert("Digite um valor válido para sacar.");
@@ -60,7 +62,10 @@ export default function SaquePage() {
     }
 
     try {
-      await axios.post("/api/saque", { valor: Number(valor), metodo });
+      await axios.post("/api/auth/usuario/saque", {  // ✅ deixei também coerente com /auth
+        valor: Number(valor),
+        metodo,
+      });
       setSucesso(true);
       setSaldo((prev) => prev - Number(valor));
     } catch (err) {
