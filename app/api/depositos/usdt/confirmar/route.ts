@@ -1,12 +1,12 @@
 // app/api/depositos/usdt/confirmar/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@lib/prisma"; // ✅ alias corrigido
 import { ethers } from "ethers";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@app/api/auth/[...nextauth]/authOptions"; // ✅ alias corrigido
 
 const RPC_URL = process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org/";
-const USDT_BEP20 = "0x55d398326f99059fF775485246999027B3197955"; // USDT (BEP20) na BSC
+const USDT_BEP20 = "0x55d398326f99059fF775485246999027B3197955"; // USDT BEP20
 const DECIMALS = 18;
 const MAIN_WALLET = (process.env.MAIN_WALLET || "").toLowerCase();
 
@@ -101,17 +101,15 @@ export async function POST(req: Request) {
             txHash: hash,
             from: decoded.from.toLowerCase(),
             to: toAddr,
-            amount: amountStr,       // Decimal (string)
+            amount: amountStr, // Decimal (string)
             userId: currentUserId,
             status: "confirmado",
-            // se você adicionou o campo no schema:
-            // confirmadoEm: new Date(),
           },
         }),
         prisma.deposito.create({
           data: {
             userId: currentUserId,
-            valor: amountStr,        // Decimal (string)
+            valor: amountStr,
             status: "confirmado",
             metodo: "usdt",
           },
@@ -141,24 +139,19 @@ export async function POST(req: Request) {
       }
 
       // status ainda não confirmado → confirma e credita saldo
-      const updated = await prisma.$transaction(async (tx) => {
+      const updated = await prisma.$transaction(async (tx: typeof prisma) => {
         const up = await tx.onChainDeposit.update({
           where: { id: existente.id },
           data: {
             status: "confirmado",
             userId: existente.userId ?? currentUserId,
-            // confirmadoEm: new Date(),
           },
         });
 
-        // para evitar crédito duplo, só incrementa agora (na transição para confirmado)
         await tx.user.update({
           where: { id: (existente.userId ?? currentUserId) as number },
           data: { saldo: { increment: amount } },
         });
-
-        // opcional: criar um registro de Deposito aqui pode gerar duplicidade (não há txHash nele).
-        // por segurança, não criamos o Deposito quando já havia OnChainDeposit prévio.
 
         return up;
       });

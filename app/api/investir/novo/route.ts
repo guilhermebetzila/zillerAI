@@ -1,9 +1,10 @@
 // app/api/investir/novo/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@lib/prisma"; // ✅ caminho corrigido
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
-import { Prisma } from "@prisma/client";
+import { authOptions } from "@app/api/auth/[...nextauth]/authOptions"; // ✅ caminho corrigido
+import Decimal from "decimal.js";
+import type { Prisma } from "@prisma/client";
 
 export async function POST(req: Request) {
   try {
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Valor inválido." }, { status: 400 });
     }
 
-    const valorDecimal = new Prisma.Decimal(valorNumber);
+    const valorDecimal = new Decimal(valorNumber);
 
     // 🔎 Busca usuário
     const usuario = await prisma.user.findUnique({
@@ -32,8 +33,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
     }
 
-    const saldoAtual = usuario.saldo ?? new Prisma.Decimal(0);
-    const valorInvestidoAtual = usuario.valorInvestido ?? new Prisma.Decimal(0);
+    const saldoAtual = new Decimal(usuario.saldo ?? 0);
+    const valorInvestidoAtual = new Decimal(usuario.valorInvestido ?? 0);
 
     // ❌ Verifica saldo
     if (saldoAtual.lessThan(valorDecimal)) {
@@ -47,10 +48,10 @@ export async function POST(req: Request) {
     }
 
     // 💸 Cria investimento e atualiza saldo + valorInvestido em transação
-    const investimento = await prisma.$transaction(async (tx) => {
+    const investimento = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const novoInvestimento = await tx.investimento.create({
         data: {
-          valor: valorDecimal,
+          valor: valorDecimal.toNumber(),
           userId: usuario.id,
         },
       });
@@ -58,8 +59,8 @@ export async function POST(req: Request) {
       await tx.user.update({
         where: { id: usuario.id },
         data: {
-          saldo: saldoAtual.minus(valorDecimal),
-          valorInvestido: valorInvestidoAtual.plus(valorDecimal),
+          saldo: saldoAtual.minus(valorDecimal).toNumber(),
+          valorInvestido: valorInvestidoAtual.plus(valorDecimal).toNumber(),
         },
       });
 
@@ -71,7 +72,7 @@ export async function POST(req: Request) {
         message: "✅ Investimento realizado com sucesso!",
         investimento: {
           ...investimento,
-          valor: investimento.valor.toString(), // 🔄 Converte Decimal → string
+          valor: new Decimal(investimento.valor ?? 0).toString(), // converte para string
         },
       },
       { status: 201 }

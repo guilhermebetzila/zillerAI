@@ -1,28 +1,42 @@
 // app/api/investir/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
-import { Prisma } from "@prisma/client";
+import { prisma } from "../../../lib/prisma"; // caminho relativo
+import { authOptions } from "../auth/[...nextauth]/authOptions"; // caminho relativo
+import Decimal from "decimal.js";
 
+// Tipos auxiliares inferidos
+type InvestimentoType = {
+  id: string;
+  valor: number | null;
+  percentualDiario: number | null;
+  rendimentoAcumulado: number | null;
+  criadoEm: Date;
+  ativo: boolean;
+};
+
+type RendimentoType = {
+  id: string;
+  dateKey: string;
+  base: number | null;
+  rate: number | null;
+  amount: number | null;
+  createdAt: Date;
+};
+
+// GET: retorna saldo, investimentos e rendimentos do usuário logado
 export async function GET() {
   try {
-    // 🔒 Sessão
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
     }
 
-    // 🔎 Usuário + investimentos + rendimentos
     const usuario = await prisma.user.findUnique({
       where: { email: session.user.email },
       include: {
-        investimentos: {
-          orderBy: { criadoEm: "desc" },
-        },
-        rendimentos: {
-          orderBy: { createdAt: "desc" }, // ✅ corrigido
-        },
+        investimentos: { orderBy: { criadoEm: "desc" } },
+        rendimentos: { orderBy: { createdAt: "desc" } },
       },
     });
 
@@ -31,33 +45,35 @@ export async function GET() {
     }
 
     // 💰 Total investido (somente ativos)
-    const valorInvestidoDecimal = usuario.investimentos
+    const valorInvestido = (usuario.investimentos as InvestimentoType[])
       .filter((i) => i.ativo)
-      .reduce(
-        (acc, i) => acc.plus(i.valor ?? new Prisma.Decimal(0)),
-        new Prisma.Decimal(0)
-      );
+      .reduce((acc: Decimal, i) => acc.add(new Decimal(i.valor ?? 0)), new Decimal(0));
 
-    // 📦 Resposta formatada
+    // 📦 Formatar investimentos
+    const investimentos = (usuario.investimentos as InvestimentoType[]).map((i) => ({
+      id: i.id,
+      valor: new Decimal(i.valor ?? 0).toString(),
+      percentualDiario: new Decimal(i.percentualDiario ?? 0).toString(),
+      rendimentoAcumulado: new Decimal(i.rendimentoAcumulado ?? 0).toString(),
+      criadoEm: i.criadoEm,
+      ativo: i.ativo,
+    }));
+
+    // 📦 Formatar rendimentos
+    const rendimentos = (usuario.rendimentos as RendimentoType[]).map((r) => ({
+      id: r.id,
+      dateKey: r.dateKey,
+      base: new Decimal(r.base ?? 0).toString(),
+      rate: new Decimal(r.rate ?? 0).toString(),
+      amount: new Decimal(r.amount ?? 0).toString(),
+      createdAt: r.createdAt,
+    }));
+
     return NextResponse.json({
-      saldo: usuario.saldo?.toString() ?? "0",
-      valorInvestido: valorInvestidoDecimal.toString(),
-      investimentos: usuario.investimentos.map((i) => ({
-        id: i.id,
-        valor: i.valor?.toString() ?? "0",
-        percentualDiario: i.percentualDiario?.toString() ?? "0",
-        rendimentoAcumulado: i.rendimentoAcumulado?.toString() ?? "0",
-        criadoEm: i.criadoEm,
-        ativo: i.ativo,
-      })),
-      rendimentos: usuario.rendimentos.map((r) => ({
-        id: r.id,
-        dateKey: r.dateKey,
-        base: r.base?.toString() ?? "0",
-        rate: r.rate?.toString() ?? "0",
-        amount: r.amount?.toString() ?? "0",
-        createdAt: r.createdAt, // ✅ corrigido
-      })),
+      saldo: new Decimal(usuario.saldo ?? 0).toString(),
+      valorInvestido: valorInvestido.toString(),
+      investimentos,
+      rendimentos,
     });
   } catch (error) {
     console.error("❌ Erro em /api/investir:", error);

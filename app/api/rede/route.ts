@@ -1,7 +1,8 @@
+// app/api/rede/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions"; // ✅ garante que pega o provider certo
-import { prisma } from "@/lib/prisma";
+import { authOptions } from "../auth/[...nextauth]/authOptions"; // caminho relativo
+import { prisma } from "../../../lib/prisma"; // caminho ajustado para lib/prisma.ts
 
 export type UsuarioArvore = {
   id: number;
@@ -21,7 +22,7 @@ async function carregarArvore(userId: number): Promise<UsuarioArvore | null> {
   if (!user) return null;
 
   const filhos = await Promise.all(
-    user.indicados.map((ind) => carregarArvore(ind.id))
+    user.indicados.map((ind: { id: number }) => carregarArvore(ind.id))
   );
 
   return {
@@ -41,7 +42,6 @@ function contarDiretosEIndiretos(arvore: UsuarioArvore | null) {
 
   function contarTodosIndiretos(nodes: UsuarioArvore[]): number {
     return nodes.reduce((acc, node) => {
-      // soma todos os descendentes recursivamente
       return acc + node.indicados.length + contarTodosIndiretos(node.indicados);
     }, 0);
   }
@@ -69,16 +69,12 @@ export async function GET(req: Request) {
     });
 
     if (!usuario) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
     const arvore = await carregarArvore(usuario.id);
     const { diretos, indiretos } = contarDiretosEIndiretos(arvore);
 
-    // ✅ Regra: cada indicado (direto e indireto) vale 5 pontos
     const pontosDiretos = diretos * 5;
     const pontosIndiretos = indiretos * 5;
     const pontosTotais = pontosDiretos + pontosIndiretos;
@@ -90,7 +86,7 @@ export async function GET(req: Request) {
       pontosDiretos,
       pontosIndiretos,
       pontosTotais,
-      arvore, // devolve a árvore completa também
+      arvore,
     });
   } catch (error) {
     console.error("Erro API rede:", error);

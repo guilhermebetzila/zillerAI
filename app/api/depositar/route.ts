@@ -1,6 +1,7 @@
+// app/api/depositar/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { prisma } from "@/lib/prisma"; // ✅ usa a instância única
+import { prisma } from "@lib/prisma"; // ✅ alias corrigido
 
 export async function GET(req: NextRequest) {
   try {

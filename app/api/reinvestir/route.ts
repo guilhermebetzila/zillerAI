@@ -1,8 +1,8 @@
 // app/api/reinvestir/route.ts
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../../../lib/prisma"; // caminho relativo correto
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "../auth/[...nextauth]/authOptions"; // caminho relativo ajustado
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +11,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
-    // Buscar usuário logado
     const usuario = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
@@ -29,7 +28,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Saldo insuficiente para reinvestir" }, { status: 400 });
     }
 
-    // Reinvestimento: zera saldo e cria novo investimento
     await prisma.$transaction([
       prisma.user.update({
         where: { id: usuario.id },

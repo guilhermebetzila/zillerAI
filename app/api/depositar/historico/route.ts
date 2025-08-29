@@ -1,7 +1,7 @@
 // app/api/depositar/historico/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@lib/prisma"; // ✅ alias corrigido
 
 export async function GET(req: NextRequest) {
   try {

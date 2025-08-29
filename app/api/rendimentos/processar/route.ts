@@ -1,7 +1,9 @@
+// app/api/rendimentos/processar/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import prisma from "../../../../lib/prisma"; // caminho relativo real
+import Decimal from "decimal.js";
 
+// Função principal para aplicar rendimentos
 async function aplicarRendimentos() {
   const usuarios = await prisma.user.findMany({
     include: { investimentos: true },
@@ -12,16 +14,15 @@ async function aplicarRendimentos() {
 
   let totalAplicado = 0;
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: typeof prisma) => {
     for (const usuario of usuarios) {
       for (const inv of usuario.investimentos) {
         if (!inv.ativo) continue;
 
         const base = Number(inv.valor);
-        const rate = 0.025; // 2.5% ao dia
+        const rate = 0.025;
         const amount = base * rate;
 
-        // 🔎 Verifica se já aplicou hoje
         const existe = await tx.rendimentoDiario.findUnique({
           where: {
             userId_investimentoId_dateKey: {
@@ -33,28 +34,23 @@ async function aplicarRendimentos() {
         });
         if (existe) continue;
 
-        // 🔹 Cria registro no histórico
         await tx.rendimentoDiario.create({
           data: {
             userId: usuario.id,
             investimentoId: inv.id,
             dateKey,
-            base: new Prisma.Decimal(base),
-            rate: new Prisma.Decimal(rate),
-            amount: new Prisma.Decimal(amount),
+            base: new Decimal(base),
+            rate: new Decimal(rate),
+            amount: new Decimal(amount),
           },
         });
 
-        // 🔹 Atualiza saldo do usuário
         await tx.user.update({
           where: { id: usuario.id },
           data: { saldo: { increment: amount } },
         });
 
         totalAplicado += amount;
-        console.log(
-          `💰 ${amount.toFixed(2)} USDT aplicados ao usuário ${usuario.id}, investimento ${inv.id}`
-        );
       }
     }
   });
@@ -62,7 +58,7 @@ async function aplicarRendimentos() {
   return totalAplicado;
 }
 
-// GET ou POST pode chamar a mesma função
+// GET
 export async function GET() {
   try {
     const total = await aplicarRendimentos();
@@ -71,11 +67,12 @@ export async function GET() {
       totalAplicado: total,
     });
   } catch (error) {
-    console.error("Erro ao atualizar rendimentos:", error);
+    console.error(error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
 
+// POST
 export async function POST() {
   try {
     const total = await aplicarRendimentos();
@@ -84,7 +81,7 @@ export async function POST() {
       totalAplicado: total,
     });
   } catch (error) {
-    console.error("Erro ao atualizar rendimentos:", error);
+    console.error(error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }

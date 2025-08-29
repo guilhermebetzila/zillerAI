@@ -1,8 +1,18 @@
 // app/api/investir/rendimentos/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../../../../lib/prisma"; // caminho relativo correto
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "../../auth/[...nextauth]/authOptions"; // caminho relativo correto
+
+// Tipo auxiliar para tipar rendimentos
+type RendimentoType = {
+  id: string;
+  dateKey: string;
+  base: number | null;
+  rate: number | null;
+  amount: number | null;
+  createdAt: Date;
+};
 
 export async function GET() {
   try {
@@ -19,7 +29,7 @@ export async function GET() {
       where: { email },
       include: {
         rendimentos: {
-          orderBy: { createdAt: "desc" }, // ✅ corrigido
+          orderBy: { createdAt: "desc" },
         },
       },
     });
@@ -29,13 +39,13 @@ export async function GET() {
     }
 
     // 🔄 Mapeia rendimentos convertendo Decimal para string
-    const rendimentos = usuario.rendimentos.map((r) => ({
+    const rendimentos = (usuario.rendimentos as RendimentoType[]).map((r) => ({
       id: r.id,
       dateKey: r.dateKey,
       base: r.base?.toString() ?? "0",
       rate: r.rate?.toString() ?? "0",
       amount: r.amount?.toString() ?? "0",
-      createdAt: r.createdAt, // ✅ ajustado para bater com schema
+      createdAt: r.createdAt,
     }));
 
     return NextResponse.json({

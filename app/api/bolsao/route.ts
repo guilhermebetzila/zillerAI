@@ -1,6 +1,6 @@
 // app/api/bolsao/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@lib/prisma"; // ✅ usa o alias definido no tsconfig
 
 export async function GET() {
   try {

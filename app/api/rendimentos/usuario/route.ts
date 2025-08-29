@@ -1,16 +1,16 @@
 // app/api/rendimentos/usuario/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "../../../../lib/prisma"; // caminho relativo real para o Prisma
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
-import { Prisma } from "@prisma/client";
+import { authOptions } from "../../auth/[...nextauth]/authOptions"; // caminho relativo real
+import Decimal from "decimal.js";
 
+// GET: retorna o rendimento do usuário no dia
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const queryUserId = searchParams.get("userId");
 
-    // Pega usuário logado (caso não passe query param)
     const session = await getServerSession(authOptions).catch(() => null);
     const sessionId = (session?.user as any)?.id;
 
@@ -21,7 +21,6 @@ export async function GET(req: Request) {
 
     const hoje = new Date().toISOString().split("T")[0];
 
-    // Soma todos os rendimentos do dia
     const rendimentoHoje = await prisma.rendimentoDiario.aggregate({
       where: { userId, dateKey: hoje },
       _sum: { amount: true },
@@ -29,7 +28,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       userId,
-      rendimento: Number(rendimentoHoje._sum.amount ?? 0),
+      rendimento: new Decimal(rendimentoHoje._sum.amount ?? 0).toNumber(),
       dateKey: hoje,
     });
   } catch (error) {
@@ -38,6 +37,7 @@ export async function GET(req: Request) {
   }
 }
 
+// POST: aplica rendimentos ao usuário
 export async function POST(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -51,7 +51,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Usuário não identificado" }, { status: 400 });
     }
 
-    // Busca todos os investimentos ativos do usuário
     const usuario = await prisma.user.findUnique({
       where: { id: userId },
       include: { investimentos: true },
@@ -64,13 +63,13 @@ export async function POST(req: Request) {
     const hoje = new Date();
     const dateKey = hoje.toISOString().split("T")[0]; // YYYY-MM-DD
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: typeof prisma) => {
       for (const inv of usuario.investimentos) {
         if (!inv.ativo) continue;
 
-        const base = Number(inv.valor);
-        const rate = 0.025; // 2.5% ao dia
-        const amount = base * rate;
+        const base = new Decimal(inv.valor);
+        const rate = new Decimal(0.025); // 2.5% ao dia
+        const amount = base.mul(rate);
 
         // Verifica se já aplicou hoje
         const existe = await tx.rendimentoDiario.findUnique({
@@ -91,16 +90,16 @@ export async function POST(req: Request) {
             userId: usuario.id,
             investimentoId: inv.id,
             dateKey,
-            base: new Prisma.Decimal(base),
-            rate: new Prisma.Decimal(rate),
-            amount: new Prisma.Decimal(amount),
+            base,
+            rate,
+            amount,
           },
         });
 
         // Atualiza saldo do usuário
         await tx.user.update({
           where: { id: usuario.id },
-          data: { saldo: { increment: amount } },
+          data: { saldo: { increment: amount.toNumber() } },
         });
 
         console.log(

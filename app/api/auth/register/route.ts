@@ -2,8 +2,8 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { hash } from 'bcryptjs'
-import { prisma } from '@/lib/prisma'
-import { sendWelcomeEmail } from '@/lib/mailer'
+import { prisma } from '@lib/prisma'
+import { sendWelcomeEmail } from '@lib/mailer'
 
 export async function POST(req: NextRequest) {
   try {

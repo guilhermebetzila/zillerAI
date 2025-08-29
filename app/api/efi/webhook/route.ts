@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../../../../lib/prisma"; // caminho relativo corrigido
 
 // 🔹 POST: recebe notificações de PIX da Efí
 export async function POST(req: Request) {

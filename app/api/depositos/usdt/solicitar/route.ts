@@ -1,25 +1,20 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@app/api/auth/[...nextauth]/authOptions";
 
 const MAIN_WALLET = (process.env.MAIN_WALLET || "").toLowerCase();
 
 export async function POST(req: Request) {
   try {
-    // 🔑 Usuário logado
     const session = await getServerSession(authOptions);
     const currentUserIdRaw = (session?.user as any)?.id || null;
     const currentUserId = currentUserIdRaw ? Number(currentUserIdRaw) : null;
 
     if (!currentUserId) {
-      return NextResponse.json(
-        { error: "Usuário não autenticado." },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Usuário não autenticado." }, { status: 401 });
     }
 
-    // 📥 Body
     const { valor } = await req.json().catch(() => ({} as any));
     if (!valor || typeof valor !== "number" || valor <= 0) {
       return NextResponse.json(
@@ -35,14 +30,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // 💾 Cria registro em onChainDeposit
     const deposito = await prisma.onChainDeposit.create({
       data: {
         userId: currentUserId,
         amount: Number(valor),
         from: "aguardando-envio",
         to: MAIN_WALLET,
-        txHash: `manual-${Date.now()}`, // placeholder até detectar hash real
+        txHash: `manual-${Date.now()}`,
         status: "aguardando",
       },
     });
