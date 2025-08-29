@@ -20,27 +20,13 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "app/*"
-      ],
-      "@app/*": [
-        "app/*"
-      ],
-      "@components/*": [
-        "components/*"
-      ],
-      "@lib/*": [
-        "app/lib/*"
-      ],
-      "@hooks/*": [
-        "app/hooks/*"
-      ],
-      "@context/*": [
-        "app/hooks/context/*"
-      ],
-      "@ui/*": [
-        "components/ui/*"
-      ]
+      "@/*": ["app/*"],
+      "@app/*": ["app/*"],
+      "@components/*": ["components/*"],
+      "@lib/*": ["lib/*"],
+      "@hooks/*": ["app/hooks/*"],
+      "@context/*": ["app/hooks/context/*"],
+      "@ui/*": ["components/ui/*"]
     },
     "typeRoots": [
       "./types",
@@ -55,9 +41,6 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "app/api/efipay/saque/route.ts",
-    "app/scripts/atualizarInvestimentos.ts",
-    "app/scripts/iniciarAutomatico.ts",
     "next-env.d.ts",
     "server.ts",
     "types/**/*.d.ts",

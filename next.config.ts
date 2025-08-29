@@ -4,7 +4,6 @@ import TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   webpack: (config) => {
     if (!config.resolve.plugins) {
       config.resolve.plugins = [];
