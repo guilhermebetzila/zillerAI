@@ -1,23 +1,72 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LayoutWrapper from "../../../components/LayoutWrapper";
+import axios from "axios";
 
 export default function SaquePage() {
   const [valor, setValor] = useState("");
   const [metodo, setMetodo] = useState<"pix" | "usdt">("pix");
   const [sucesso, setSucesso] = useState(false);
+  const [pix, setPix] = useState("");
+  const [usdt, setUsdt] = useState("");
+  const [saldo, setSaldo] = useState(0);
 
-  const handleSaque = () => {
+  // Buscar saldo do usuário ao carregar
+  useEffect(() => {
+    async function fetchSaldo() {
+      try {
+        const res = await axios.get("/api/usuario/saldo"); // ajuste a rota conforme seu backend
+        setSaldo(res.data.saldo);
+      } catch (err) {
+        console.error("Erro ao buscar saldo:", err);
+      }
+    }
+    fetchSaldo();
+  }, []);
+
+  const handleSalvarMetodo = async () => {
+    try {
+      if (metodo === "pix" && !pix) {
+        alert("Digite sua chave Pix.");
+        return;
+      }
+      if (metodo === "usdt" && !usdt) {
+        alert("Digite sua carteira USDT (BEP-20).");
+        return;
+      }
+
+      await axios.post("/api/usuario/cadastrar-metodo", {
+        metodo,
+        valor: metodo === "pix" ? pix : usdt,
+      });
+
+      alert(`${metodo.toUpperCase()} cadastrado com sucesso!`);
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao cadastrar método de saque.");
+    }
+  };
+
+  const handleSaque = async () => {
     if (!valor || Number(valor) <= 0) {
       alert("Digite um valor válido para sacar.");
       return;
     }
 
-    // Aqui você faria a chamada para sua API de saque
-    console.log("Solicitando saque:", { valor, metodo });
+    if (Number(valor) > saldo) {
+      alert("Você não possui saldo suficiente para esse saque.");
+      return;
+    }
 
-    setSucesso(true);
+    try {
+      await axios.post("/api/saque", { valor: Number(valor), metodo });
+      setSucesso(true);
+      setSaldo((prev) => prev - Number(valor));
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao solicitar saque.");
+    }
   };
 
   return (
@@ -55,12 +104,47 @@ export default function SaquePage() {
               </button>
             </div>
 
+            {/* Campos de cadastro */}
+            {metodo === "pix" ? (
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={pix}
+                  onChange={(e) => setPix(e.target.value)}
+                  placeholder="Digite sua chave Pix"
+                  className="w-full border p-2 rounded mb-2"
+                />
+                <button
+                  onClick={handleSalvarMetodo}
+                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                >
+                  Salvar Pix
+                </button>
+              </div>
+            ) : (
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={usdt}
+                  onChange={(e) => setUsdt(e.target.value)}
+                  placeholder="Digite sua carteira USDT (BEP-20)"
+                  className="w-full border p-2 rounded mb-2"
+                />
+                <button
+                  onClick={handleSalvarMetodo}
+                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                >
+                  Salvar USDT
+                </button>
+              </div>
+            )}
+
             {/* Valor */}
             <input
               type="number"
               value={valor}
               onChange={(e) => setValor(e.target.value)}
-              placeholder="Digite o valor"
+              placeholder={`Digite o valor (saldo disponível: R$${saldo.toFixed(2)})`}
               className="w-full border p-2 rounded mb-4"
             />
 
