@@ -1,12 +1,41 @@
-"use client"
+'use client'
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@ui/card"
+import { Button } from "@ui/button"
+import { Badge } from "@ui/badge"
 import { Clock, Play } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@lib/utils"
 
-const matches = [
+interface Match {
+  id: string
+  homeTeam: string
+  awayTeam: string
+  league: string
+  time: string
+  status: "live" | "upcoming"
+  odds: {
+    home: number
+    draw: number
+    away: number
+  }
+}
+
+interface Bet {
+  id: string
+  matchId: string
+  type: "home" | "away" | "draw"
+  odds: number
+  selection: string
+  match: string
+}
+
+interface MatchListProps {
+  selectedSport: string
+  onBetSelect: (bet: Bet) => void
+  selectedBets: Bet[]
+}
+
+const matches: Match[] = [
   {
     id: "1",
     homeTeam: "Flamengo",
@@ -14,11 +43,7 @@ const matches = [
     league: "Brasileirão Série A",
     time: "20:00",
     status: "live",
-    odds: {
-      home: 2.1,
-      draw: 3.2,
-      away: 3.5,
-    },
+    odds: { home: 2.1, draw: 3.2, away: 3.5 },
   },
   {
     id: "2",
@@ -27,11 +52,7 @@ const matches = [
     league: "La Liga",
     time: "16:00",
     status: "upcoming",
-    odds: {
-      home: 1.85,
-      draw: 3.6,
-      away: 4.2,
-    },
+    odds: { home: 1.85, draw: 3.6, away: 4.2 },
   },
   {
     id: "3",
@@ -40,11 +61,7 @@ const matches = [
     league: "Premier League",
     time: "14:30",
     status: "upcoming",
-    odds: {
-      home: 2.3,
-      draw: 3.1,
-      away: 3.2,
-    },
+    odds: { home: 2.3, draw: 3.1, away: 3.2 },
   },
   {
     id: "4",
@@ -53,33 +70,21 @@ const matches = [
     league: "Ligue 1",
     time: "21:45",
     status: "upcoming",
-    odds: {
-      home: 1.6,
-      draw: 4.0,
-      away: 5.5,
-    },
+    odds: { home: 1.6, draw: 4.0, away: 5.5 },
   },
 ]
 
-interface MatchListProps {
-  selectedSport: string
-  onBetSelect: (bet: any) => void
-  selectedBets: any[]
-}
-
 export function MatchList({ selectedSport, onBetSelect, selectedBets }: MatchListProps) {
-  const createBet = (matchId: string, type: string, odds: number, match: any) => {
-    return {
-      id: `${matchId}-${type}`,
-      matchId,
-      type,
-      odds,
-      selection: type === "home" ? match.homeTeam : type === "away" ? match.awayTeam : "Empate",
-      match: `${match.homeTeam} vs ${match.awayTeam}`,
-    }
-  }
+  const createBet = (matchId: string, type: "home" | "draw" | "away", odds: number, match: Match): Bet => ({
+    id: `${matchId}-${type}`,
+    matchId,
+    type,
+    odds,
+    selection: type === "home" ? match.homeTeam : type === "away" ? match.awayTeam : "Empate",
+    match: `${match.homeTeam} vs ${match.awayTeam}`,
+  })
 
-  const isBetSelected = (matchId: string, type: string) => {
+  const isBetSelected = (matchId: string, type: "home" | "draw" | "away") => {
     return selectedBets.some((bet) => bet.id === `${matchId}-${type}`)
   }
 
