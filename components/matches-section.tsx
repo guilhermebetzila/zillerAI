@@ -1,10 +1,23 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Button } from "@ui/button"
+import { Card } from "@ui/card"
 import { ArrowRight, Trophy } from "lucide-react"
 
-const matches = [
+interface Match {
+  id: string
+  type: string
+  multiplier?: string
+  odds?: string
+  team1: string
+  team2?: string
+  markets: string[]
+  finalOdds: string
+  originalOdds?: string
+  color: "yellow" | "green" | "blue"
+}
+
+const matches: Match[] = [
   {
     id: "1",
     type: "SUPER APOSTA AUMENTADA",
@@ -12,7 +25,11 @@ const matches = [
     odds: "13.5 mil fichas",
     team1: "Vinícius Jr.",
     team2: "Real Madrid v Borussia Dortmund",
-    markets: ["Vinícius Jr. - Para Marcar", "Vinícius Jr. - Para Dar Assistência", "Para Real Madrid se Qualificar"],
+    markets: [
+      "Vinícius Jr. - Para Marcar",
+      "Vinícius Jr. - Para Dar Assistência",
+      "Para Real Madrid se Qualificar",
+    ],
     finalOdds: "2.00",
     color: "yellow",
   },
@@ -20,7 +37,6 @@ const matches = [
     id: "2",
     type: "APOSTA AUMENTADA",
     team1: "Real Madrid v Borussia Dortmund",
-    team2: "",
     markets: [
       "Real Madrid - Mais de 3 Escanteios",
       "Borussia Dortmund - Mais de 3 Escanteios",
@@ -35,7 +51,6 @@ const matches = [
     id: "3",
     type: "APOSTA AUMENTADA",
     team1: "Real Madrid v Borussia Dortmund",
-    team2: "",
     markets: [
       "Real Madrid - Mais de 3 Escanteios",
       "Borussia Dortmund - Mais de 3 Escanteios",
@@ -51,8 +66,11 @@ const matches = [
     type: "APOSTA AUMENTADA",
     odds: "6.7 mil fichas",
     team1: "Real Madrid v Borussia Dortmund",
-    team2: "",
-    markets: ["Maior Número de Chutes a Gol", "Maior Número de Escanteios", "Ambos Marcam: Final Real Madrid"],
+    markets: [
+      "Maior Número de Chutes a Gol",
+      "Maior Número de Escanteios",
+      "Ambos Marcam: Final Real Madrid",
+    ],
     finalOdds: "5.00",
     color: "blue",
   },
@@ -86,8 +104,8 @@ export function MatchesSection({ selectedSport }: MatchesSectionProps) {
                       match.color === "yellow"
                         ? "bg-yellow-500 text-black"
                         : match.color === "green"
-                          ? "bg-green-600 text-white"
-                          : "bg-blue-600 text-white"
+                        ? "bg-green-600 text-white"
+                        : "bg-blue-600 text-white"
                     }`}
                   >
                     {match.type}
