@@ -3,15 +3,15 @@
 import { useState, useEffect } from "react"
 
 // Componentes UI
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Switch } from "@/components/ui/switch"
-import { Slider } from "@/components/ui/slider"
+import { Button } from "@ui/button"
+import { Card } from "@ui/card"
+import { Badge } from "@ui/badge"
+import { Progress } from "@ui/progress"
+import { Switch } from "@ui/switch"
+import { Slider } from "@ui/slider"
 
 // Outros componentes
-import { QRCodeGenerator } from "@/components/qr-code-generator"
+import { QRCodeGenerator } from "@components/qr-code-generator" // ✅ Ajustado para o alias correto
 
 // Ícones
 import {
@@ -38,6 +38,8 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react"
+
+
 
 import { QRScanner } from "./qr-scanner"  // Mantém o QRScanner normalmente
 
