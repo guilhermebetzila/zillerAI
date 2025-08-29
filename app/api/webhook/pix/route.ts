@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../../../../lib/prisma";
 import { StatusSaque } from "@prisma/client";
 
 // Essa rota será chamada pela EFI

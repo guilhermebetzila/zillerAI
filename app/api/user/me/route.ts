@@ -1,7 +1,8 @@
 // app/api/user/me/route.ts
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+// ✅ ajuste: usar caminho relativo ao invés de alias "@/lib/prisma"
+import { prisma } from "../../../../lib/prisma";
 
 export async function GET(req: NextRequest) {
   try {

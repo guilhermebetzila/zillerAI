@@ -1,9 +1,9 @@
 import './globals.css'
 import Providers from './Providers'
-import { Topbar } from '@/components/TopBar'
-import BackgroundDots from '@/components/BackgroundDots'
-import Sidebar from '@/components/Sidebar'  // <-- Ajustado aqui para import default
-import { EsteiraParceiros } from '@/components/EsteiraParceiros'
+import { Topbar } from '../components/TopBar'
+import BackgroundDots from '../components/BackgroundDots'
+import Sidebar from '../components/Sidebar'
+import { EsteiraParceiros } from '../components/EsteiraParceiros'
 import { Toaster } from "sonner";
 
 export const metadata = {
