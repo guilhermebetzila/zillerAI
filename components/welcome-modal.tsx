@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent } from "@ui/dialog"
+import { Button } from "@ui/button"
 import { Gift, Star, CreditCard, Shield } from "lucide-react"
 import Image from "next/image"
 

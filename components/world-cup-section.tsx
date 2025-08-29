@@ -1,7 +1,7 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Button } from "@ui/button"
+import { Card } from "@ui/card"
 import { ArrowRight } from "lucide-react"
 import Image from "next/image"
 
@@ -92,8 +92,8 @@ export function WorldCupSection() {
                       match.color === "yellow"
                         ? "bg-yellow-500 text-black"
                         : match.color === "green"
-                          ? "bg-green-600 text-white"
-                          : "bg-cyan-600 text-white"
+                        ? "bg-green-600 text-white"
+                        : "bg-cyan-600 text-white"
                     }`}
                   >
                     {match.type}
