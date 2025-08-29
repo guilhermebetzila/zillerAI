@@ -8,8 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ----------------- MODELOS PRINCIPAIS -----------------
-
 model User {
   id                 Int                  @id @default(autoincrement())
   email              String               @unique
@@ -23,41 +21,36 @@ model User {
   graduacaoId        Int?
   lastLogin          DateTime?
   carteira           String?              @unique
-  photoUrl           String?              // <-- FOTO DE PERFIL
+  pixKey             String?              @unique   // 👈 NOVO CAMPO PARA PIX
+  bonusResidual      Decimal              @default(0)
+  photoUrl           String?
   depositos          Deposito[]
   investimentos      Investimento[]
   onChainDeposits    OnChainDeposit[]
   rendimentos        RendimentoDiario[]
   saques             Saque[]
   graduacao          Graduacao?           @relation(fields: [graduacaoId], references: [id])
+  indicadoPor        User?                @relation("Indicacoes", fields: [indicadoPorId], references: [id])
+  indicados          User[]               @relation("Indicacoes")
   withdrawalRequests WithdrawalRequest[]
-
-  // Indicação
-  indicadoPor User?  @relation("Indicacoes", fields: [indicadoPorId], references: [id])
-  indicados   User[] @relation("Indicacoes")
-
-  // 👇 Bônus residual acumulado
-  bonusResidual      Decimal              @default(0)
 }
 
 model Saque {
   id           Int         @id @default(autoincrement())
   userId       Int
-  user         User        @relation(fields: [userId], references: [id])
   valor        Decimal
-  metodo       String      @default("PIX") // "PIX" ou "USDT"
-  chave        String?     // Chave PIX ou carteira USDT
-  descricao    String?
   status       StatusSaque @default(pendente)
-  responseApi  String?     // JSON de resposta Binance Pay (para USDT)
   criadoEm     DateTime    @default(now())
   processadoEm DateTime?
-  endToEndId   String?     @unique
   txHash       String?     @unique
-  txId         String?     // <-- novo campo para salvar txId do PIX
+  descricao    String?
+  endToEndId   String?     @unique
+  chave        String?
+  metodo       String      @default("PIX")
+  responseApi  String?
+  txId         String?
+  user         User        @relation(fields: [userId], references: [id])
 }
-
-// ----------------- OUTROS MODELOS EXISTENTES -----------------
 
 model Deposito {
   id       Int            @id @default(autoincrement())
@@ -70,29 +63,29 @@ model Deposito {
 }
 
 model Investimento {
-  id                  Int      @id @default(autoincrement())
+  id                  Int                @id @default(autoincrement())
   valor               Decimal
-  criadoEm            DateTime @default(now())
+  criadoEm            DateTime           @default(now())
   userId              Int
-  percentualDiario    Decimal  @default(0.025)
-  rendimentoAcumulado Decimal  @default(0)
-  ativo               Boolean  @default(true)
-  limite              Decimal  @default(0)
-  user                User     @relation(fields: [userId], references: [id])
+  percentualDiario    Decimal            @default(0.025)
+  rendimentoAcumulado Decimal            @default(0)
+  ativo               Boolean            @default(true)
+  limite              Decimal            @default(0)
+  user                User               @relation(fields: [userId], references: [id])
   rendimentos         RendimentoDiario[]
 }
 
 model RendimentoDiario {
-  id             Int           @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   userId         Int
-  investimentoId Int
-  dateKey        String        // ex: "2025-08-24"
+  dateKey        String
   base           Decimal
   rate           Decimal
   amount         Decimal
-  createdAt      DateTime      @default(now())
-  user           User          @relation(fields: [userId], references: [id])
-  investimento   Investimento  @relation(fields: [investimentoId], references: [id])
+  createdAt      DateTime     @default(now())
+  investimentoId Int
+  investimento   Investimento @relation(fields: [investimentoId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
 
   @@unique([userId, investimentoId, dateKey], name: "userId_investimentoId_dateKey")
 }
@@ -111,25 +104,23 @@ model OnChainDeposit {
   to           String
   amount       Decimal
   createdAt    DateTime       @default(now())
-  confirmadoEm DateTime?
   userId       Int?
   status       StatusDeposito @default(pendente)
+  confirmadoEm DateTime?
   user         User?          @relation(fields: [userId], references: [id])
 }
 
 model WithdrawalRequest {
   id          Int      @id @default(autoincrement())
   userId      Int
-  user        User     @relation(fields: [userId], references: [id])
   amount      Decimal
   pixKey      String
   description String?
   status      String   @default("PENDING")
   idEnvio     String?
   createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
 }
-
-// ----------------- ENUMS -----------------
 
 enum StatusDeposito {
   pendente

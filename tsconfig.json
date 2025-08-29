@@ -3,7 +3,11 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -16,16 +20,44 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["app/*"],
-      "@components/*": ["components/*"],
-      "@lib/*": ["lib/*"],
-      "@hooks/*": ["app/hooks/*"],
-      "@context/*": ["app/hooks/context/*"],
-      "@ui/*": ["components/ui/*"]
+      "@/*": [
+        "app/*"
+      ],
+      "@components/*": [
+        "components/*"
+      ],
+      "@lib/*": [
+        "lib/*"
+      ],
+      "@hooks/*": [
+        "app/hooks/*"
+      ],
+      "@context/*": [
+        "app/hooks/context/*"
+      ],
+      "@ui/*": [
+        "components/ui/*"
+      ]
     },
-    "typeRoots": ["./types", "./node_modules/@types"],
-    "plugins": [{ "name": "next" }]
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
-  "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts"],
-  "exclude": ["node_modules", ".next", "prisma/seed.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "prisma/seed.ts"
+  ]
 }
