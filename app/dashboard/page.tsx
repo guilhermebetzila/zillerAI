@@ -202,7 +202,7 @@ export default function DashboardPage() {
             <p>💵 Saldo atual: <strong>${saldo.toFixed(2)}</strong></p>
             <p>📈 Valor Investido: <strong>${valorInvestido.toFixed(2)}</strong></p>
             <p>🌟 Rendimento Diário: <strong>${rendimentoDiario.toFixed(2)}</strong></p>
-            <p>🎁 Bônus Reesidual: <strong>${bonusResidual.toFixed(2)}</strong></p>
+            <p>🎁 Bônus Residual: <strong>${bonusResidual.toFixed(2)}</strong></p>
           </div>
 
           {/* Blocos horizontais */}
