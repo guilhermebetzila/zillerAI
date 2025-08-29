@@ -1,12 +1,12 @@
 // app/api/depositos/usdt/confirmar/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@lib/prisma"; // ✅ alias corrigido
+import { prisma } from "@lib/prisma";
 import { ethers } from "ethers";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@app/api/auth/[...nextauth]/authOptions"; // ✅ alias corrigido
+import { authOptions } from "@app/api/auth/[...nextauth]/authOptions";
 
 const RPC_URL = process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org/";
-const USDT_BEP20 = "0x55d398326f99059fF775485246999027B3197955"; // USDT BEP20
+const USDT_BEP20 = "0x55d398326f99059fF775485246999027B3197955";
 const DECIMALS = 18;
 const MAIN_WALLET = (process.env.MAIN_WALLET || "").toLowerCase();
 
@@ -86,22 +86,22 @@ export async function POST(req: Request) {
       );
     }
 
-    const amount = Number(ethers.formatUnits(decoded.value, DECIMALS)); // número para saldo
-    const amountStr = amount.toString(); // string para campo Decimal no Prisma
+    const amount = Number(ethers.formatUnits(decoded.value, DECIMALS));
+    const amountStr = amount.toString();
 
     // 🚫 evita duplicidade por txHash
     const existente = await prisma.onChainDeposit.findUnique({ where: { txHash: hash } });
 
     // 🧾 transação atômica
     if (!existente) {
-      // 1) primeira vez que vemos esse hash → cria registro, cria depósito contábil e credita saldo
+      // primeira vez que vemos esse hash → cria registro, cria depósito contábil e credita saldo
       const [onchain] = await prisma.$transaction([
         prisma.onChainDeposit.create({
           data: {
             txHash: hash,
             from: decoded.from.toLowerCase(),
             to: toAddr,
-            amount: amountStr, // Decimal (string)
+            amount: amountStr,
             userId: currentUserId,
             status: "confirmado",
           },
@@ -129,7 +129,7 @@ export async function POST(req: Request) {
         onchainId: onchain.id,
       });
     } else {
-      // 2) já existe registro desse hash
+      // já existe registro desse hash
       if (existente.status === "confirmado") {
         return NextResponse.json({
           ok: true,
@@ -139,7 +139,7 @@ export async function POST(req: Request) {
       }
 
       // status ainda não confirmado → confirma e credita saldo
-      const updated = await prisma.$transaction(async (tx: typeof prisma) => {
+      const updated = await prisma.$transaction(async (tx) => {
         const up = await tx.onChainDeposit.update({
           where: { id: existente.id },
           data: {
@@ -149,7 +149,7 @@ export async function POST(req: Request) {
         });
 
         await tx.user.update({
-          where: { id: (existente.userId ?? currentUserId) as number },
+          where: { id: existente.userId ?? currentUserId },
           data: { saldo: { increment: amount } },
         });
 
