@@ -1,6 +1,6 @@
 // app/api/depositos/usdt/verificar/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@lib/prisma"; // ✅ corrigido
 import { ethers } from "ethers";
 
 const RPC_URL = process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org/";

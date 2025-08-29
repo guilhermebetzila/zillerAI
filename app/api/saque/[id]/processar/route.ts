@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@lib/prisma"; // ✅ corrigido
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: any }   // 👈 usar any ou deixar sem tipar
+  { params }: { params: any }   // pode deixar `any` mesmo
 ) {
   try {
     const body = await req.json();

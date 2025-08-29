@@ -9,7 +9,8 @@ async function aplicarRendimentos() {
   const hoje = new Date();
   const dateKey = hoje.toISOString().split("T")[0];
 
-  await prisma.$transaction(async (tx: typeof prisma) => {
+  // ✅ removido ": typeof prisma"
+  await prisma.$transaction(async (tx) => {
     for (const usuario of usuarios) {
       for (const investimento of usuario.investimentos) {
         if (!investimento.ativo) continue;

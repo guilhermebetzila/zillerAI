@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/authOptions' // ajuste aqui
-import { prisma } from '@/lib/prisma'
+// 🔥 use import relativo em vez de '@/...'
+import { authOptions } from '../../auth/[...nextauth]/authOptions'
+import { prisma } from '../../../../lib/prisma'
 
 export async function GET(req: NextRequest) {
   try {
