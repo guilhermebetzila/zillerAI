@@ -2,25 +2,24 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "../../../lib/prisma"; // caminho relativo
-import { authOptions } from "../auth/[...nextauth]/authOptions"; // caminho relativo
-import Decimal from "decimal.js";
+import { authOptions } from "../auth/[...nextauth]/authOptions";
 
-// Tipos auxiliares inferidos
+// Tipos auxiliares ajustados
 type InvestimentoType = {
-  id: string;
-  valor: number | null;
-  percentualDiario: number | null;
-  rendimentoAcumulado: number | null;
+  id: number; // ⚠️ mudou para number
+  valor: string;
+  percentualDiario: string;
+  rendimentoAcumulado: string;
   criadoEm: Date;
   ativo: boolean;
 };
 
 type RendimentoType = {
-  id: string;
+  id: number; // ⚠️ mudou para number
   dateKey: string;
-  base: number | null;
-  rate: number | null;
-  amount: number | null;
+  base: string;
+  rate: string;
+  amount: string;
   createdAt: Date;
 };
 
@@ -45,32 +44,32 @@ export async function GET() {
     }
 
     // 💰 Total investido (somente ativos)
-    const valorInvestido = (usuario.investimentos as InvestimentoType[])
+    const valorInvestido = usuario.investimentos
       .filter((i) => i.ativo)
-      .reduce((acc: Decimal, i) => acc.add(new Decimal(i.valor ?? 0)), new Decimal(0));
+      .reduce((acc, i) => acc + Number(i.valor ?? 0), 0);
 
     // 📦 Formatar investimentos
-    const investimentos = (usuario.investimentos as InvestimentoType[]).map((i) => ({
+    const investimentos: InvestimentoType[] = usuario.investimentos.map((i) => ({
       id: i.id,
-      valor: new Decimal(i.valor ?? 0).toString(),
-      percentualDiario: new Decimal(i.percentualDiario ?? 0).toString(),
-      rendimentoAcumulado: new Decimal(i.rendimentoAcumulado ?? 0).toString(),
+      valor: (i.valor ?? 0).toString(),
+      percentualDiario: (i.percentualDiario ?? 0).toString(),
+      rendimentoAcumulado: (i.rendimentoAcumulado ?? 0).toString(),
       criadoEm: i.criadoEm,
       ativo: i.ativo,
     }));
 
     // 📦 Formatar rendimentos
-    const rendimentos = (usuario.rendimentos as RendimentoType[]).map((r) => ({
+    const rendimentos: RendimentoType[] = usuario.rendimentos.map((r) => ({
       id: r.id,
       dateKey: r.dateKey,
-      base: new Decimal(r.base ?? 0).toString(),
-      rate: new Decimal(r.rate ?? 0).toString(),
-      amount: new Decimal(r.amount ?? 0).toString(),
+      base: (r.base ?? 0).toString(),
+      rate: (r.rate ?? 0).toString(),
+      amount: (r.amount ?? 0).toString(),
       createdAt: r.createdAt,
     }));
 
     return NextResponse.json({
-      saldo: new Decimal(usuario.saldo ?? 0).toString(),
+      saldo: (usuario.saldo ?? 0).toString(),
       valorInvestido: valorInvestido.toString(),
       investimentos,
       rendimentos,
