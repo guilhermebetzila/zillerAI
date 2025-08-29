@@ -1,5 +1,5 @@
 // app/layout.tsx
-import './global.css'   // 👈 ajustado para bater com o arquivo que você tem
+import './globals.css'   // ✅ corrigido
 import Providers from './Providers'
 import { Topbar } from '../components/TopBar'
 import BackgroundDots from '../components/BackgroundDots'
