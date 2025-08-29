@@ -3,25 +3,31 @@
 import { useEffect, useState } from 'react';
 import { io as clientIO } from 'socket.io-client';
 import { Search, Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@ui/button";
+import { Input } from "@ui/input";
+
+interface Usuario {
+  email: string;
+  saldo?: number | string;
+  [key: string]: any;
+}
 
 const socket = clientIO('http://localhost:4000'); // Altere para produção
 
 export function Header() {
   const [saldo, setSaldo] = useState<number>(0);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<Usuario | null>(null);
 
   useEffect(() => {
-    const usuario = JSON.parse(localStorage.getItem('usuarioLogado') || 'null');
+    const usuario: Usuario | null = JSON.parse(localStorage.getItem('usuarioLogado') || 'null');
     setUser(usuario);
 
     if (usuario?.saldo) {
       setSaldo(Number(usuario.saldo) || 0);
     }
 
-    socket.on('saldo:atualizado', ({ email, valor }) => {
-      const usuarioAtual = JSON.parse(localStorage.getItem('usuarioLogado') || 'null');
+    socket.on('saldo:atualizado', ({ email, valor }: { email: string; valor: number }) => {
+      const usuarioAtual: Usuario | null = JSON.parse(localStorage.getItem('usuarioLogado') || 'null');
 
       if (usuarioAtual?.email === email) {
         usuarioAtual.saldo = Number(usuarioAtual.saldo || 0) + Number(valor || 0);
@@ -56,7 +62,13 @@ export function Header() {
         <div className="hidden md:flex items-center gap-4 flex-1 max-w-md mx-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input placeholder="Buscar esportes, times..." className="pl-10 bg-white text-black" />
+            <Input 
+              placeholder="Buscar esportes, times..." 
+              className="pl-10 bg-white text-black"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                // Você pode implementar a busca aqui
+              }}
+            />
           </div>
         </div>
 
