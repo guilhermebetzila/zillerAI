@@ -1,12 +1,11 @@
-// lib/auth.ts
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "./prisma";
+import { prisma } from "@lib/prisma";
 import bcrypt from "bcrypt";
 
-// Tipo do usuário que vamos retornar para a sessão
+// Tipo do usuário que vamos retornar na sessão
 type AuthUser = {
-  id: string;            // string, pois NextAuth espera id como string
+  id: string; // agora string
   email: string;
   nome: string;
   saldo: number;
@@ -24,20 +23,17 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.senha) return null;
 
-        // Busca o usuário pelo email
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
         if (!user) return null;
 
-        // Verifica a senha usando bcrypt
         const isValid = await bcrypt.compare(credentials.senha, user.senha);
         if (!isValid) return null;
 
-        // Retorna somente os campos que vamos usar na sessão
         const authUser: AuthUser = {
-          id: String(user.id), // converte number para string
+          id: user.id.toString(), // converter para string
           email: user.email,
           nome: user.nome,
           saldo: Number(user.saldo),
@@ -54,7 +50,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.id = user.id.toString();
         token.email = user.email;
         token.nome = user.nome;
         token.saldo = user.saldo;

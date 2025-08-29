@@ -25,11 +25,11 @@ export async function POST(req: Request) {
     }
 
     const updateData: any = {};
-    if (metodo === "pix") updateData.chavePix = valor;
-    if (metodo === "usdt") updateData.carteiraUsdt = valor;
+    if (metodo === "pix") updateData.pixKey = valor;
+    if (metodo === "usdt") updateData.carteira = valor;
 
     await prisma.user.update({
-      where: { id: Number(session.user.id) }, // <-- conversão para number
+      where: { id: Number(session.user.id) },
       data: updateData,
     });
 
