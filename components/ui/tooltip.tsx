@@ -3,7 +3,10 @@
 import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
-import { cn } from "@/lib/utils"
+// Função cn embutida para concatenar classes
+const cn = (...classes: (string | undefined | false | null)[]) => {
+  return classes.filter(Boolean).join(" ")
+}
 
 const TooltipProvider = TooltipPrimitive.Provider
 

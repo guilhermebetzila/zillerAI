@@ -3,7 +3,8 @@
 import * as React from "react"
 import * as SeparatorPrimitive from "@radix-ui/react-separator"
 
-import { cn } from "@/lib/utils"
+// Ajuste do caminho relativo para utils
+import { cn } from "../../lib/utils" // <-- ajuste conforme sua pasta lib
 
 const Separator = React.forwardRef<
   React.ElementRef<typeof SeparatorPrimitive.Root>,
