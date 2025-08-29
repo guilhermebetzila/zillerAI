@@ -1,9 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+
+// Componentes UI
+import { Button } from "@ui/button"
+import { Card } from "@ui/card"
+
+// Ícones
 import { Download, X, Smartphone } from "lucide-react"
+
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[]

@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Slider } from "@/components/ui/slider"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Card } from "@ui/card"
+import { Button } from "@ui/button"
+import { Badge } from "@ui/badge"
+import { Label } from "@ui/label"
+import { Switch } from "@ui/switch"
+import { Slider } from "@ui/slider"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@ui/dialog"
 import {
   Clock,
   Shield,
@@ -78,7 +78,6 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
   const [hasChanges, setHasChanges] = useState(false)
 
   useEffect(() => {
-    // Carregar configurações salvas
     const saved = localStorage.getItem("timeout-config")
     if (saved) {
       try {
@@ -159,7 +158,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
               <div className="space-y-4">
                 <Select
                   value={config.normalTimeout.toString()}
-                  onValueChange={(value) => updateConfig({ normalTimeout: Number.parseInt(value) })}
+                  onValueChange={(value: string) => updateConfig({ normalTimeout: Number.parseInt(value) })}
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue />
@@ -180,7 +179,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
                   <Label className="text-gray-300 text-sm mb-2 block">Personalizar: {config.normalTimeout} min</Label>
                   <Slider
                     value={[config.normalTimeout]}
-                    onValueChange={([value]) => updateConfig({ normalTimeout: value })}
+                    onValueChange={([value]: number[]) => updateConfig({ normalTimeout: value })}
                     max={120}
                     min={5}
                     step={5}
@@ -203,7 +202,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
               <div className="space-y-4">
                 <Select
                   value={config.rememberTimeout.toString()}
-                  onValueChange={(value) => updateConfig({ rememberTimeout: Number.parseInt(value) })}
+                  onValueChange={(value: string) => updateConfig({ rememberTimeout: Number.parseInt(value) })}
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue />
@@ -224,7 +223,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
                   <Label className="text-gray-300 text-sm mb-2 block">Personalizar: {config.rememberTimeout} min</Label>
                   <Slider
                     value={[config.rememberTimeout]}
-                    onValueChange={([value]) => updateConfig({ rememberTimeout: value })}
+                    onValueChange={([value]: number[]) => updateConfig({ rememberTimeout: value })}
                     max={120}
                     min={5}
                     step={5}
@@ -246,7 +245,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
                 </Label>
                 <Slider
                   value={[config.warningTime]}
-                  onValueChange={([value]) => updateConfig({ warningTime: value })}
+                  onValueChange={([value]: number[]) => updateConfig({ warningTime: value })}
                   max={Math.min(10, Math.floor(config.normalTimeout / 2))}
                   min={1}
                   step={1}
@@ -266,7 +265,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
                 <Label className="text-white font-medium">Auto-extensão</Label>
                 <Switch
                   checked={config.enableAutoExtend}
-                  onCheckedChange={(checked) => updateConfig({ enableAutoExtend: checked })}
+                  onCheckedChange={(checked: boolean) => updateConfig({ enableAutoExtend: checked })}
                 />
               </div>
               <p className="text-gray-400 text-xs mb-4">Permitir extensão automática da sessão</p>
@@ -278,7 +277,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
                   </Label>
                   <Slider
                     value={[config.maxExtensions]}
-                    onValueChange={([value]) => updateConfig({ maxExtensions: value })}
+                    onValueChange={([value]: number[]) => updateConfig({ maxExtensions: value })}
                     max={5}
                     min={0}
                     step={1}
@@ -298,7 +297,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
                 <Label className="text-white font-medium">Timeout por Dispositivo</Label>
                 <Switch
                   checked={config.deviceSpecific}
-                  onCheckedChange={(checked) => updateConfig({ deviceSpecific: checked })}
+                  onCheckedChange={(checked: boolean) => updateConfig({ deviceSpecific: checked })}
                 />
               </div>
               <p className="text-gray-400 text-xs mb-4">Configurações específicas por tipo de dispositivo</p>
@@ -312,7 +311,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
                       <Label className="text-gray-300 text-sm">Mobile: {config.mobileTimeout} min</Label>
                       <Slider
                         value={[config.mobileTimeout]}
-                        onValueChange={([value]) => updateConfig({ mobileTimeout: value })}
+                        onValueChange={([value]: number[]) => updateConfig({ mobileTimeout: value })}
                         max={120}
                         min={5}
                         step={5}
@@ -328,7 +327,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
                       <Label className="text-gray-300 text-sm">Desktop: {config.desktopTimeout} min</Label>
                       <Slider
                         value={[config.desktopTimeout]}
-                        onValueChange={([value]) => updateConfig({ desktopTimeout: value })}
+                        onValueChange={([value]: number[]) => updateConfig({ desktopTimeout: value })}
                         max={120}
                         min={5}
                         step={5}
@@ -344,7 +343,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
                       <Label className="text-gray-300 text-sm">Tablet: {config.tabletTimeout} min</Label>
                       <Slider
                         value={[config.tabletTimeout]}
-                        onValueChange={([value]) => updateConfig({ tabletTimeout: value })}
+                        onValueChange={([value]: number[]) => updateConfig({ tabletTimeout: value })}
                         max={120}
                         min={5}
                         step={5}
@@ -370,7 +369,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
                 </Label>
                 <Switch
                   checked={config.securityMode}
-                  onCheckedChange={(checked) => updateConfig({ securityMode: checked })}
+                  onCheckedChange={(checked: boolean) => updateConfig({ securityMode: checked })}
                 />
               </div>
               <p className="text-gray-400 text-xs mb-4">
@@ -395,7 +394,7 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
                     </Label>
                     <Slider
                       value={[config.securityTimeout]}
-                      onValueChange={([value]) => updateConfig({ securityTimeout: value })}
+                      onValueChange={([value]: number[]) => updateConfig({ securityTimeout: value })}
                       max={10}
                       min={2}
                       step={1}
@@ -435,7 +434,9 @@ export function TimeoutSettings({ isOpen, onClose, onSave }: TimeoutSettingsProp
                 <div className="flex justify-between items-center">
                   <span className="text-gray-300 text-sm">Auto-extensão</span>
                   <Badge
-                    className={`${config.enableAutoExtend && !config.securityMode ? "bg-green-900/30 text-green-400" : "bg-gray-700 text-gray-400"} border-0 text-xs`}
+                    className={`${
+                      config.enableAutoExtend && !config.securityMode ? "bg-green-900/30 text-green-400" : "bg-gray-700 text-gray-400"
+                    } border-0 text-xs`}
                   >
                     {config.enableAutoExtend && !config.securityMode ? "Ativa" : "Inativa"}
                   </Badge>

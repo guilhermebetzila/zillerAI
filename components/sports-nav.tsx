@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@lib/utils"  // ✅ Corrigido
 
 const sportsNav = [
   { id: "football", name: "Futebol" },
@@ -25,7 +25,9 @@ export function SportsNav({ selectedSport, onSportSelect }: SportsNavProps) {
             onClick={() => onSportSelect(sport.id)}
             className={cn(
               "px-4 py-2 rounded-full whitespace-nowrap transition-colors",
-              selectedSport === sport.id ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200",
+              selectedSport === sport.id
+                ? "bg-green-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200",
             )}
           >
             {sport.name}

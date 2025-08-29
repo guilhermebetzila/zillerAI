@@ -6,17 +6,17 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+} from '@ui/dialog'
+import { Button } from '@ui/button'
+import { Input } from '@ui/input'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
+} from '@ui/select'
+import { Label } from '@ui/label'
 import { Info } from 'lucide-react'
 
 interface RegisterModalProps {
@@ -40,7 +40,6 @@ export function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
     setError('')
   }
 
-  // Criar usuário padrão ao abrir o modal pela primeira vez
   useEffect(() => {
     const existing = localStorage.getItem('betdreams_registered_user')
     if (!existing) {
@@ -88,7 +87,7 @@ export function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
     }
 
     const newUser = {
-      name: 'João Silva Santos', // Nome fixo
+      name: 'João Silva Santos',
       email: formData.email,
       password: formData.password,
       phone: formData.phone,
@@ -143,7 +142,7 @@ export function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
               </Label>
               <Select
                 value={formData.country}
-                onValueChange={(value) => handleInputChange('country', value)}
+                onValueChange={(value: string) => handleInputChange('country', value)}
               >
                 <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                   <div className="flex items-center gap-2">
@@ -152,10 +151,7 @@ export function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
                   </div>
                 </SelectTrigger>
                 <SelectContent className="bg-gray-700 border-gray-600">
-                  <SelectItem
-                    value="Brasil"
-                    className="text-white hover:bg-gray-600"
-                  >
+                  <SelectItem value="Brasil" className="text-white hover:bg-gray-600">
                     🇧🇷 Brasil
                   </SelectItem>
                 </SelectContent>
@@ -174,7 +170,9 @@ export function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
                 <Input
                   placeholder="Número de celular"
                   value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    handleInputChange('phone', e.target.value)
+                  }
                   className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 pr-8"
                 />
                 <Info className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -189,7 +187,9 @@ export function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
               placeholder="E-mail"
               type="email"
               value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleInputChange('email', e.target.value)
+              }
               className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
             />
 
@@ -214,7 +214,7 @@ export function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
                 type="password"
                 placeholder="Digite sua senha"
                 value={formData.password}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleInputChange('password', e.target.value)
                 }
                 className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
@@ -229,7 +229,7 @@ export function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
                 type="password"
                 placeholder="Confirme sua senha"
                 value={formData.confirmPassword}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleInputChange('confirmPassword', e.target.value)
                 }
                 className="bg-gray-700 border-gray-600 text-white placeholder-gray-400"
@@ -259,4 +259,3 @@ export function RegisterModal({ isOpen, onClose }: RegisterModalProps) {
     </Dialog>
   )
 }
-

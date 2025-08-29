@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@lib/utils"  // ✅ Corrigido
 import { DollarSign, TrendingUp, Target, Gamepad2, Star, Users, Zap, Flame } from "lucide-react"
 import Image from "next/image"
 

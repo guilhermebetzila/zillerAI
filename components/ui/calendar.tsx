@@ -1,13 +1,27 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
+import * as React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DayPicker } from "react-day-picker";
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+// Função cn embutida para evitar erro de import
+function cn(...classes: (string | undefined | false | null)[]) {
+  return classes.filter(Boolean).join(" ");
+}
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
+// Versão mínima do buttonVariants para este componente
+function buttonVariants({ variant }: { variant?: "ghost" | "outline" } = {}) {
+  switch (variant) {
+    case "ghost":
+      return "bg-transparent hover:bg-accent/20 focus:ring-2";
+    case "outline":
+      return "border border-border bg-background hover:bg-accent/10 focus:ring-2";
+    default:
+      return "bg-primary text-primary-foreground hover:bg-primary/80 focus:ring-2";
+  }
+}
+
+export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
 function Calendar({
   className,
@@ -59,8 +73,8 @@ function Calendar({
       }}
       {...props}
     />
-  )
+  );
 }
-Calendar.displayName = "Calendar"
+Calendar.displayName = "Calendar";
 
-export { Calendar }
+export { Calendar };

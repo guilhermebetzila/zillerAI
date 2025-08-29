@@ -1,10 +1,10 @@
-"use client"
+'use client'
 
-import { useState, useEffect, useCallback } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { AlertTriangle, LogOut, RotateCcw } from "lucide-react"
+import { useState, useEffect, useCallback } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@ui/dialog'
+import { Button } from '@ui/button'
+import { Progress } from '@ui/progress'
+import { AlertTriangle, LogOut, RotateCcw } from 'lucide-react'
 
 interface TimeoutConfig {
   normalTimeout: number
@@ -76,7 +76,7 @@ export function SessionTimeoutManager({
   // Calcular timeout baseado nas configurações
   const getTimeoutDuration = useCallback(() => {
     if (config.securityMode) {
-      return config.securityTimeout * 60 * 1000 // Converter para ms
+      return config.securityTimeout * 60 * 1000
     }
 
     if (config.deviceSpecific) {
@@ -93,7 +93,9 @@ export function SessionTimeoutManager({
       }
     }
 
-    return isRemembered ? config.rememberTimeout * 60 * 1000 : config.normalTimeout * 60 * 1000
+    return isRemembered
+      ? config.rememberTimeout * 60 * 1000
+      : config.normalTimeout * 60 * 1000
   }, [config, isRemembered])
 
   // Resetar timer quando usuário faz login
@@ -199,7 +201,9 @@ export function SessionTimeoutManager({
 
         <div className="space-y-4">
           <div className="text-center">
-            <div className="text-3xl font-bold text-yellow-400 mb-2">{formatTime(timeLeft)}</div>
+            <div className="text-3xl font-bold text-yellow-400 mb-2">
+              {formatTime(timeLeft)}
+            </div>
             <p className="text-gray-300 text-sm">Sua sessão expirará em breve</p>
           </div>
 
@@ -228,7 +232,9 @@ export function SessionTimeoutManager({
                 <AlertTriangle className="h-4 w-4 text-red-400" />
                 <span className="text-red-300 text-sm font-medium">Modo Segurança Ativo</span>
               </div>
-              <p className="text-red-200 text-xs mt-1">Extensão de sessão desabilitada por segurança</p>
+              <p className="text-red-200 text-xs mt-1">
+                Extensão de sessão desabilitada por segurança
+              </p>
             </div>
           )}
 
@@ -243,7 +249,10 @@ export function SessionTimeoutManager({
             </Button>
 
             {canExtend && (
-              <Button onClick={handleExtendSession} className="flex-1 bg-green-600 hover:bg-green-700 text-white">
+              <Button
+                onClick={handleExtendSession}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 Estender
               </Button>

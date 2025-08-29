@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, ReactNode } from 'react'
-import Sidebar from '@/components/Sidebar'
-import TopHeader from '@/components/top-header'
+import Sidebar from '@components/Sidebar'        // ✅ Corrigido
+import TopHeader from '@components/top-header'  // ✅ Corrigido
 
 type SidebarWrapperProps = {
   children: ReactNode
@@ -45,4 +45,3 @@ export default function SidebarWrapper({ children }: SidebarWrapperProps) {
     </>
   )
 }
-

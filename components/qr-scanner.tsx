@@ -1,10 +1,14 @@
 "use client"
 
 import { useEffect, useRef, useState, useCallback } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
+
+// Componentes UI
+import { Button } from "@ui/button"
+import { Card } from "@ui/card"
+import { Badge } from "@ui/badge"
+import { Switch } from "@ui/switch"
+
+// Ícones
 import {
   Camera,
   CameraOff,
@@ -21,6 +25,7 @@ import {
   VolumeX,
   Settings,
 } from "lucide-react"
+
 
 interface QRScannerProps {
   isOpen: boolean
