@@ -1,8 +1,8 @@
 // app/api/rendimentos/usuario/route.ts
 import { NextResponse } from "next/server";
-import prisma from "../../../../lib/prisma"; // caminho relativo real para o Prisma
+import { prisma } from "../../../../lib/prisma"; // caminho relativo correto
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/authOptions"; // caminho relativo real
+import { authOptions } from "../../auth/[...nextauth]/authOptions"; // caminho relativo correto
 import Decimal from "decimal.js";
 
 // GET: retorna o rendimento do usuário no dia
@@ -63,7 +63,8 @@ export async function POST(req: Request) {
     const hoje = new Date();
     const dateKey = hoje.toISOString().split("T")[0]; // YYYY-MM-DD
 
-    await prisma.$transaction(async (tx: typeof prisma) => {
+    // ✅ Removida tipagem de tx
+    await prisma.$transaction(async (tx) => {
       for (const inv of usuario.investimentos) {
         if (!inv.ativo) continue;
 

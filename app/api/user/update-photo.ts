@@ -1,5 +1,6 @@
+// app/api/user/update-photo.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@lib/prisma"; // ✅ usando alias correto do tsconfig
 import formidable, { File, Fields, Files } from "formidable";
 import fs from "fs";
 import path from "path";

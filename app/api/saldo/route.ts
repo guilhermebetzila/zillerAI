@@ -1,13 +1,13 @@
 // app/api/saldo/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import prisma from "@lib/prisma"; // usando alias do tsconfig
+import prisma from "@lib/prisma"; // alias do tsconfig
 import Decimal from "decimal.js";
 
-// Tipagem para investimentos do usuário
+// Tipagem coerente com retorno do Prisma
 interface InvestimentoTipo {
   id: number;
-  valor: number;
+  valor: Decimal; // Decimal.js
   ativo: boolean;
 }
 
@@ -18,18 +18,24 @@ interface InvestimentoTipo {
 export async function POST(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    if (!token?.email) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    if (!token?.email)
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
     const email = token.email;
 
     const user = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-    if (!user) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
+    if (!user)
+      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
 
     const investimento = await prisma.investimento.findFirst({
       where: { userId: user.id, ativo: true },
       select: { id: true, valor: true },
     });
-    if (!investimento) return NextResponse.json({ error: "Nenhum investimento ativo encontrado" }, { status: 400 });
+    if (!investimento)
+      return NextResponse.json(
+        { error: "Nenhum investimento ativo encontrado" },
+        { status: 400 }
+      );
 
     const base = new Decimal(investimento.valor);
     const rate = new Decimal(0.01);
@@ -38,12 +44,20 @@ export async function POST(req: NextRequest) {
     const dateKey = new Date().toISOString().split("T")[0];
 
     const rendimentoExistente = await prisma.rendimentoDiario.findUnique({
-      where: { userId_investimentoId_dateKey: { userId: user.id, investimentoId: investimento.id, dateKey } },
+      where: {
+        userId_investimentoId_dateKey: {
+          userId: user.id,
+          investimentoId: investimento.id,
+          dateKey,
+        },
+      },
     });
-    if (rendimentoExistente) return NextResponse.json({
-      message: "Rendimento de hoje já foi registrado",
-      rendimento: rendimentoExistente.amount,
-    });
+
+    if (rendimentoExistente)
+      return NextResponse.json({
+        message: "Rendimento de hoje já foi registrado",
+        rendimento: new Decimal(rendimentoExistente.amount).toNumber(),
+      });
 
     const novoRendimento = await prisma.rendimentoDiario.create({
       data: {
@@ -63,7 +77,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       message: "Rendimento registrado com sucesso",
-      rendimento: novoRendimento.amount,
+      rendimento: new Decimal(novoRendimento.amount).toNumber(),
     });
   } catch (error) {
     console.error("Erro ao registrar rendimento:", error);
@@ -78,7 +92,8 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    if (!token?.email) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    if (!token?.email)
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
     const email = token.email;
 
@@ -86,13 +101,16 @@ export async function GET(req: NextRequest) {
       where: { email },
       include: { investimentos: true, indicados: true },
     });
-    if (!user) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
+    if (!user)
+      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
 
+    // Calcula valor total investido
     const valorInvestido = user.investimentos.reduce(
-      (acc: Decimal, inv: InvestimentoTipo) => acc.add(new Decimal(inv.valor)),
+      (acc: Decimal, inv) => acc.add(new Decimal(inv.valor)),
       new Decimal(0)
     );
 
+    // Calcula bônus residual: somatório dos rendimentos de investimentos inativos
     const bonusResidualTotal = await prisma.rendimentoDiario.aggregate({
       _sum: { amount: true },
       where: { userId: user.id, investimento: { ativo: false } },
