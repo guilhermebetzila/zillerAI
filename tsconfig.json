@@ -3,11 +3,7 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ESNext"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -30,12 +26,11 @@
     },
     "typeRoots": [
       "./types",
+      "./components/ui",   // ✅ Adiciona aqui para garantir que toast.d.ts seja encontrado
       "./node_modules/@types"
     ],
     "plugins": [
-      {
-        "name": "next"
-      }
+      { "name": "next" }
     ]
   },
   "include": [
@@ -44,7 +39,8 @@
     "next-env.d.ts",
     "server.ts",
     "types/**/*.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "components/ui/**/*.d.ts"   // ✅ Inclui arquivos de tipo dentro de ui
   ],
   "exclude": [
     "node_modules",
