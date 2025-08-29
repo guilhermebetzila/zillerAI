@@ -7,13 +7,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { WelcomeModal } from "@/components/welcome-modal"
-import { CasinoDashboard } from "@/components/casino-dashboard"
+} from "@ui/dialog"
+import { Button } from "@ui/button"
+import { Input } from "@ui/input"
+import { Checkbox } from "@ui/checkbox"
+import { Label } from "@ui/label"
+import { WelcomeModal } from "@components/welcome-modal"
 
 interface LoginModalProps {
   isOpen: boolean
@@ -33,23 +32,25 @@ export function LoginModal({
   const [formData, setFormData] = useState({ email: "", password: "" })
   const [rememberMe, setRememberMe] = useState(false)
   const [showWelcomeModal, setShowWelcomeModal] = useState(false)
-  const [showCasinoDashboard, setShowCasinoDashboard] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: "email" | "password", value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     setError("")
   }
 
   const saveLoginData = (userData: { name: string; email: string }) => {
     if (rememberMe) {
-      localStorage.setItem("betdreams_login", JSON.stringify({
-        isLoggedIn: true,
-        userData,
-        timestamp: Date.now(),
-        rememberMe: true,
-      }))
+      localStorage.setItem(
+        "betdreams_login",
+        JSON.stringify({
+          isLoggedIn: true,
+          userData,
+          timestamp: Date.now(),
+          rememberMe: true,
+        })
+      )
     }
   }
 
@@ -66,50 +67,39 @@ export function LoginModal({
       // Simulação de delay da API
       await new Promise((res) => setTimeout(res, 1000))
 
-      // Busca o usuário registrado no localStorage
       const storedUser = localStorage.getItem("betdreams_registered_user")
       if (!storedUser) {
         setError("Usuário não encontrado. Cadastre-se.")
+        setIsLoading(false)
         return
       }
 
       const parsedUser = JSON.parse(storedUser)
 
-      if (
-        formData.email !== parsedUser.email ||
-        formData.password !== parsedUser.password
-      ) {
+      if (formData.email !== parsedUser.email || formData.password !== parsedUser.password) {
         setError("Email ou senha incorretos")
+        setIsLoading(false)
         return
       }
 
-      const userData = {
-        name: parsedUser.name,
-        email: parsedUser.email,
-      }
+      const userData = { name: parsedUser.name, email: parsedUser.email }
 
       saveLoginData(userData)
       onLoginSuccess?.(userData)
       setShowWelcomeModal(true)
 
-      // Redireciona para o perfil
       router.push("/perfil")
-    } catch (err) {
+    } catch {
       setError("Ocorreu um erro no login.")
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleWelcomeClose = () => {
-    setShowWelcomeModal(false)
-    setShowCasinoDashboard(true)
-  }
-
+  const handleWelcomeClose = () => setShowWelcomeModal(false)
   const handleActivateBonus = () => {
     console.log("🎁 Bônus ativado!")
     setShowWelcomeModal(false)
-    setShowCasinoDashboard(true)
   }
 
   return (
@@ -208,14 +198,6 @@ export function LoginModal({
         onClose={handleWelcomeClose}
         onActivateBonus={handleActivateBonus}
       />
-
-      {showCasinoDashboard && (
-        <CasinoDashboard
-          isVisible={showCasinoDashboard}
-          onClose={() => setShowCasinoDashboard(false)}
-        />
-      )}
     </>
   )
 }
-
