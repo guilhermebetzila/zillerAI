@@ -1,5 +1,4 @@
-// app/layout.tsx
-import './globals.css'   // ✅ corrigido
+import './globals.css'
 import Providers from './Providers'
 import { Topbar } from '../components/TopBar'
 import BackgroundDots from '../components/BackgroundDots'
@@ -15,22 +14,16 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-br">
-      <body className="relative bg-[#0a0d1a] text-white w-full min-h-screen m-0 p-0 overflow-x-hidden">
+      <body className="relative w-full min-h-screen m-0 p-0 overflow-x-hidden bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
         <BackgroundDots />
         <Providers>
           <div className="flex flex-col w-full min-h-screen">
             <Topbar />
             <main className="flex-1 w-full">{children}</main>
-
-            {/* ESTEIRA ACIMA DO SIDEBAR */}
             <EsteiraParceiros />
-
-            {/* SIDEBAR FIXO EMBAIXO */}
             <Sidebar />
           </div>
         </Providers>
-
-        {/* Toaster para notificações globais */}
         <Toaster richColors position="bottom-right" />
       </body>
     </html>

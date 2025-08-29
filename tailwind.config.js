@@ -3,12 +3,16 @@ module.exports = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
-    "./ui/**/*.{js,ts,jsx,tsx}",   // caso você tenha a pasta ui
+    "./ui/**/*.{js,ts,jsx,tsx}",
+  ],
+  safelist: [
+    'bg-[hsl(var(--background))]',
+    'text-[hsl(var(--foreground))]',
   ],
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'], // garante a fonte global
+        sans: ['Inter', 'sans-serif'],
       },
     },
   },
