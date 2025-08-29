@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState, useEffect } from "react";
+import { Card } from "@ui/card";
+import { Button } from "@ui/button";
+import { Badge } from "@ui/badge";
+import { Input } from "@ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@ui/select";
 import {
   Smartphone,
   Monitor,
@@ -18,8 +18,7 @@ import {
   Search,
   LogOut,
   Eye,
-} from "lucide-react"
-
+} from "lucide-react";
 interface LoginRecord {
   id: string
   timestamp: Date
