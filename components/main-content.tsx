@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
 import { Search } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { PromotionalBanners } from "@/components/promotional-banners"
-import { SportsIconsGrid } from "@/components/sports-icons-grid"
-import { SportsNavigation } from "@/components/sports-navigation"
-import { WorldCupSection } from "@/components/world-cup-section"
+import { Input } from "@ui/input"
+import { PromotionalBanners } from "@components/promotional-banners"
+import { SportsIconsGrid } from "@components/sports-icons-grid"
+import { SportsNavigation } from "@components/sports-navigation"
+import { WorldCupSection } from "@components/world-cup-section"
 
 interface MainContentProps {
   selectedSport: string
@@ -25,17 +25,7 @@ export function MainContent({ selectedSport }: MainContentProps) {
         </div>
       </div>
 
-      {/* Promotional Banners */}
-      <PromotionalBanners />
-
-      {/* Sports Icons Grid */}
-      <SportsIconsGrid />
-
-      {/* Sports Navigation */}
-      <SportsNavigation />
-
-      {/* World Cup Section */}
-      <WorldCupSection />
+    
     </main>
   )
 }
