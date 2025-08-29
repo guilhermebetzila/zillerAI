@@ -1,11 +1,11 @@
-"use client"
+'use client';
 
-import { SportsSidebar } from "@/components/sports-sidebar"
-import { MainContent } from "@/components/main-content"
+import { SportsSidebar } from "@components/sports-sidebar";
+import { MainContent } from "@components/main-content";
 
 interface LayoutProps {
-  selectedSport: string
-  onSportSelect: (sport: string) => void
+  selectedSport: string;
+  onSportSelect: (sport: string) => void;
 }
 
 export function Layout({ selectedSport, onSportSelect }: LayoutProps) {
@@ -14,5 +14,5 @@ export function Layout({ selectedSport, onSportSelect }: LayoutProps) {
       <SportsSidebar selectedSport={selectedSport} onSportSelect={onSportSelect} />
       <MainContent selectedSport={selectedSport} />
     </div>
-  )
+  );
 }
