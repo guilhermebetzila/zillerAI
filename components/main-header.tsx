@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@ui/button"
 import { Users, UserPlus, User } from "lucide-react"
 import Image from "next/image"
-import { RegisterModal } from "@/components/register-modal"
-import { LoginModal } from "@/components/login-modal"
+import { RegisterModal } from "@components/register-modal"
+import { LoginModal } from "@components/login-modal"
 
 export function MainHeader() {
-  const [userCount, setUserCount] = useState(5456)
+  const [userCount, setUserCount] = useState<number>(5456)
   const [showRegisterModal, setShowRegisterModal] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
 
@@ -84,7 +84,6 @@ export function MainHeader() {
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
         onOpenRegister={() => setShowRegisterModal(true)}
-        // onLoginSuccess={(userData) => console.log("Login OK:", userData)}
       />
     </header>
   )
