@@ -13,7 +13,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-br">
+    <html lang="pt-br" className="dark">
       <body className="relative w-full min-h-screen m-0 p-0 overflow-x-hidden bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
         <BackgroundDots />
         <Providers>
