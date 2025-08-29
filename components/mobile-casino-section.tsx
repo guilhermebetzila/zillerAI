@@ -1,12 +1,28 @@
 "use client"
 
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Card } from "@ui/card"
+import { Button } from "@ui/button"
+import { Badge } from "@ui/badge"
 import { Play, Zap } from "lucide-react"
 import Image from "next/image"
 
-const featuredGames = [
+interface Game {
+  name: string
+  image: string
+  category: string
+  dealer?: string
+  exclusive?: boolean
+  hot?: boolean
+  live?: boolean
+}
+
+interface Category {
+  name: string
+  icon: string
+  count: number
+}
+
+const featuredGames: Game[] = [
   {
     name: "FORTUNE TIGER",
     image: "/games/fortune-tiger.png",
@@ -45,7 +61,7 @@ const featuredGames = [
   },
 ]
 
-const categories = [
+const categories: Category[] = [
   { name: "Slots", icon: "🎰", count: 234 },
   { name: "Mesa", icon: "🃏", count: 45 },
   { name: "Ao Vivo", icon: "📹", count: 67 },
@@ -104,14 +120,14 @@ export function MobileCasinoSection() {
               <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
                 {game.exclusive && <Badge className="bg-green-500 text-white text-xs px-1 py-0">EXCLUSIVO</Badge>}
                 {game.hot && (
-                  <Badge className="bg-red-500 text-white text-xs px-1 py-0">
-                    <Zap className="h-2 w-2 mr-1" />
+                  <Badge className="bg-red-500 text-white text-xs px-1 py-0 flex items-center gap-1">
+                    <Zap className="h-2 w-2" />
                     HOT
                   </Badge>
                 )}
                 {game.live && (
-                  <Badge className="bg-red-600 text-white text-xs px-1 py-0">
-                    <Play className="h-2 w-2 mr-1" />
+                  <Badge className="bg-red-600 text-white text-xs px-1 py-0 flex items-center gap-1">
+                    <Play className="h-2 w-2" />
                     AO VIVO
                   </Badge>
                 )}
@@ -119,7 +135,7 @@ export function MobileCasinoSection() {
 
               {/* Play button */}
               <div className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center z-10">
-                <Play className="h-3 w-3 text-white fill-current" />
+                <Play className="h-3 w-3 text-white" />
               </div>
 
               {/* Game image */}

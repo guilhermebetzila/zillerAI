@@ -1,14 +1,20 @@
 "use client"
 
 import { Home, Trophy, Zap, Gamepad2, User } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { cn } from "@lib/utils"
 
 interface MobileBottomNavProps {
   activeTab: string
   onTabChange: (tab: string) => void
 }
 
-const navItems = [
+interface NavItem {
+  id: string
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+}
+
+const navItems: NavItem[] = [
   { id: "home", icon: Home, label: "Início" },
   { id: "sports", icon: Trophy, label: "Esportes" },
   { id: "live", icon: Zap, label: "Ao Vivo" },

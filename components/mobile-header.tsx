@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@ui/button"
+import { Input } from "@ui/input"
 import { Users, Menu, Bell, User, Search, Wallet, LogOut, UserPlus } from "lucide-react"
 import Image from "next/image"
-import { RegisterModal } from "@/components/register-modal"
-import { LoginModal } from "@/components/login-modal"
-import { SessionTimeoutManager } from "@/components/session-timeout-manager"
+import { RegisterModal } from "@components/register-modal"
+import { LoginModal } from "@components/login-modal"
+import { SessionTimeoutManager } from "@components/session-timeout-manager"
 
 export function MobileHeader() {
   const [userCount, setUserCount] = useState(5456)

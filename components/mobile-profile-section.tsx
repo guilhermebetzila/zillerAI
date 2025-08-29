@@ -2,14 +2,18 @@
 
 import { useState, useEffect } from "react"
 
+// Componentes UI
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
-import { QRCodeGenerator } from "@/components/qr-code-generator"  // Apenas um import do QRCodeGenerator
 
+// Outros componentes
+import { QRCodeGenerator } from "@/components/qr-code-generator"
+
+// Ícones
 import {
   User,
   Settings,
