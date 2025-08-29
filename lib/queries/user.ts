@@ -1,7 +1,13 @@
 // lib/queries/user.ts
 
-import { prisma } from '@/lib/prisma'
+import { prisma } from '@lib/prisma'
 
 export async function getAllUsers() {
-  return await prisma.user.findMany()
+  try {
+    const users = await prisma.user.findMany()
+    return users
+  } catch (error) {
+    console.error("Erro ao buscar usuários:", error)
+    return []
+  }
 }

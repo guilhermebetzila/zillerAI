@@ -1,10 +1,11 @@
-import './globals.css'
+// app/layout.tsx
+import './global.css'   // 👈 ajustado para bater com o arquivo que você tem
 import Providers from './Providers'
 import { Topbar } from '../components/TopBar'
 import BackgroundDots from '../components/BackgroundDots'
 import Sidebar from '../components/Sidebar'
 import { EsteiraParceiros } from '../components/EsteiraParceiros'
-import { Toaster } from "sonner";
+import { Toaster } from "sonner"
 
 export const metadata = {
   title: 'Ziller.Ia',
