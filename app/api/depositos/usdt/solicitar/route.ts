@@ -1,7 +1,8 @@
+// app/api/depositos/usdt/solicitar/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/api/auth/[...nextauth]/authOptions";
 
 const MAIN_WALLET = (process.env.MAIN_WALLET || "").toLowerCase();
 

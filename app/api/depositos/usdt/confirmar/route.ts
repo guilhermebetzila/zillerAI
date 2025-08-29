@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@lib/prisma";
 import { ethers } from "ethers";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@app/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/api/auth/[...nextauth]/authOptions";
 
 const RPC_URL = process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org/";
 const USDT_BEP20 = "0x55d398326f99059fF775485246999027B3197955";
@@ -94,7 +94,6 @@ export async function POST(req: Request) {
 
     // 🧾 transação atômica
     if (!existente) {
-      // primeira vez que vemos esse hash → cria registro, cria depósito contábil e credita saldo
       const [onchain] = await prisma.$transaction([
         prisma.onChainDeposit.create({
           data: {

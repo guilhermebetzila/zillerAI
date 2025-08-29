@@ -17,34 +17,15 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["app/*"],
-      "@app/*": ["app/*"],
       "@components/*": ["components/*"],
       "@lib/*": ["lib/*"],
       "@hooks/*": ["app/hooks/*"],
       "@context/*": ["app/hooks/context/*"],
       "@ui/*": ["components/ui/*"]
     },
-    "typeRoots": [
-      "./types",
-      "./components/ui",   // ✅ Adiciona aqui para garantir que toast.d.ts seja encontrado
-      "./node_modules/@types"
-    ],
-    "plugins": [
-      { "name": "next" }
-    ]
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "plugins": [{ "name": "next" }]
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "next-env.d.ts",
-    "server.ts",
-    "types/**/*.d.ts",
-    ".next/types/**/*.ts",
-    "components/ui/**/*.d.ts"   // ✅ Inclui arquivos de tipo dentro de ui
-  ],
-  "exclude": [
-    "node_modules",
-    ".next",
-    "prisma/seed.ts"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", "next-env.d.ts"],
+  "exclude": ["node_modules", ".next", "prisma/seed.ts"]
 }
