@@ -1,16 +1,16 @@
 // app/api/investir/rendimentos/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "../../../../lib/prisma"; // caminho relativo correto
+import { prisma } from "../../../../lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/authOptions"; // caminho relativo correto
+import { authOptions } from "../../auth/[...nextauth]/authOptions";
 
-// Tipo auxiliar para tipar rendimentos
+// Tipo auxiliar para tipar rendimentos retornados
 type RendimentoType = {
-  id: string;
+  id: number;       // Prisma retorna number
   dateKey: string;
-  base: number | null;
-  rate: number | null;
-  amount: number | null;
+  base: string;     // Decimal convertido para string
+  rate: string;     // Decimal convertido para string
+  amount: string;   // Decimal convertido para string
   createdAt: Date;
 };
 
@@ -39,7 +39,7 @@ export async function GET() {
     }
 
     // 🔄 Mapeia rendimentos convertendo Decimal para string
-    const rendimentos = (usuario.rendimentos as RendimentoType[]).map((r) => ({
+    const rendimentos: RendimentoType[] = usuario.rendimentos.map((r) => ({
       id: r.id,
       dateKey: r.dateKey,
       base: r.base?.toString() ?? "0",
