@@ -1,7 +1,6 @@
 // app/api/rendimentos/processar/route.ts
 import { NextResponse } from "next/server";
-import prisma from "../../../../lib/prisma"; // caminho relativo real
-import Decimal from "decimal.js";
+import { prisma } from "../../../../lib/prisma"; // caminho relativo real
 
 // Função principal para aplicar rendimentos
 async function aplicarRendimentos() {
@@ -14,12 +13,13 @@ async function aplicarRendimentos() {
 
   let totalAplicado = 0;
 
-  await prisma.$transaction(async (tx: typeof prisma) => {
+  // ✅ Transação atômica sem tipagem manual
+  await prisma.$transaction(async (tx) => {
     for (const usuario of usuarios) {
       for (const inv of usuario.investimentos) {
         if (!inv.ativo) continue;
 
-        const base = Number(inv.valor);
+        const base = Number(inv.valor ?? 0);
         const rate = 0.025;
         const amount = base * rate;
 
@@ -39,9 +39,9 @@ async function aplicarRendimentos() {
             userId: usuario.id,
             investimentoId: inv.id,
             dateKey,
-            base: new Decimal(base),
-            rate: new Decimal(rate),
-            amount: new Decimal(amount),
+            base: base,
+            rate: rate,
+            amount: amount,
           },
         });
 
