@@ -1,14 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Card } from "@ui/card"
+import { Button } from "@ui/button"
+import { Input } from "@ui/input"
+import { Badge } from "@ui/badge"
 import { X, Trash2 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 
 interface BetSlipProps {
-  bets: any[]
+  bets: {
+    id: string
+    selection: string
+    match: string
+    odds: number | string
+  }[]
   onRemoveBet: (betId: string) => void
 }
 
@@ -82,7 +87,9 @@ export function BetSlip({ bets, onRemoveBet }: BetSlipProps) {
                 type="number"
                 placeholder="0,00"
                 value={stake}
-                onChange={(e) => setStake(e.target.value.replace(",", "."))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setStake(e.target.value.replace(",", "."))
+                }
                 className="text-center"
               />
             </div>
