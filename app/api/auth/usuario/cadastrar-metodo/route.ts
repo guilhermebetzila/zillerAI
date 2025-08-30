@@ -1,46 +1,57 @@
-// app/api/auth/usuario/cadastrar-metodo/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "../../../../../lib/prisma";
+import { prisma } from "@lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../../../../lib/auth";
+import { authOptions } from "@lib/auth";
+
+type Body = {
+  metodo: string; // "pix" | "usdt"
+  valor: string;
+};
+
+function normalizeMetodo(metodo: string) {
+  const norm = metodo.trim().toUpperCase();
+  if (norm === "PIX") return "PIX";
+  if (norm === "USDT") return "USDT";
+  return null;
+}
 
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Usuário não autenticado" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Usuário não autenticado" }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { metodo, valor } = body;
+    const { metodo, valor }: Body = await req.json();
 
     if (!metodo || !valor) {
-      return NextResponse.json(
-        { error: "Método ou valor inválido" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Dados incompletos" }, { status: 400 });
     }
 
-    const updateData: any = {};
-    if (metodo === "pix") updateData.pixKey = valor;
-    if (metodo === "usdt") updateData.carteira = valor;
+    const metodoNorm = normalizeMetodo(metodo);
+    if (!metodoNorm) {
+      return NextResponse.json({ error: "Método inválido. Use PIX ou USDT." }, { status: 400 });
+    }
 
-    await prisma.user.update({
-      where: { id: Number(session.user.id) },
-      data: updateData,
-    });
+    const userId = Number(session.user.id);
+
+    if (metodoNorm === "PIX") {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { pixKey: valor }, // ✅ campo correto no schema
+      });
+    } else if (metodoNorm === "USDT") {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { carteira: valor }, // ✅ campo correto no schema
+      });
+    }
 
     return NextResponse.json({
-      message: `${metodo.toUpperCase()} cadastrado com sucesso!`,
+      message: `${metodoNorm} cadastrado com sucesso!`,
     });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json(
-      { error: "Erro ao cadastrar método" },
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error("[CADASTRAR_METODO_ERROR]", error);
+    return NextResponse.json({ error: "Erro ao cadastrar método" }, { status: 500 });
   }
 }

@@ -21,7 +21,7 @@ model User {
   graduacaoId        Int?
   lastLogin          DateTime?
   carteira           String?              @unique
-  pixKey             String?              @unique   // 👈 NOVO CAMPO PARA PIX
+  pixKey             String?              @unique
   bonusResidual      Decimal              @default(0)
   photoUrl           String?
   depositos          Deposito[]
