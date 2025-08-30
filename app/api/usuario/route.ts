@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/api/auth/authOptions"; // ✅ caminho certo
+import { authOptions } from "@/api/auth/[...nextauth]/authOptions"; // ✅ caminho corrigido
 import prisma from "@lib/prisma"; // ✅ caminho certo
 
 export async function GET() {
