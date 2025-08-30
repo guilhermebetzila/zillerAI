@@ -280,6 +280,67 @@ export default function DashboardPage() {
             </AccordionItem>
           </Accordion>
 
+          {/* === NOVA SEÇÃO: Carrossel de imagens e cards (acima do rodapé) === */}
+          <div className="mt-8 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-3 px-1 py-3 items-stretch">
+              {/* 3 fotos quadradas com bordas arredondadas */}
+              <a
+                href="https://t.me/+atEKwprJriVlY2Ex"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden shadow-md"
+              >
+                <img src="/img/telegram.png" alt="Telegram" className="w-full h-full object-cover" />
+              </a>
+
+              <a
+                href="https://wa.me/5521996528434"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden shadow-md"
+              >
+                <img src="/img/whats.png" alt="WhatsApp" className="w-full h-full object-cover" />
+              </a>
+
+              <div className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden shadow-md bg-white/10">
+                <img src="/img/coin.png" alt="Coin" className="w-full h-full object-cover" />
+              </div>
+
+              {/* Quarta “imagem”: Em Breve + play.png abaixo */}
+              <div className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden shadow-md bg-white/10 flex flex-col items-center justify-center p-1">
+                <span className="text-[10px] leading-tight text-center">Em Breve</span>
+                <img src="/img/play.png" alt="Play" className="w-6 h-6 mt-1" />
+              </div>
+
+              {/* Quadrados maiores com textos */}
+              <div className="flex-shrink-0 min-w-[260px] h-28 rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center px-3">
+                <span className="text-sm font-medium">EM BREVE acesso ao roadmap da empresa</span>
+              </div>
+
+              <div className="flex-shrink-0 min-w-[260px] h-28 rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center px-3">
+                <span className="text-sm font-medium">Em Breve Banco internacional</span>
+              </div>
+
+              <div className="flex-shrink-0 min-w-[260px] h-28 rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center px-3">
+                <span className="text-sm font-medium">
+                  Especialista em Desenvolvimento de ferramentas de tecnologia para produtos financeiros
+                </span>
+              </div>
+
+              <div className="flex-shrink-0 min-w-[260px] h-28 rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center px-3">
+                <span className="text-sm font-medium">
+                  Participantes para incentivo contra a fome e educação
+                </span>
+              </div>
+
+              <div className="flex-shrink-0 min-w-[260px] h-28 rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center px-3">
+                <span className="text-sm font-medium">
+                  Em breve lançamento Criptomoeda e Capital aberto bolsa de valores
+                </span>
+              </div>
+            </div>
+          </div>
+
           {/* Footer */}
           <footer className="w-full mt-8 text-white py-4 px-4 text-sm">
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
