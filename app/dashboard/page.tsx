@@ -30,7 +30,6 @@ export default function DashboardPage() {
   const router = useRouter();
 
   const user = session?.user as any;
-  const userId = user?.id ? Number(user.id) : undefined;
   const displayName = user?.name || user?.email?.split('@')[0] || 'Usuário';
 
   const [saldo, setSaldo] = useState<number>(0);
@@ -52,10 +51,9 @@ export default function DashboardPage() {
   // Função para buscar dados do usuário
   useEffect(() => {
     const fetchUsuario = async () => {
-      if (!userId) return;
       setLoading(true);
       try {
-        const res = await fetch(`/api/usuario/dados?userId=${userId}`, { credentials: 'include' });
+        const res = await fetch(`/api/usuario/dados`, { credentials: 'include' });
         if (!res.ok) throw new Error('Erro ao buscar dados do usuário');
         const data = await res.json();
         setSaldo(Number(data.saldo) || 0);
@@ -72,14 +70,13 @@ export default function DashboardPage() {
       }
     };
     if (status === 'authenticated') fetchUsuario();
-  }, [status, userId]);
+  }, [status]);
 
   // Função para buscar rede (diretos e indiretos)
   useEffect(() => {
     const fetchRede = async () => {
-      if (!userId) return;
       try {
-        const res = await fetch(`/api/rede?userId=${userId}`, { credentials: 'include' });
+        const res = await fetch(`/api/rede`, { credentials: 'include' });
         if (!res.ok) throw new Error('Erro ao buscar rede');
         const data = await res.json();
         setPontosDiretos(Number(data.diretos) || 0);
@@ -90,14 +87,13 @@ export default function DashboardPage() {
       }
     };
     if (status === 'authenticated') fetchRede();
-  }, [status, userId]);
+  }, [status]);
 
   // Função para buscar rendimento diário
   useEffect(() => {
     const fetchRendimento = async () => {
-      if (!userId) return;
       try {
-        const res = await fetch(`/api/rendimentos/usuario?userId=${userId}`, { credentials: 'include' });
+        const res = await fetch(`/api/rendimentos/usuario`, { credentials: 'include' });
         if (!res.ok) throw new Error('Erro ao buscar rendimento diário');
         const data = await res.json();
         setRendimentoDiario(Number(data.rendimento) || 0);
@@ -107,7 +103,7 @@ export default function DashboardPage() {
       }
     };
     if (status === 'authenticated') fetchRendimento();
-  }, [status, userId]);
+  }, [status]);
 
   const handleMenuClick = (item: MenuItem) => {
     if (item.action === 'logout') signOut({ callbackUrl: '/login' });
@@ -127,7 +123,7 @@ export default function DashboardPage() {
         await fetch('/api/user/update-photo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId, photoUrl: uploadData.url }),
+          body: JSON.stringify({ photoUrl: uploadData.url }),
         });
       }
     } catch (error) {
