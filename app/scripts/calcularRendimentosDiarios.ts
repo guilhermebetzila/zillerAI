@@ -1,17 +1,18 @@
-// app/scripts/calcularRendimentosDiarios.ts
 import prisma from "../../lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
 import fs from "fs";
+import path from "path";
 
 const TAXA_DIARIA = new Decimal(0.025);
 const BONUS_RESIDUAL_RATE = new Decimal(0.05);
 
 export async function calcularRendimentosDiarios() {
   const hoje = new Date().toISOString().split("T")[0];
-  const logPath = "./logs";
+
+  const logPath = path.resolve(process.cwd(), "logs");
   if (!fs.existsSync(logPath)) fs.mkdirSync(logPath);
 
-  const logFile = `${logPath}/rendimentos.log`;
+  const logFile = path.join(logPath, "rendimentos.log");
   const log = (msg: string) => {
     console.log(msg);
     fs.appendFileSync(logFile, msg + "\n");
@@ -107,7 +108,6 @@ export async function calcularRendimentosDiarios() {
           data: { rendimentoAcumulado: dummy.rendimentoAcumulado.add(rendimento) },
         });
 
-        // Bônus residual
         if (user.indicadoPorId) {
           const bonusResidual = rendimento.mul(BONUS_RESIDUAL_RATE);
           const indicadoPor = await prisma.user.findUnique({ where: { id: user.indicadoPorId } });
@@ -134,7 +134,7 @@ export async function calcularRendimentosDiarios() {
   }
 }
 
-// 🚀 Executa se for chamado via CLI
+// Executa via CLI
 if (import.meta.url === `file://${process.argv[1]}`) {
   calcularRendimentosDiarios();
 }

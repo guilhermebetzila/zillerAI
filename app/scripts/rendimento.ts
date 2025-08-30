@@ -1,4 +1,3 @@
-// app/scripts/rendimento.ts
 import prisma from "../../lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
 
@@ -76,9 +75,7 @@ export async function gerarRendimentoDiario() {
 
       await prisma.investimento.update({
         where: { id: dummy.id },
-        data: {
-          rendimentoAcumulado: dummy.rendimentoAcumulado.add(rendimento),
-        },
+        data: { rendimentoAcumulado: dummy.rendimentoAcumulado.add(rendimento) },
       });
     } catch (err) {
       console.error(`❌ Erro ao processar usuário ${u.id}:`, err);
@@ -89,7 +86,7 @@ export async function gerarRendimentoDiario() {
   await prisma.$disconnect();
 }
 
-// 🚀 Executa se for chamado via CLI
+// Executa via CLI
 if (import.meta.url === `file://${process.argv[1]}`) {
   gerarRendimentoDiario();
 }

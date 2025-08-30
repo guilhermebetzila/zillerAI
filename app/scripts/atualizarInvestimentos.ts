@@ -1,10 +1,8 @@
-// app/scripts/atualizarInvestimentos.ts
 import prisma from "../../lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export async function atualizarInvestimentos() {
   const hoje = new Date().toISOString().split("T")[0];
-
   console.log(`\n=== Início da atualização: ${hoje} ===`);
 
   const investimentos = await prisma.investimento.findMany({
@@ -61,7 +59,6 @@ export async function atualizarInvestimentos() {
         where: { id: investimento.userId },
         data: { saldo: investimento.user.saldo.add(rendimento) },
       });
-
       await prisma.investimento.update({
         where: { id: investimento.id },
         data: { rendimentoAcumulado: investimento.rendimentoAcumulado.add(rendimento) },
@@ -77,7 +74,7 @@ export async function atualizarInvestimentos() {
   await prisma.$disconnect();
 }
 
-// 🚀 Executa se for chamado via CLI
+// Executa via CLI
 if (import.meta.url === `file://${process.argv[1]}`) {
   atualizarInvestimentos();
 }
