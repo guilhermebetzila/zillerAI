@@ -11,26 +11,11 @@ export default function SaquePage() {
   const [pix, setPix] = useState("");
   const [usdt, setUsdt] = useState("");
   const [saldo, setSaldo] = useState(0);
-  const [userId, setUserId] = useState<number | null>(null);
 
-  // Pegar userId do backend ou do token (ajuste conforme sua autenticação)
-  useEffect(() => {
-    async function fetchUserId() {
-      try {
-        const res = await axios.get("/api/auth/usuario/info"); // Rota que retorna dados do usuário logado
-        setUserId(res.data.id);
-      } catch (err) {
-        console.error("Erro ao buscar usuário:", err);
-      }
-    }
-    fetchUserId();
-  }, []);
-
-  // Buscar saldo atualizado
+  // Buscar saldo atualizado do usuário logado
   const fetchSaldo = async () => {
-    if (!userId) return;
     try {
-      const res = await axios.get(`/api/auth/usuario/saldo?userId=${userId}`);
+      const res = await axios.get("/api/auth/usuario/saldo");
       setSaldo(res.data.saldo);
     } catch (err) {
       console.error("Erro ao buscar saldo:", err);
@@ -39,7 +24,7 @@ export default function SaquePage() {
 
   useEffect(() => {
     fetchSaldo();
-  }, [userId]);
+  }, []);
 
   // Salvar chave Pix ou carteira USDT
   const handleSalvarMetodo = async () => {
@@ -67,19 +52,20 @@ export default function SaquePage() {
 
   // Solicitar saque
   const handleSaque = async () => {
-    if (!valor || Number(valor) <= 0) {
+    const valorNumber = Number(valor);
+    if (!valor || isNaN(valorNumber) || valorNumber <= 0) {
       alert("Digite um valor válido para sacar.");
       return;
     }
 
-    if (Number(valor) > saldo) {
+    if (valorNumber > saldo) {
       alert("Você não possui saldo suficiente para esse saque.");
       return;
     }
 
     try {
       await axios.post("/api/auth/usuario/saque", {
-        valor: Number(valor),
+        valor: valorNumber,
         metodo,
       });
       setSucesso(true);
