@@ -4,13 +4,14 @@ import fs from "fs";
 import path from "path";
 
 const TAXA_DIARIA = new Decimal(0.025);
-const LOG_PATH = path.resolve(process.cwd(), "logs");
+
+// Logs
+const LOG_PATH = path.resolve("./logs");
 if (!fs.existsSync(LOG_PATH)) fs.mkdirSync(LOG_PATH, { recursive: true });
 const LOG_FILE = path.join(LOG_PATH, "rendimentos.log");
-
 const log = (msg: string) => {
   console.log(msg);
-  fs.appendFileSync(LOG_FILE, msg + "\n");
+  try { fs.appendFileSync(LOG_FILE, msg + "\n"); } catch (err) { console.error("❌ Falha ao escrever no log:", err); }
 };
 
 export async function gerarRendimentoDiario() {

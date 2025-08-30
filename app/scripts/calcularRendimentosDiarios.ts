@@ -5,13 +5,14 @@ import path from "path";
 
 const TAXA_DIARIA = new Decimal(0.025);
 const BONUS_RESIDUAL_RATE = new Decimal(0.05);
-const LOG_PATH = path.resolve(process.cwd(), "logs");
+
+// Logs
+const LOG_PATH = path.resolve("./logs");
 if (!fs.existsSync(LOG_PATH)) fs.mkdirSync(LOG_PATH, { recursive: true });
 const LOG_FILE = path.join(LOG_PATH, "rendimentos.log");
-
 const log = (msg: string) => {
   console.log(msg);
-  fs.appendFileSync(LOG_FILE, msg + "\n");
+  try { fs.appendFileSync(LOG_FILE, msg + "\n"); } catch (err) { console.error("❌ Falha ao escrever no log:", err); }
 };
 
 export async function calcularRendimentosDiarios() {
@@ -41,7 +42,14 @@ export async function calcularRendimentosDiarios() {
         let dummy = await prisma.investimento.findFirst({ where: { userId: user.id, ativo: false, limite: 0 } });
         if (!dummy) {
           dummy = await prisma.investimento.create({
-            data: { userId: user.id, valor: new Decimal(0), ativo: false, percentualDiario: new Decimal(0), limite: new Decimal(0), rendimentoAcumulado: new Decimal(0) },
+            data: {
+              userId: user.id,
+              valor: new Decimal(0),
+              ativo: false,
+              percentualDiario: new Decimal(0),
+              limite: new Decimal(0),
+              rendimentoAcumulado: new Decimal(0),
+            },
           });
           log(`  Dummy criado com id ${dummy.id}`);
         }
@@ -53,7 +61,11 @@ export async function calcularRendimentosDiarios() {
         if (existente) {
           await prisma.rendimentoDiario.update({
             where: { id: existente.id },
-            data: { amount: existente.amount.plus(rendimento), base: existente.base.plus(totalInvestido), rate: existente.rate.plus(TAXA_DIARIA).div(2) },
+            data: {
+              amount: existente.amount.plus(rendimento),
+              base: existente.base.plus(totalInvestido),
+              rate: existente.rate.plus(TAXA_DIARIA).div(2),
+            },
           });
           log(`  Rendimento diário atualizado no dummy ${dummy.id}`);
         } else {
