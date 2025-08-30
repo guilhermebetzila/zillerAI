@@ -5,8 +5,8 @@ import path from "path";
 
 const LOG_PATH = path.resolve(process.cwd(), "logs");
 if (!fs.existsSync(LOG_PATH)) fs.mkdirSync(LOG_PATH, { recursive: true });
-
 const LOG_FILE = path.join(LOG_PATH, "rendimentos.log");
+
 const log = (msg: string) => {
   console.log(msg);
   fs.appendFileSync(LOG_FILE, msg + "\n");
@@ -16,10 +16,7 @@ export async function atualizarInvestimentos() {
   const hoje = new Date().toISOString().split("T")[0];
   log(`\n=== Início da atualização: ${hoje} ===`);
 
-  const investimentos = await prisma.investimento.findMany({
-    where: { ativo: true },
-    include: { user: true },
-  });
+  const investimentos = await prisma.investimento.findMany({ where: { ativo: true }, include: { user: true } });
   log(`🔹 Total de investimentos ativos encontrados: ${investimentos.length}`);
 
   for (const investimento of investimentos) {
