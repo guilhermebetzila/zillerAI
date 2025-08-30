@@ -6,8 +6,8 @@ import { Prisma } from "@prisma/client";
 
 type Body = {
   valor: number | string;
-  metodo?: string;      // "PIX" | "USDT" (aceita minúsculas também)
-  descricao?: string;   // opcional
+  metodo?: string;
+  descricao?: string;
 };
 
 function normalizeMetodo(m?: string) {
@@ -56,10 +56,10 @@ export async function POST(req: Request) {
 
     // Validar chaves por método
     if (metodoNorm === "PIX" && !usuario.pixKey) {
-      return NextResponse.json({ error: "Chave Pix (pixKey) não cadastrada" }, { status: 400 });
+      return NextResponse.json({ error: "Chave Pix não cadastrada" }, { status: 400 });
     }
     if (metodoNorm === "USDT" && !usuario.carteira) {
-      return NextResponse.json({ error: "Carteira USDT (carteira) não cadastrada" }, { status: 400 });
+      return NextResponse.json({ error: "Carteira USDT não cadastrada" }, { status: 400 });
     }
 
     // Transação: cria o saque + decrementa saldo

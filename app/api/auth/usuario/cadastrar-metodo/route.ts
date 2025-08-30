@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@lib/auth";
 
 type Body = {
-  metodo: string; // "pix" | "usdt"
+  metodo: string;
   valor: string;
 };
 
@@ -38,12 +38,12 @@ export async function POST(req: Request) {
     if (metodoNorm === "PIX") {
       await prisma.user.update({
         where: { id: userId },
-        data: { pixKey: valor }, // ✅ campo correto no schema
+        data: { pixKey: valor },
       });
     } else if (metodoNorm === "USDT") {
       await prisma.user.update({
         where: { id: userId },
-        data: { carteira: valor }, // ✅ campo correto no schema
+        data: { carteira: valor },
       });
     }
 

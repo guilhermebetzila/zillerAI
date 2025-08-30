@@ -3,8 +3,12 @@
 import { useState, useEffect } from "react";
 import LayoutWrapper from "../../../components/LayoutWrapper";
 import axios from "axios";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function SaquePage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [valor, setValor] = useState("");
   const [metodo, setMetodo] = useState<"pix" | "usdt">("pix");
   const [sucesso, setSucesso] = useState(false);
@@ -15,8 +19,17 @@ export default function SaquePage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
-  // Buscar saldo atualizado do usuário logado
+  // Redirecionar se não estiver autenticado
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/login");
+    }
+  }, [status, router]);
+
+  // Buscar saldo apenas se autenticado
   const fetchSaldo = async () => {
+    if (status !== "authenticated") return;
+    
     try {
       setLoading(true);
       setError(null);
@@ -29,7 +42,12 @@ export default function SaquePage() {
       }
     } catch (err: any) {
       console.error("Erro ao buscar saldo:", err);
-      setError("Erro ao carregar saldo. Tente novamente.");
+      if (err.response?.status === 401) {
+        setError("Sessão expirada. Faça login novamente.");
+        router.push("/auth/login");
+      } else {
+        setError("Erro ao carregar saldo. Tente novamente.");
+      }
       setSaldo(0);
     } finally {
       setLoading(false);
@@ -37,8 +55,10 @@ export default function SaquePage() {
   };
 
   useEffect(() => {
-    fetchSaldo();
-  }, []);
+    if (status === "authenticated") {
+      fetchSaldo();
+    }
+  }, [status]);
 
   // Salvar chave Pix ou carteira USDT
   const handleSalvarMetodo = async () => {
@@ -61,7 +81,12 @@ export default function SaquePage() {
       setTimeout(() => setInfo(null), 3000);
     } catch (err: any) {
       console.error(err.response?.data || err.message);
-      setError("Erro ao cadastrar método de saque.");
+      if (err.response?.status === 401) {
+        setError("Sessão expirada. Faça login novamente.");
+        router.push("/auth/login");
+      } else {
+        setError("Erro ao cadastrar método de saque.");
+      }
     }
   };
 
@@ -89,9 +114,25 @@ export default function SaquePage() {
       await fetchSaldo(); // Atualiza saldo após saque
     } catch (err: any) {
       console.error(err);
-      setError(err.response?.data?.message || "Erro ao solicitar saque.");
+      if (err.response?.status === 401) {
+        setError("Sessão expirada. Faça login novamente.");
+        router.push("/auth/login");
+      } else {
+        setError(err.response?.data?.message || "Erro ao solicitar saque.");
+      }
     }
   };
+
+  // Se não estiver autenticado, mostra loading
+  if (status === "loading" || status === "unauthenticated") {
+    return (
+      <LayoutWrapper>
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </LayoutWrapper>
+    );
+  }
 
   return (
     <LayoutWrapper>
