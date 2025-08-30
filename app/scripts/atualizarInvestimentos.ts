@@ -28,56 +28,43 @@ export async function atualizarInvestimentos() {
   for (const investimento of investimentos) {
     try {
       const base = new Decimal(investimento.valor);
-      const rate = new Decimal(0.015); // 1,5%
+      const rate = new Decimal(investimento.percentualDiario);
       const rendimento = base.mul(rate);
-
-      log(`\nInvestimento ${investimento.id} do usuário ${investimento.userId}`);
-      log(`Valor: ${base.toFixed(2)}, Taxa diária: ${rate.toFixed(4)}, Rendimento: ${rendimento.toFixed(2)}`);
 
       const existente = await prisma.rendimentoDiario.findUnique({
         where: { userId_investimentoId_dateKey: { userId: investimento.userId, investimentoId: investimento.id, dateKey: hoje } },
       });
 
       if (existente) {
-        log("Atualizando registro de rendimento existente");
-        await prisma.rendimentoDiario.update({
-          where: { id: existente.id },
-          data: {
-            amount: existente.amount.plus(rendimento),
-            base: existente.base.plus(base),
-            rate: existente.rate.plus(rate).div(2),
-          },
-        });
-      } else {
-        log("Criando novo registro de rendimento diário");
-        await prisma.rendimentoDiario.create({
-          data: { userId: investimento.userId, investimentoId: investimento.id, dateKey: hoje, base, rate, amount: rendimento },
-        });
+        log(`💡 Rendimento já registrado para investimento ${investimento.id}, usuário ${investimento.userId}`);
+        continue;
       }
 
-      // Atualiza saldo do usuário
+      await prisma.rendimentoDiario.create({
+        data: { userId: investimento.userId, investimentoId: investimento.id, dateKey: hoje, base, rate, amount: rendimento },
+      });
+
       await prisma.user.update({
         where: { id: investimento.userId },
         data: { saldo: investimento.user.saldo.add(rendimento) },
       });
 
-      // Atualiza rendimento acumulado do investimento
       await prisma.investimento.update({
         where: { id: investimento.id },
         data: { rendimentoAcumulado: investimento.rendimentoAcumulado.add(rendimento) },
       });
 
-      log(`✅ Atualização concluída para o investimento ${investimento.id}`);
+      log(`✅ Rendimento aplicado: ${rendimento.toFixed(2)} USDT para investimento ${investimento.id}, usuário ${investimento.userId}`);
     } catch (err) {
-      log(`❌ Erro ao atualizar investimento ${investimento.id} do usuário ${investimento.userId}: ${err}`);
+      log(`❌ Erro no investimento ${investimento.id} do usuário ${investimento.userId}: ${err}`);
     }
   }
 
-  log("\n🏁 Rendimentos atualizados com sucesso!");
+  log("\n🏁 Atualização concluída!");
   await prisma.$disconnect();
 }
 
-// Executa via CLI
+// Permite rodar via CLI
 if (process.argv[1].includes("atualizarInvestimentos")) {
   atualizarInvestimentos();
 }
