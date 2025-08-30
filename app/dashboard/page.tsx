@@ -5,7 +5,7 @@ import LayoutWrapper from '@components/LayoutWrapper'; // corrigido
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@ui/accordion"; // corrigido
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Bell } from "lucide-react"; // ⬅️ Importei o sino
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
@@ -149,6 +149,16 @@ export default function DashboardPage() {
   return (
     <LayoutWrapper>
       <div className="min-h-screen px-4 py-4 text-white relative overflow-y-auto">
+        
+        {/* 🔔 Topo com título e sino */}
+        <header className="flex justify-between items-center mb-6 px-2">
+          <div className="flex-1"></div> {/* espaço vazio para centralizar */}
+          <h1 className="text-2xl font-bold text-center flex-1">ZILLER.ai</h1>
+          <div className="flex-1 flex justify-end">
+            <Bell className="w-6 h-6 cursor-pointer hover:text-green-400 transition" />
+          </div>
+        </header>
+
         <div className="mb-6 max-w-3xl mx-auto">
           {/* Card perfil */}
           <div className="flex flex-col items-center p-6 rounded-2xl mb-4 text-black bg-white/5">
