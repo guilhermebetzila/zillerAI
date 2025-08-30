@@ -1,7 +1,12 @@
+// app/scripts/rendimento.ts
 import prisma from "../../lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const TAXA_DIARIA = new Decimal(0.025);
 
@@ -14,7 +19,7 @@ if (!fs.existsSync(LOG_FILE)) fs.writeFileSync(LOG_FILE, "", { flag: "w" });
 
 const log = (msg: string) => {
   console.log(msg);
-  try { fs.appendFileSync(LOG_FILE, msg + "\n"); } catch (err) { console.error("❌ Falha ao escrever no log:", err); }
+  try { fs.appendFileSync(LOG_FILE, msg + "\n", { encoding: "utf8" }); } catch (err) { console.error("❌ Falha ao escrever no log:", err); }
 };
 
 export async function gerarRendimentoDiario() {

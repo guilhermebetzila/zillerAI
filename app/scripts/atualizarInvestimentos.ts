@@ -1,7 +1,12 @@
+// app/scripts/atualizarInvestimentos.ts
 import prisma from "../../lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Logs
 const LOG_PATH = path.join(__dirname, "../../logs");
@@ -12,7 +17,7 @@ if (!fs.existsSync(LOG_FILE)) fs.writeFileSync(LOG_FILE, "", { flag: "w" });
 
 const log = (msg: string) => {
   console.log(msg);
-  try { fs.appendFileSync(LOG_FILE, msg + "\n"); } catch (err) { console.error("❌ Falha ao escrever no log:", err); }
+  try { fs.appendFileSync(LOG_FILE, msg + "\n", { encoding: "utf8" }); } catch (err) { console.error("❌ Falha ao escrever no log:", err); }
 };
 
 export async function atualizarInvestimentos() {
@@ -35,13 +40,7 @@ export async function atualizarInvestimentos() {
       log(`Valor: ${base.toFixed(2)}, Taxa diária: ${rate.toFixed(4)}, Rendimento: ${rendimento.toFixed(2)}`);
 
       const existente = await prisma.rendimentoDiario.findUnique({
-        where: {
-          userId_investimentoId_dateKey: {
-            userId: investimento.userId,
-            investimentoId: investimento.id,
-            dateKey: hoje,
-          },
-        },
+        where: { userId_investimentoId_dateKey: { userId: investimento.userId, investimentoId: investimento.id, dateKey: hoje } },
       });
 
       if (existente) {
@@ -57,14 +56,7 @@ export async function atualizarInvestimentos() {
       } else {
         log("Criando novo registro de rendimento diário");
         await prisma.rendimentoDiario.create({
-          data: {
-            userId: investimento.userId,
-            investimentoId: investimento.id,
-            dateKey: hoje,
-            base,
-            rate,
-            amount: rendimento,
-          },
+          data: { userId: investimento.userId, investimentoId: investimento.id, dateKey: hoje, base, rate, amount: rendimento },
         });
       }
 

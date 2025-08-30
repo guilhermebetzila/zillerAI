@@ -1,7 +1,12 @@
+// app/scripts/calcularRendimentosDiarios.ts
 import prisma from "../../lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const TAXA_DIARIA = new Decimal(0.025);
 const BONUS_RESIDUAL_RATE = new Decimal(0.05);
@@ -15,7 +20,7 @@ if (!fs.existsSync(LOG_FILE)) fs.writeFileSync(LOG_FILE, "", { flag: "w" });
 
 const log = (msg: string) => {
   console.log(msg);
-  try { fs.appendFileSync(LOG_FILE, msg + "\n"); } catch (err) { console.error("❌ Falha ao escrever no log:", err); }
+  try { fs.appendFileSync(LOG_FILE, msg + "\n", { encoding: "utf8" }); } catch (err) { console.error("❌ Falha ao escrever no log:", err); }
 };
 
 export async function calcularRendimentosDiarios() {
@@ -45,14 +50,7 @@ export async function calcularRendimentosDiarios() {
         let dummy = await prisma.investimento.findFirst({ where: { userId: user.id, ativo: false, limite: 0 } });
         if (!dummy) {
           dummy = await prisma.investimento.create({
-            data: {
-              userId: user.id,
-              valor: new Decimal(0),
-              ativo: false,
-              percentualDiario: new Decimal(0),
-              limite: new Decimal(0),
-              rendimentoAcumulado: new Decimal(0),
-            },
+            data: { userId: user.id, valor: new Decimal(0), ativo: false, percentualDiario: new Decimal(0), limite: new Decimal(0), rendimentoAcumulado: new Decimal(0) },
           });
           log(`  Dummy criado com id ${dummy.id}`);
         }
