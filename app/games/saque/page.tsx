@@ -1,84 +1,26 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import LayoutWrapper from "../../../components/LayoutWrapper";
-import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
-interface MetodosCadastrados {
-  pix: string;
-  usdt: string;
-}
-
-interface Saque {
-  id: number;
-  valor: number;
-  metodo: string;
-  chave: string;
-  status: string;
-  criadoEm: string;
-}
 
 export default function SaquePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+
   const [valor, setValor] = useState("");
   const [metodo, setMetodo] = useState<"pix" | "usdt">("pix");
   const [pix, setPix] = useState("");
   const [usdt, setUsdt] = useState("");
+  const [mensagemSucesso, setMensagemSucesso] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [metodosCadastrados, setMetodosCadastrados] = useState<MetodosCadastrados>({
-    pix: "",
-    usdt: ""
-  });
-  const [carregandoMetodos, setCarregandoMetodos] = useState(true);
-  const [historicoSaques, setHistoricoSaques] = useState<Saque[]>([]);
 
   // Redirecionar se não estiver autenticado
   if (status === "unauthenticated") {
     router.push("/auth/login");
     return null;
   }
-
-  // Buscar métodos cadastrados e histórico
-  useEffect(() => {
-    const buscarDados = async () => {
-      if (status !== "authenticated") return;
-      
-      try {
-        setCarregandoMetodos(true);
-        const [metodosResponse, saquesResponse] = await Promise.all([
-          axios.get("/api/auth/usuario/metodos-saque"),
-          axios.get("/api/auth/usuario/saque")
-        ]);
-        
-        if (metodosResponse.data) {
-          setMetodosCadastrados({
-            pix: metodosResponse.data.pix || "",
-            usdt: metodosResponse.data.usdt || ""
-          });
-          setPix(metodosResponse.data.pix || "");
-          setUsdt(metodosResponse.data.usdt || "");
-        }
-
-        if (saquesResponse.data?.saques) {
-          setHistoricoSaques(saquesResponse.data.saques);
-        }
-      } catch (err: any) {
-        console.error("Erro ao buscar dados:", err);
-        if (err.response?.status === 401) {
-          router.push("/auth/login");
-        }
-      } finally {
-        setCarregandoMetodos(false);
-      }
-    };
-
-    if (status === "authenticated") {
-      buscarDados();
-    }
-  }, [status, router]);
 
   // Se não estiver autenticado, mostra loading
   if (status === "loading") {
@@ -91,6 +33,18 @@ export default function SaquePage() {
     );
   }
 
+  // Salvar chave PIX/USDT localmente
+  const salvarChave = () => {
+    if (metodo === "pix" && pix) {
+      setMensagemSucesso("✅ Chave PIX salva com sucesso!");
+    } else if (metodo === "usdt" && usdt) {
+      setMensagemSucesso("✅ Carteira USDT salva com sucesso!");
+    } else {
+      setMensagemSucesso("⚠️ Digite uma chave/carteira válida.");
+    }
+    setTimeout(() => setMensagemSucesso(""), 3000); // some após 3s
+  };
+
   // Solicitar saque (abre WhatsApp)
   const handleSaque = () => {
     setError(null);
@@ -101,7 +55,7 @@ export default function SaquePage() {
       return;
     }
 
-    const chaveAtual = metodo === "pix" ? metodosCadastrados.pix : metodosCadastrados.usdt;
+    const chaveAtual = metodo === "pix" ? pix : usdt;
     if (!chaveAtual) {
       setError(`Cadastre uma chave ${metodo.toUpperCase()} antes de solicitar o saque.`);
       return;
@@ -109,7 +63,11 @@ export default function SaquePage() {
 
     const userId = session?.user?.id || "N/A";
     const nome = session?.user?.name || "Usuário";
-    const mensagem = `Olá, gostaria de solicitar um saque:%0A%0A🆔 ID: ${userId}%0A👤 Nome: ${nome}%0A💰 Valor: R$ ${valorNumber.toFixed(2)}%0A🏦 Método: ${metodo.toUpperCase()}%0A🔑 Chave: ${chaveAtual}`;
+    const horario = new Date().toLocaleString("pt-BR");
+
+    const mensagem = `Olá, gostaria de solicitar um saque:%0A%0A🆔 ID: ${userId}%0A👤 Nome: ${nome}%0A💰 Valor: R$ ${valorNumber.toFixed(
+      2
+    )}%0A🏦 Método: ${metodo.toUpperCase()}%0A🔑 Chave: ${chaveAtual}%0A⏰ Horário: ${horario}%0A⏳ Prazo: até 60 minutos`;
 
     const whatsappUrl = `https://wa.me/5521996528434?text=${mensagem}`;
     window.open(whatsappUrl, "_blank");
@@ -117,8 +75,7 @@ export default function SaquePage() {
 
   return (
     <LayoutWrapper>
-      <div className="max-w-4xl mx-auto mt-6 space-y-6">
-        {/* Formulário de Saque */}
+      <div className="max-w-2xl mx-auto mt-6 space-y-6">
         <div className="bg-white p-6 rounded-2xl shadow-md text-black">
           <h1 className="text-2xl font-bold mb-4">Solicitar Saque</h1>
 
@@ -133,11 +90,17 @@ export default function SaquePage() {
             </div>
           )}
 
+          {mensagemSucesso && (
+            <div className="bg-green-100 border border-green-300 text-green-800 p-3 rounded mb-4 text-sm">
+              {mensagemSucesso}
+            </div>
+          )}
+
           <div className="flex gap-4 mb-4">
             <button
               className={`flex-1 py-2 rounded-lg border transition-colors ${
-                metodo === "pix" 
-                  ? "bg-blue-100 border-blue-400 font-bold text-blue-800" 
+                metodo === "pix"
+                  ? "bg-blue-100 border-blue-400 font-bold text-blue-800"
                   : "bg-gray-100 border-gray-300"
               }`}
               onClick={() => setMetodo("pix")}
@@ -146,8 +109,8 @@ export default function SaquePage() {
             </button>
             <button
               className={`flex-1 py-2 rounded-lg border transition-colors ${
-                metodo === "usdt" 
-                  ? "bg-blue-100 border-blue-400 font-bold text-blue-800" 
+                metodo === "usdt"
+                  ? "bg-blue-100 border-blue-400 font-bold text-blue-800"
                   : "bg-gray-100 border-gray-300"
               }`}
               onClick={() => setMetodo("usdt")}
@@ -156,23 +119,31 @@ export default function SaquePage() {
             </button>
           </div>
 
-          {/* Métodos cadastrados */}
-          {(metodosCadastrados.pix || metodosCadastrados.usdt) && (
-            <div className="bg-gray-50 p-3 rounded-lg mb-4">
-              <h3 className="font-semibold text-sm mb-2">Métodos Cadastrados:</h3>
-              {metodosCadastrados.pix && (
-                <p className="text-xs text-gray-600 mb-1">
-                  <span className="font-medium">PIX:</span> {metodosCadastrados.pix}
-                </p>
-              )}
-              {metodosCadastrados.usdt && (
-                <p className="text-xs text-gray-600">
-                  <span className="font-medium">USDT:</span> {metodosCadastrados.usdt}
-                </p>
-              )}
-            </div>
-          )}
+          {/* Input da chave PIX/USDT */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {metodo === "pix" ? "Chave PIX" : "Carteira USDT"}
+            </label>
+            <input
+              type="text"
+              value={metodo === "pix" ? pix : usdt}
+              onChange={(e) =>
+                metodo === "pix" ? setPix(e.target.value) : setUsdt(e.target.value)
+              }
+              placeholder={
+                metodo === "pix" ? "Digite sua chave PIX" : "Digite sua carteira USDT"
+              }
+              className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <button
+              onClick={salvarChave}
+              className="mt-2 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            >
+              Salvar {metodo === "pix" ? "PIX" : "USDT"}
+            </button>
+          </div>
 
+          {/* Input valor */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Valor do Saque
@@ -190,62 +161,11 @@ export default function SaquePage() {
 
           <button
             onClick={handleSaque}
-            disabled={carregandoMetodos}
-            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition"
           >
             Solicitar via WhatsApp
           </button>
         </div>
-
-        {/* Histórico de Saques */}
-        {historicoSaques.length > 0 && (
-          <div className="bg-white p-6 rounded-2xl shadow-md text-black">
-            <h2 className="text-xl font-bold mb-4">Histórico de Saques</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="p-2 text-left">Data/Hora</th>
-                    <th className="p-2 text-left">Valor</th>
-                    <th className="p-2 text-left">Método</th>
-                    <th className="p-2 text-left">Chave</th>
-                    <th className="p-2 text-left">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {historicoSaques.map((saque) => (
-                    <tr key={saque.id} className="border-b">
-                      <td className="p-2">
-                        {new Date(saque.criadoEm).toLocaleString('pt-BR')}
-                      </td>
-                      <td className="p-2">R$ {Number(saque.valor).toFixed(2)}</td>
-                      <td className="p-2">{saque.metodo.toUpperCase()}</td>
-                      <td className="p-2 text-xs font-mono">
-                        {saque.chave.length > 20 
-                          ? `${saque.chave.substring(0, 20)}...` 
-                          : saque.chave
-                        }
-                      </td>
-                      <td className="p-2">
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          saque.status === 'concluido' 
-                            ? 'bg-green-100 text-green-800'
-                            : saque.status === 'pendente'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : saque.status === 'rejeitado'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {saque.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
       </div>
     </LayoutWrapper>
   );
