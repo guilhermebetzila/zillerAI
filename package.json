@@ -9,12 +9,15 @@
     "lint": "next lint",
     "build:android": "npm run build && npx cap copy android",
     "sync:android": "npx cap sync android",
+
     "socket": "tsx app/socket/server.ts",
-    "scripts:atualizar": "node --loader ts-node/esm app/scripts/atualizarInvestimentos.ts",
-    "scripts:rendimentos": "node --loader ts-node/esm app/scripts/calcularRendimentosDiarios.ts",
-    "scripts:rendimento": "node --loader ts-node/esm app/scripts/rendimento.ts",
-    "scripts:all": "npm run scripts:atualizar && npm run scripts:rendimentos && npm run scripts:rendimento",
-    "investimentos": "npm run scripts:all",
+
+    "atualizarInvestimentos": "tsx app/scripts/atualizarInvestimentos.ts",
+    "calcularRendimentos": "tsx app/scripts/calcularRendimentosDiarios.ts",
+    "gerarRendimento": "tsx app/scripts/rendimento.ts",
+    "rodarTodos": "npm run atualizarInvestimentos && npm run calcularRendimentos && npm run gerarRendimento",
+    "investimentos": "npm run rodarTodos",
+
     "migrate:users": "tsx app/scripts/migrateUsers.ts",
     "db:push": "prisma db push",
     "db:push:local": "cross-env DATABASE_URL=\"postgresql://postgres:KqPpaxIvaJwhSbcZVPMZxLWGFptQmlSg@metro.proxy.rlwy.net:12732/railway\" prisma db push",
