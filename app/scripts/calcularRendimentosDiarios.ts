@@ -7,9 +7,12 @@ const TAXA_DIARIA = new Decimal(0.025);
 const BONUS_RESIDUAL_RATE = new Decimal(0.05);
 
 // Logs
-const LOG_PATH = path.resolve("./logs");
+const LOG_PATH = path.join(__dirname, "../../logs");
 if (!fs.existsSync(LOG_PATH)) fs.mkdirSync(LOG_PATH, { recursive: true });
+
 const LOG_FILE = path.join(LOG_PATH, "rendimentos.log");
+if (!fs.existsSync(LOG_FILE)) fs.writeFileSync(LOG_FILE, "", { flag: "w" });
+
 const log = (msg: string) => {
   console.log(msg);
   try { fs.appendFileSync(LOG_FILE, msg + "\n"); } catch (err) { console.error("❌ Falha ao escrever no log:", err); }
