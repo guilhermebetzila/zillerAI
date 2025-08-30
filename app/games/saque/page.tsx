@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import LayoutWrapper from "../../../components/LayoutWrapper";
 import axios from "axios";
 import { useSession } from "next-auth/react";
@@ -14,51 +14,26 @@ export default function SaquePage() {
   const [sucesso, setSucesso] = useState(false);
   const [pix, setPix] = useState("");
   const [usdt, setUsdt] = useState("");
-  const [saldo, setSaldo] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
   // Redirecionar se não estiver autenticado
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/login");
-    }
-  }, [status, router]);
+  if (status === "unauthenticated") {
+    router.push("/auth/login");
+    return null;
+  }
 
-  // Buscar saldo apenas se autenticado
-  const fetchSaldo = async () => {
-    if (status !== "authenticated") return;
-    
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await axios.get("/api/auth/usuario/saldo");
-      
-      if (res.data && typeof res.data.saldo === 'number') {
-        setSaldo(res.data.saldo);
-      } else {
-        throw new Error("Resposta da API inválida");
-      }
-    } catch (err: any) {
-      console.error("Erro ao buscar saldo:", err);
-      if (err.response?.status === 401) {
-        setError("Sessão expirada. Faça login novamente.");
-        router.push("/auth/login");
-      } else {
-        setError("Erro ao carregar saldo. Tente novamente.");
-      }
-      setSaldo(0);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetchSaldo();
-    }
-  }, [status]);
+  // Se não estiver autenticado, mostra loading
+  if (status === "loading") {
+    return (
+      <LayoutWrapper>
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </LayoutWrapper>
+    );
+  }
 
   // Salvar chave Pix ou carteira USDT
   const handleSalvarMetodo = async () => {
@@ -93,15 +68,12 @@ export default function SaquePage() {
   // Solicitar saque
   const handleSaque = async () => {
     setError(null);
+    setLoading(true);
 
     const valorNumber = Number(valor);
     if (!valor || isNaN(valorNumber) || valorNumber <= 0) {
       setError("Digite um valor válido para sacar.");
-      return;
-    }
-
-    if (valorNumber > saldo) {
-      setError("Você não possui saldo suficiente para esse saque.");
+      setLoading(false);
       return;
     }
 
@@ -111,7 +83,7 @@ export default function SaquePage() {
         metodo,
       });
       setSucesso(true);
-      await fetchSaldo(); // Atualiza saldo após saque
+      setValor("");
     } catch (err: any) {
       console.error(err);
       if (err.response?.status === 401) {
@@ -120,19 +92,10 @@ export default function SaquePage() {
       } else {
         setError(err.response?.data?.message || "Erro ao solicitar saque.");
       }
+    } finally {
+      setLoading(false);
     }
   };
-
-  // Se não estiver autenticado, mostra loading
-  if (status === "loading" || status === "unauthenticated") {
-    return (
-      <LayoutWrapper>
-        <div className="flex justify-center items-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </LayoutWrapper>
-    );
-  }
 
   return (
     <LayoutWrapper>
@@ -156,12 +119,7 @@ export default function SaquePage() {
           </div>
         )}
 
-        {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-            <p className="text-gray-500">Carregando saldo...</p>
-          </div>
-        ) : sucesso ? (
+        {sucesso ? (
           <div className="text-center py-6">
             <div className="text-4xl mb-4">🎉</div>
             <p className="text-lg font-semibold text-green-600 mb-2">
@@ -254,14 +212,11 @@ export default function SaquePage() {
                 type="number"
                 value={valor}
                 onChange={(e) => setValor(e.target.value)}
-                placeholder={`Saldo disponível: R$ ${saldo.toFixed(2)}`}
+                placeholder="Digite o valor do saque"
                 className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 min="0"
                 step="0.01"
               />
-              <div className="text-xs text-gray-500 mt-1">
-                Saldo disponível: R$ {saldo.toFixed(2)}
-              </div>
             </div>
 
             <button
