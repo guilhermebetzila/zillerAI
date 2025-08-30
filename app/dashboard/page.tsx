@@ -143,6 +143,9 @@ export default function DashboardPage() {
     return null;
   }
 
+  // Calcula saldo total considerando rendimento diário + residual
+  const saldoTotal = saldo + rendimentoDiario + bonusResidual;
+
   return (
     <LayoutWrapper>
       <div className="min-h-screen px-4 py-4 text-white relative overflow-y-auto">
@@ -155,7 +158,8 @@ export default function DashboardPage() {
         </header>
 
         <div className="mb-6 max-w-3xl mx-auto">
-          <div className="flex flex-col items-center p-6 rounded-2xl mb-4 text-black bg-white/5">
+          {/* Card do usuário */}
+          <div className="flex flex-col items-center p-6 rounded-2xl mb-4 bg-white/5">
             <div className="relative w-28 h-28 mb-3">
               <img
                 src={userPhotoUrl || '/img/avatar.png'}
@@ -176,7 +180,7 @@ export default function DashboardPage() {
                 onChange={handlePhotoUpload}
               />
             </div>
-            <h2 className="text-xl font-semibold">{displayName}</h2>
+            <h2 className="text-xl font-semibold text-white">{displayName}</h2>
             <p className="text-sm text-gray-300">{user?.email}</p>
             <button
               className="mt-3 w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-2xl shadow-lg font-medium transition text-base"
@@ -186,6 +190,16 @@ export default function DashboardPage() {
             </button>
           </div>
 
+          {/* Card de valores ajustado */}
+          <div className="mb-6 p-4 bg-white/10 rounded-2xl shadow-md text-white">
+            <p>💰 Saldo Total: <strong>${saldoTotal.toFixed(2)}</strong></p>
+            <p>💵 Saldo Anterior: <strong>${saldo.toFixed(2)}</strong></p>
+            <p>📈 Valor Investido: <strong>${valorInvestido.toFixed(2)}</strong></p>
+            <p>🌟 Rendimento Diário: <strong>${rendimentoDiario.toFixed(2)}</strong></p>
+            <p>🎁 Bônus Residual Hoje: <strong>${bonusResidual.toFixed(2)}</strong></p>
+          </div>
+
+          {/* Menu horizontal */}
           <div className="mb-6 overflow-x-auto scrollbar-hide">
             <div className="flex gap-2 px-1 py-2 justify-start">
               {menuItems.map((item, index) => (
@@ -200,13 +214,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="mb-6 p-4 bg-white/10 rounded-2xl shadow-md text-black">
-            <p>💵 Saldo atual: <strong>${saldo.toFixed(2)}</strong></p>
-            <p>📈 Valor Investido: <strong>${valorInvestido.toFixed(2)}</strong></p>
-            <p>🌟 Rendimento Diário: <strong>${rendimentoDiario.toFixed(2)}</strong></p>
-            <p>🎁 Bônus Residual: <strong>${bonusResidual.toFixed(2)}</strong></p>
-          </div>
-
+          {/* Accordion */}
           <Accordion type="single" collapsible className="mt-6 space-y-2">
             <AccordionItem value="pontuacao" className="border-0">
               <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold flex justify-between items-center border-0">
@@ -272,6 +280,7 @@ export default function DashboardPage() {
             </AccordionItem>
           </Accordion>
 
+          {/* Footer */}
           <footer className="w-full mt-8 text-white py-4 px-4 text-sm">
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
@@ -294,7 +303,6 @@ export default function DashboardPage() {
               © {new Date().getFullYear()} Ziller.Ia • Todos os direitos reservados
             </div>
           </footer>
-
         </div>
       </div>
     </LayoutWrapper>
