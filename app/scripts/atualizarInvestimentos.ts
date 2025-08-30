@@ -1,7 +1,8 @@
-import { prisma } from "./prisma.js";
+// app/scripts/atualizarInvestimentos.ts
+import prisma from "../../lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
 
-async function atualizarInvestimentos() {
+export async function atualizarInvestimentos() {
   const hoje = new Date().toISOString().split("T")[0];
 
   const investimentos = await prisma.investimento.findMany({
@@ -11,9 +12,9 @@ async function atualizarInvestimentos() {
 
   for (const investimento of investimentos) {
     try {
-      const base = investimento.valor;
-      const rate = investimento.percentualDiario;
-      const rendimento = new Decimal(base).mul(rate);
+      const base = new Decimal(investimento.valor);
+      const rate = new Decimal(investimento.percentualDiario);
+      const rendimento = base.mul(rate);
 
       const existente = await prisma.rendimentoDiario.findUnique({
         where: {
@@ -49,12 +50,12 @@ async function atualizarInvestimentos() {
 
       await prisma.user.update({
         where: { id: investimento.userId },
-        data: { saldo: { increment: rendimento } },
+        data: { saldo: investimento.user.saldo.add(rendimento) },
       });
 
       await prisma.investimento.update({
         where: { id: investimento.id },
-        data: { rendimentoAcumulado: { increment: rendimento } },
+        data: { rendimentoAcumulado: investimento.rendimentoAcumulado.add(rendimento) },
       });
     } catch (err) {
       console.error(

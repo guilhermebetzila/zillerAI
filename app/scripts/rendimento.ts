@@ -1,4 +1,5 @@
-import { prisma } from "./prisma.js";
+// app/scripts/rendimento.ts
+import prisma from "../../lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
 
 const TAXA_DIARIA = new Decimal(0.025);
@@ -75,7 +76,9 @@ export async function gerarRendimentoDiario() {
 
       await prisma.investimento.update({
         where: { id: dummy.id },
-        data: { rendimentoAcumulado: dummy.rendimentoAcumulado.add(rendimento) },
+        data: {
+          rendimentoAcumulado: dummy.rendimentoAcumulado.add(rendimento),
+        },
       });
     } catch (err) {
       console.error(`❌ Erro ao processar usuário ${u.id}:`, err);
