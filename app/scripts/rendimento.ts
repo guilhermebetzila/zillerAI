@@ -5,9 +5,9 @@ import path from "path";
 
 const TAXA_DIARIA = new Decimal(0.025);
 const LOG_PATH = path.resolve(process.cwd(), "logs");
-if (!fs.existsSync(LOG_PATH)) fs.mkdirSync(LOG_PATH);
-const LOG_FILE = path.join(LOG_PATH, "rendimentos.log");
+if (!fs.existsSync(LOG_PATH)) fs.mkdirSync(LOG_PATH, { recursive: true });
 
+const LOG_FILE = path.join(LOG_PATH, "rendimentos.log");
 const log = (msg: string) => {
   console.log(msg);
   fs.appendFileSync(LOG_FILE, msg + "\n");
@@ -15,8 +15,7 @@ const log = (msg: string) => {
 
 export async function gerarRendimentoDiario() {
   const hoje = new Date().toISOString().split("T")[0];
-
-  log(`\n=== Execução gerarRendimentoDiario: ${new Date()} ===`);
+  log(`\n=== Execução rendimento.ts: ${new Date()} ===`);
 
   try {
     const usuarios = await prisma.user.findMany({ include: { investimentos: true } });

@@ -6,9 +6,9 @@ import path from "path";
 const TAXA_DIARIA = new Decimal(0.025);
 const BONUS_RESIDUAL_RATE = new Decimal(0.05);
 const LOG_PATH = path.resolve(process.cwd(), "logs");
-if (!fs.existsSync(LOG_PATH)) fs.mkdirSync(LOG_PATH);
-const LOG_FILE = path.join(LOG_PATH, "rendimentos.log");
+if (!fs.existsSync(LOG_PATH)) fs.mkdirSync(LOG_PATH, { recursive: true });
 
+const LOG_FILE = path.join(LOG_PATH, "rendimentos.log");
 const log = (msg: string) => {
   console.log(msg);
   fs.appendFileSync(LOG_FILE, msg + "\n");
