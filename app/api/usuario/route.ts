@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/api/auth/[...nextauth]/authOptions"; // ✅ caminho corrigido
-import prisma from "@lib/prisma"; // ✅ caminho certo
+import { authOptions } from "@/api/auth/[...nextauth]/authOptions";
+import prisma from "@lib/prisma";
 
 export async function GET() {
   try {
@@ -43,7 +43,6 @@ export async function GET() {
       pontos: usuario.pontos,
       photoUrl: usuario.photoUrl,
     });
-
   } catch (error) {
     console.error("Erro ao buscar dados do usuário:", error);
     return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
