@@ -11,9 +11,10 @@ export async function calcularRendimentosDiarios() {
   const logPath = "./logs";
   if (!fs.existsSync(logPath)) fs.mkdirSync(logPath);
 
+  const logFile = `${logPath}/rendimentos.log`;
   const log = (msg: string) => {
     console.log(msg);
-    fs.appendFileSync(`${logPath}/rendimentos.log`, msg + "\n");
+    fs.appendFileSync(logFile, msg + "\n");
   };
 
   log(`\n=== Execução: ${new Date()} ===`);
@@ -22,7 +23,7 @@ export async function calcularRendimentosDiarios() {
     const usuarios = await prisma.user.findMany({
       include: { investimentos: true, indicadoPor: true },
     });
-    log(`👤 Encontrados ${usuarios.length} usuários.`);
+    log(`🔹 Total de usuários encontrados: ${usuarios.length}`);
 
     for (const user of usuarios) {
       try {
@@ -32,9 +33,18 @@ export async function calcularRendimentosDiarios() {
           new Decimal(0)
         );
 
-        if (totalInvestido.lte(0)) continue;
+        log(`\nUsuário ${user.id} - totalInvestido: ${totalInvestido.toFixed(2)}`);
+        user.investimentos.forEach(inv => {
+          log(`  Investimento ${inv.id}: valor=${inv.valor.toFixed(2)}, rendimentoAcumulado=${inv.rendimentoAcumulado.toFixed(2)}, ativo=${inv.ativo}`);
+        });
+
+        if (totalInvestido.lte(0)) {
+          log("  ⏭ Ignorado (totalInvestido <= 0)");
+          continue;
+        }
 
         const rendimento = totalInvestido.mul(TAXA_DIARIA);
+        log(`  Rendimento calculado: ${rendimento.toFixed(2)}`);
 
         let dummy = await prisma.investimento.findFirst({
           where: { userId: user.id, ativo: false, limite: 0 },
@@ -51,6 +61,7 @@ export async function calcularRendimentosDiarios() {
               rendimentoAcumulado: new Decimal(0),
             },
           });
+          log(`  Dummy criado com id ${dummy.id}`);
         }
 
         const existente = await prisma.rendimentoDiario.findUnique({
@@ -72,6 +83,7 @@ export async function calcularRendimentosDiarios() {
               rate: existente.rate.plus(TAXA_DIARIA).div(2),
             },
           });
+          log(`  Rendimento diário atualizado no dummy ${dummy.id}`);
         } else {
           await prisma.rendimentoDiario.create({
             data: {
@@ -83,41 +95,32 @@ export async function calcularRendimentosDiarios() {
               amount: rendimento,
             },
           });
+          log(`  Rendimento diário criado no dummy ${dummy.id}`);
         }
 
         await prisma.user.update({
           where: { id: user.id },
           data: { saldo: user.saldo.add(rendimento) },
         });
-
         await prisma.investimento.update({
           where: { id: dummy.id },
-          data: {
-            rendimentoAcumulado: dummy.rendimentoAcumulado.add(rendimento),
-          },
+          data: { rendimentoAcumulado: dummy.rendimentoAcumulado.add(rendimento) },
         });
 
         // Bônus residual
         if (user.indicadoPorId) {
           const bonusResidual = rendimento.mul(BONUS_RESIDUAL_RATE);
-
-          const indicadoPor = await prisma.user.findUnique({
-            where: { id: user.indicadoPorId },
-          });
-
+          const indicadoPor = await prisma.user.findUnique({ where: { id: user.indicadoPorId } });
           if (indicadoPor) {
             await prisma.user.update({
               where: { id: indicadoPor.id },
               data: { saldo: indicadoPor.saldo.add(bonusResidual) },
             });
-
-            log(
-              `💎 Bonus residual: Usuário ${indicadoPor.id} recebeu ${bonusResidual.toFixed(
-                2
-              )} USDT do indicado ${user.id}`
-            );
+            log(`  💎 Bônus residual: Usuário ${indicadoPor.id} recebeu ${bonusResidual.toFixed(2)} USDT do indicado ${user.id}`);
           }
         }
+
+        log(`  ✅ Processamento concluído para usuário ${user.id}`);
       } catch (err) {
         log(`❌ Erro ao processar usuário ${user.id}: ${err}`);
       }

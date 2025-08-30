@@ -5,16 +5,23 @@ import { Decimal } from "@prisma/client/runtime/library";
 export async function atualizarInvestimentos() {
   const hoje = new Date().toISOString().split("T")[0];
 
+  console.log(`\n=== Início da atualização: ${hoje} ===`);
+
   const investimentos = await prisma.investimento.findMany({
     where: { ativo: true },
     include: { user: true },
   });
+
+  console.log(`🔹 Total de investimentos ativos encontrados: ${investimentos.length}`);
 
   for (const investimento of investimentos) {
     try {
       const base = new Decimal(investimento.valor);
       const rate = new Decimal(investimento.percentualDiario);
       const rendimento = base.mul(rate);
+
+      console.log(`\nInvestimento ${investimento.id} do usuário ${investimento.userId}`);
+      console.log(`Valor: ${base.toFixed(2)}, Taxa diária: ${rate.toFixed(4)}, Rendimento: ${rendimento.toFixed(2)}`);
 
       const existente = await prisma.rendimentoDiario.findUnique({
         where: {
@@ -27,6 +34,7 @@ export async function atualizarInvestimentos() {
       });
 
       if (existente) {
+        console.log("Atualizando registro de rendimento existente");
         await prisma.rendimentoDiario.update({
           where: { id: existente.id },
           data: {
@@ -36,6 +44,7 @@ export async function atualizarInvestimentos() {
           },
         });
       } else {
+        console.log("Criando novo registro de rendimento diário");
         await prisma.rendimentoDiario.create({
           data: {
             userId: investimento.userId,
@@ -57,15 +66,14 @@ export async function atualizarInvestimentos() {
         where: { id: investimento.id },
         data: { rendimentoAcumulado: investimento.rendimentoAcumulado.add(rendimento) },
       });
+
+      console.log(`✅ Atualização concluída para o investimento ${investimento.id}`);
     } catch (err) {
-      console.error(
-        `❌ Erro ao atualizar investimento ${investimento.id} do usuário ${investimento.userId}:`,
-        err
-      );
+      console.error(`❌ Erro ao atualizar investimento ${investimento.id} do usuário ${investimento.userId}:`, err);
     }
   }
 
-  console.log("🏁 Rendimentos atualizados com sucesso!");
+  console.log("\n🏁 Rendimentos atualizados com sucesso!");
   await prisma.$disconnect();
 }
 
