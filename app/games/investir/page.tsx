@@ -31,7 +31,6 @@ export default function InvestimentosPage() {
   const [loadingReinvestir, setLoadingReinvestir] = useState(false);
   const [podeReinvestir, setPodeReinvestir] = useState(true);
 
-  // Carregar dados do usuário
   const carregarDados = async () => {
     try {
       const res = await fetch("/api/investir");
@@ -42,24 +41,17 @@ export default function InvestimentosPage() {
         setInvestimentos(data.investimentos || []);
         setRendimentos(data.rendimentos || []);
 
-        // Se já reinvestiu hoje, desativar botão
         const hoje = new Date().toISOString().split("T")[0];
         const ultimoRendimento = data.rendimentos?.[0]?.dateKey;
-        if (ultimoRendimento === hoje) {
-          setPodeReinvestir(false);
-        } else {
-          setPodeReinvestir(true);
-        }
-
+        setPodeReinvestir(ultimoRendimento !== hoje);
       } else {
         toast.error(data.error || "Erro ao carregar dados.");
       }
-    } catch (err) {
+    } catch {
       toast.error("❌ Erro de conexão.");
     }
   };
 
-  // Criar novo investimento
   const investir = async () => {
     const valorNum = parseFloat(novoValor);
     if (!valorNum || valorNum <= 0) {
@@ -82,14 +74,13 @@ export default function InvestimentosPage() {
       } else {
         toast.error(data.error || "Erro ao investir.");
       }
-    } catch (err) {
+    } catch {
       toast.error("❌ Erro de conexão.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Reinvestir saldo disponível
   const reinvestir = async () => {
     if (saldo <= 0) {
       toast.error("❌ Você não tem saldo disponível para reinvestir.");
@@ -106,13 +97,13 @@ export default function InvestimentosPage() {
       const data = await res.json();
       if (res.ok) {
         toast.success("🔄 Reinvestimento realizado com sucesso!");
-        setSaldo(0);           // Zera saldo automaticamente
-        setPodeReinvestir(false); // Bloqueia reinvestimento até o próximo rendimento
+        setSaldo(0);
+        setPodeReinvestir(false);
         carregarDados();
       } else {
         toast.error(data.error || "Erro ao reinvestir.");
       }
-    } catch (err) {
+    } catch {
       toast.error("❌ Erro de conexão.");
     } finally {
       setLoadingReinvestir(false);
@@ -127,7 +118,6 @@ export default function InvestimentosPage() {
     <div className="max-w-3xl mx-auto p-6 text-white space-y-6">
       <h1 className="text-2xl font-bold text-center">📈 Área de Investimentos</h1>
 
-      {/* Saldo e Investido */}
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-gray-800 p-4 rounded-lg shadow text-center">
           <p className="text-gray-400">Saldo Atual</p>
@@ -139,7 +129,6 @@ export default function InvestimentosPage() {
         </div>
       </div>
 
-      {/* Novo Investimento */}
       <div className="bg-gray-800 p-4 rounded-lg shadow space-y-3">
         <label className="block">Valor para investir (USDT)</label>
         <input
@@ -158,22 +147,18 @@ export default function InvestimentosPage() {
         </button>
       </div>
 
-      {/* Botão Reinvestir */}
       <div className="bg-gray-800 p-4 rounded-lg shadow space-y-3">
         <p>💰 Deseja reinvestir todo o saldo disponível?</p>
         <button
           onClick={reinvestir}
           disabled={loadingReinvestir || !podeReinvestir}
-          className={`w-full mt-2 p-2 rounded disabled:opacity-50 ${
-            podeReinvestir ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600 cursor-not-allowed"
-          }`}
+          className={`w-full mt-2 p-2 rounded disabled:opacity-50 ${podeReinvestir ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600 cursor-not-allowed"}`}
         >
           {loadingReinvestir ? "Processando..." : "🔄 Reinvestir"}
         </button>
         {!podeReinvestir && <p className="text-sm text-gray-400 mt-1">Aguarde o próximo rendimento do dia para reinvestir novamente.</p>}
       </div>
 
-      {/* Histórico de Investimentos */}
       <div className="bg-gray-800 p-4 rounded-lg shadow">
         <h2 className="text-lg font-semibold mb-3">📜 Meus Investimentos</h2>
         {investimentos.length === 0 ? (
@@ -192,7 +177,6 @@ export default function InvestimentosPage() {
         )}
       </div>
 
-      {/* Histórico de Rendimentos */}
       <div className="bg-gray-800 p-4 rounded-lg shadow">
         <h2 className="text-lg font-semibold mb-3">💰 Rendimentos Recentes</h2>
         {rendimentos.length === 0 ? (
@@ -212,7 +196,6 @@ export default function InvestimentosPage() {
         )}
       </div>
 
-      {/* Voltar */}
       <button
         onClick={() => window.history.back()}
         className="bg-gray-700 w-full mt-6 p-2 rounded-lg font-semibold hover:bg-gray-600 transition"

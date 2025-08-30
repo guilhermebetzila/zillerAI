@@ -1,23 +1,17 @@
-// app/scripts/atualizarInvestimentos.ts
 import prisma from "../../lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Logs
-const LOG_PATH = path.join(__dirname, "../../logs");
+const LOG_PATH = path.join(process.cwd(), "logs");
 if (!fs.existsSync(LOG_PATH)) fs.mkdirSync(LOG_PATH, { recursive: true });
-
-const LOG_FILE = path.join(LOG_PATH, "rendimentos.log");
+const LOG_FILE = path.join(LOG_PATH, "atualizarInvestimentos.log");
 if (!fs.existsSync(LOG_FILE)) fs.writeFileSync(LOG_FILE, "", { flag: "w" });
 
 const log = (msg: string) => {
   console.log(msg);
-  try { fs.appendFileSync(LOG_FILE, msg + "\n", { encoding: "utf8" }); } catch (err) { console.error("❌ Falha ao escrever no log:", err); }
+  try { fs.appendFileSync(LOG_FILE, msg + "\n", { encoding: "utf8" }); } 
+  catch (err) { console.error("❌ Falha ao escrever no log:", err); }
 };
 
 export async function atualizarInvestimentos() {
@@ -28,12 +22,13 @@ export async function atualizarInvestimentos() {
     where: { ativo: true },
     include: { user: true },
   });
+
   log(`🔹 Total de investimentos ativos encontrados: ${investimentos.length}`);
 
   for (const investimento of investimentos) {
     try {
       const base = new Decimal(investimento.valor);
-      const rate = new Decimal(investimento.percentualDiario);
+      const rate = new Decimal(0.015); // 1,5%
       const rendimento = base.mul(rate);
 
       log(`\nInvestimento ${investimento.id} do usuário ${investimento.userId}`);
@@ -60,10 +55,13 @@ export async function atualizarInvestimentos() {
         });
       }
 
+      // Atualiza saldo do usuário
       await prisma.user.update({
         where: { id: investimento.userId },
         data: { saldo: investimento.user.saldo.add(rendimento) },
       });
+
+      // Atualiza rendimento acumulado do investimento
       await prisma.investimento.update({
         where: { id: investimento.id },
         data: { rendimentoAcumulado: investimento.rendimentoAcumulado.add(rendimento) },
@@ -80,6 +78,6 @@ export async function atualizarInvestimentos() {
 }
 
 // Executa via CLI
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1].includes("atualizarInvestimentos")) {
   atualizarInvestimentos();
 }

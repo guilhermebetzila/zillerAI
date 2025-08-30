@@ -48,7 +48,6 @@ export default function DashboardPage() {
   const progresso = Math.min((pontos / PONTOS_OBJETIVO) * 100, 100);
   const pontosRestantes = Math.max(PONTOS_OBJETIVO - pontos, 0);
 
-  // Função para buscar dados do usuário
   useEffect(() => {
     const fetchUsuario = async () => {
       setLoading(true);
@@ -72,7 +71,6 @@ export default function DashboardPage() {
     if (status === 'authenticated') fetchUsuario();
   }, [status]);
 
-  // Função para buscar rede (diretos e indiretos)
   useEffect(() => {
     const fetchRede = async () => {
       try {
@@ -89,7 +87,6 @@ export default function DashboardPage() {
     if (status === 'authenticated') fetchRede();
   }, [status]);
 
-  // Função para buscar rendimento diário
   useEffect(() => {
     const fetchRendimento = async () => {
       try {
@@ -149,8 +146,6 @@ export default function DashboardPage() {
   return (
     <LayoutWrapper>
       <div className="min-h-screen px-4 py-4 text-white relative overflow-y-auto">
-
-        {/* 🔔 Topo com título e sino */}
         <header className="flex justify-between items-center mb-6 px-2">
           <div className="flex-1"></div>
           <h1 className="text-2xl font-bold text-center flex-1">ZILLER.ai</h1>
@@ -160,8 +155,6 @@ export default function DashboardPage() {
         </header>
 
         <div className="mb-6 max-w-3xl mx-auto">
-
-          {/* Card perfil */}
           <div className="flex flex-col items-center p-6 rounded-2xl mb-4 text-black bg-white/5">
             <div className="relative w-28 h-28 mb-3">
               <img
@@ -193,7 +186,6 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {/* Barra de menu horizontal */}
           <div className="mb-6 overflow-x-auto scrollbar-hide">
             <div className="flex gap-2 px-1 py-2 justify-start">
               {menuItems.map((item, index) => (
@@ -208,7 +200,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Barra de saldo e infos */}
           <div className="mb-6 p-4 bg-white/10 rounded-2xl shadow-md text-black">
             <p>💵 Saldo atual: <strong>${saldo.toFixed(2)}</strong></p>
             <p>📈 Valor Investido: <strong>${valorInvestido.toFixed(2)}</strong></p>
@@ -216,7 +207,6 @@ export default function DashboardPage() {
             <p>🎁 Bônus Residual: <strong>${bonusResidual.toFixed(2)}</strong></p>
           </div>
 
-          {/* Accordion: Pontuação & Indicação */}
           <Accordion type="single" collapsible className="mt-6 space-y-2">
             <AccordionItem value="pontuacao" className="border-0">
               <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold flex justify-between items-center border-0">
@@ -282,7 +272,6 @@ export default function DashboardPage() {
             </AccordionItem>
           </Accordion>
 
-          {/* Footer */}
           <footer className="w-full mt-8 text-white py-4 px-4 text-sm">
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
