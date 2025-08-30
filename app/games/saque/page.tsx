@@ -10,15 +10,20 @@ export default function SaquePage() {
   const [sucesso, setSucesso] = useState(false);
   const [pix, setPix] = useState("");
   const [usdt, setUsdt] = useState("");
-  const [saldo, setSaldo] = useState(0);
+  const [saldo, setSaldo] = useState<number | null>(null); // Pode ser null até carregar
+  const [loading, setLoading] = useState(true);
 
   // Buscar saldo atualizado do usuário logado
   const fetchSaldo = async () => {
     try {
+      setLoading(true);
       const res = await axios.get("/api/auth/usuario/saldo");
-      setSaldo(res.data.saldo);
+      setSaldo(res.data.saldo ?? 0);
     } catch (err) {
       console.error("Erro ao buscar saldo:", err);
+      setSaldo(0);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -29,11 +34,11 @@ export default function SaquePage() {
   // Salvar chave Pix ou carteira USDT
   const handleSalvarMetodo = async () => {
     try {
-      if (metodo === "pix" && !pix) {
+      if (metodo === "pix" && !pix.trim()) {
         alert("Digite sua chave Pix.");
         return;
       }
-      if (metodo === "usdt" && !usdt) {
+      if (metodo === "usdt" && !usdt.trim()) {
         alert("Digite sua carteira USDT (BEP-20).");
         return;
       }
@@ -52,6 +57,11 @@ export default function SaquePage() {
 
   // Solicitar saque
   const handleSaque = async () => {
+    if (saldo === null) {
+      alert("Saldo ainda está sendo carregado. Aguarde...");
+      return;
+    }
+
     const valorNumber = Number(valor);
     if (!valor || isNaN(valorNumber) || valorNumber <= 0) {
       alert("Digite um valor válido para sacar.");
@@ -69,9 +79,7 @@ export default function SaquePage() {
         metodo,
       });
       setSucesso(true);
-
-      // Atualiza saldo após saque
-      await fetchSaldo();
+      await fetchSaldo(); // Atualiza saldo após saque
     } catch (err) {
       console.error(err);
       alert("Erro ao solicitar saque.");
@@ -84,20 +92,27 @@ export default function SaquePage() {
         <h1 className="text-2xl font-bold mb-4">Solicitar Saque</h1>
 
         <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 p-3 rounded mb-4 text-sm">
-          Atenção: saques podem levar até <span className="font-semibold">60 minutos</span>.
+          Atenção: saques podem levar até{" "}
+          <span className="font-semibold">60 minutos</span>.
         </div>
 
-        {!sucesso ? (
+        {loading ? (
+          <p className="text-center text-gray-500">Carregando saldo...</p>
+        ) : !sucesso ? (
           <>
             <div className="flex gap-4 mb-4">
               <button
-                className={`flex-1 py-2 rounded-lg border ${metodo === "pix" ? "bg-gray-200 font-bold" : "bg-gray-100"}`}
+                className={`flex-1 py-2 rounded-lg border ${
+                  metodo === "pix" ? "bg-gray-200 font-bold" : "bg-gray-100"
+                }`}
                 onClick={() => setMetodo("pix")}
               >
                 Cadastrar Pix
               </button>
               <button
-                className={`flex-1 py-2 rounded-lg border ${metodo === "usdt" ? "bg-gray-200 font-bold" : "bg-gray-100"}`}
+                className={`flex-1 py-2 rounded-lg border ${
+                  metodo === "usdt" ? "bg-gray-200 font-bold" : "bg-gray-100"
+                }`}
                 onClick={() => setMetodo("usdt")}
               >
                 Cadastrar Carteira BEP-20 (Binance)
@@ -142,7 +157,9 @@ export default function SaquePage() {
               type="number"
               value={valor}
               onChange={(e) => setValor(e.target.value)}
-              placeholder={`Digite o valor (saldo disponível: R$${saldo.toFixed(2)})`}
+              placeholder={`Digite o valor (saldo disponível: R$${(saldo ?? 0).toFixed(
+                2
+              )})`}
               className="w-full border p-2 rounded mb-4"
             />
 
@@ -159,7 +176,8 @@ export default function SaquePage() {
               🎉 Parabéns! Saque concluído.
             </p>
             <p className="text-sm text-gray-700">
-              Em até <span className="font-bold">60 minutos</span> será creditado em sua conta.
+              Em até <span className="font-bold">60 minutos</span> será
+              creditado em sua conta.
             </p>
           </div>
         )}
