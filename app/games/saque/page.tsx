@@ -10,17 +10,26 @@ export default function SaquePage() {
   const [sucesso, setSucesso] = useState(false);
   const [pix, setPix] = useState("");
   const [usdt, setUsdt] = useState("");
-  const [saldo, setSaldo] = useState<number | null>(null); // Pode ser null até carregar
+  const [saldo, setSaldo] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   // Buscar saldo atualizado do usuário logado
   const fetchSaldo = async () => {
     try {
       setLoading(true);
+      setError(null);
       const res = await axios.get("/api/auth/usuario/saldo");
-      setSaldo(res.data.saldo ?? 0);
-    } catch (err) {
+      
+      if (res.data && typeof res.data.saldo === 'number') {
+        setSaldo(res.data.saldo);
+      } else {
+        throw new Error("Resposta da API inválida");
+      }
+    } catch (err: any) {
       console.error("Erro ao buscar saldo:", err);
+      setError("Erro ao carregar saldo. Tente novamente.");
       setSaldo(0);
     } finally {
       setLoading(false);
@@ -48,28 +57,26 @@ export default function SaquePage() {
         valor: metodo === "pix" ? pix : usdt,
       });
 
-      alert(`${metodo.toUpperCase()} cadastrado com sucesso!`);
+      setInfo(`${metodo.toUpperCase()} cadastrado com sucesso!`);
+      setTimeout(() => setInfo(null), 3000);
     } catch (err: any) {
       console.error(err.response?.data || err.message);
-      alert("Erro ao cadastrar método de saque.");
+      setError("Erro ao cadastrar método de saque.");
     }
   };
 
   // Solicitar saque
   const handleSaque = async () => {
-    if (saldo === null) {
-      alert("Saldo ainda está sendo carregado. Aguarde...");
-      return;
-    }
+    setError(null);
 
     const valorNumber = Number(valor);
     if (!valor || isNaN(valorNumber) || valorNumber <= 0) {
-      alert("Digite um valor válido para sacar.");
+      setError("Digite um valor válido para sacar.");
       return;
     }
 
     if (valorNumber > saldo) {
-      alert("Você não possui saldo suficiente para esse saque.");
+      setError("Você não possui saldo suficiente para esse saque.");
       return;
     }
 
@@ -80,9 +87,9 @@ export default function SaquePage() {
       });
       setSucesso(true);
       await fetchSaldo(); // Atualiza saldo após saque
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Erro ao solicitar saque.");
+      setError(err.response?.data?.message || "Erro ao solicitar saque.");
     }
   };
 
@@ -96,90 +103,134 @@ export default function SaquePage() {
           <span className="font-semibold">60 minutos</span>.
         </div>
 
+        {error && (
+          <div className="bg-red-100 border border-red-300 text-red-800 p-3 rounded mb-4 text-sm">
+            ⚠️ {error}
+          </div>
+        )}
+
+        {info && (
+          <div className="bg-green-100 border border-green-300 text-green-800 p-3 rounded mb-4 text-sm">
+            ✅ {info}
+          </div>
+        )}
+
         {loading ? (
-          <p className="text-center text-gray-500">Carregando saldo...</p>
-        ) : !sucesso ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+            <p className="text-gray-500">Carregando saldo...</p>
+          </div>
+        ) : sucesso ? (
+          <div className="text-center py-6">
+            <div className="text-4xl mb-4">🎉</div>
+            <p className="text-lg font-semibold text-green-600 mb-2">
+              Parabéns! Saque concluído.
+            </p>
+            <p className="text-sm text-gray-700">
+              Em até <span className="font-bold">60 minutos</span> será
+              creditado em sua conta.
+            </p>
+            <button
+              onClick={() => {
+                setSucesso(false);
+                setValor("");
+              }}
+              className="mt-4 bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition"
+            >
+              Novo Saque
+            </button>
+          </div>
+        ) : (
           <>
             <div className="flex gap-4 mb-4">
               <button
-                className={`flex-1 py-2 rounded-lg border ${
-                  metodo === "pix" ? "bg-gray-200 font-bold" : "bg-gray-100"
+                className={`flex-1 py-2 rounded-lg border transition-colors ${
+                  metodo === "pix" 
+                    ? "bg-blue-100 border-blue-400 font-bold text-blue-800" 
+                    : "bg-gray-100 border-gray-300"
                 }`}
                 onClick={() => setMetodo("pix")}
               >
                 Cadastrar Pix
               </button>
               <button
-                className={`flex-1 py-2 rounded-lg border ${
-                  metodo === "usdt" ? "bg-gray-200 font-bold" : "bg-gray-100"
+                className={`flex-1 py-2 rounded-lg border transition-colors ${
+                  metodo === "usdt" 
+                    ? "bg-blue-100 border-blue-400 font-bold text-blue-800" 
+                    : "bg-gray-100 border-gray-300"
                 }`}
                 onClick={() => setMetodo("usdt")}
               >
-                Cadastrar Carteira BEP-20 (Binance)
+                Cadastrar USDT
               </button>
             </div>
 
             {metodo === "pix" ? (
               <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Chave Pix
+                </label>
                 <input
                   type="text"
                   value={pix}
                   onChange={(e) => setPix(e.target.value)}
                   placeholder="Digite sua chave Pix"
-                  className="w-full border p-2 rounded mb-2"
+                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <button
                   onClick={handleSalvarMetodo}
-                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition mt-2"
                 >
                   Salvar Pix
                 </button>
               </div>
             ) : (
               <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Carteira USDT (BEP-20)
+                </label>
                 <input
                   type="text"
                   value={usdt}
                   onChange={(e) => setUsdt(e.target.value)}
-                  placeholder="Digite sua carteira USDT (BEP-20)"
-                  className="w-full border p-2 rounded mb-2"
+                  placeholder="Digite sua carteira USDT"
+                  className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <button
                   onClick={handleSalvarMetodo}
-                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition mt-2"
                 >
                   Salvar USDT
                 </button>
               </div>
             )}
 
-            <input
-              type="number"
-              value={valor}
-              onChange={(e) => setValor(e.target.value)}
-              placeholder={`Digite o valor (saldo disponível: R$${(saldo ?? 0).toFixed(
-                2
-              )})`}
-              className="w-full border p-2 rounded mb-4"
-            />
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Valor do Saque
+              </label>
+              <input
+                type="number"
+                value={valor}
+                onChange={(e) => setValor(e.target.value)}
+                placeholder={`Saldo disponível: R$ ${saldo.toFixed(2)}`}
+                className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                min="0"
+                step="0.01"
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                Saldo disponível: R$ {saldo.toFixed(2)}
+              </div>
+            </div>
 
             <button
               onClick={handleSaque}
-              className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+              disabled={loading}
+              className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sacar
+              {loading ? "Processando..." : "Sacar"}
             </button>
           </>
-        ) : (
-          <div className="text-center">
-            <p className="text-lg font-semibold text-green-600 mb-2">
-              🎉 Parabéns! Saque concluído.
-            </p>
-            <p className="text-sm text-gray-700">
-              Em até <span className="font-bold">60 minutos</span> será
-              creditado em sua conta.
-            </p>
-          </div>
         )}
       </div>
     </LayoutWrapper>
