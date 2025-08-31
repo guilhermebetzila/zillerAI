@@ -52,13 +52,12 @@ export default function DashboardPage() {
     const fetchUsuario = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/usuario/dados`, { credentials: 'include' });
+        const res = await fetch(`/api/usuario`, { credentials: 'include' }); // ✅ Corrigido
         if (!res.ok) throw new Error('Erro ao buscar dados do usuário');
         const data = await res.json();
 
-        // ✅ Ajustado para usar valorInvestido (maiúsculo)
         setSaldo(Number(data.saldo) || 0);
-        setValorInvestido(Number(data.valorInvestido) || 0);
+        setValorInvestido(Number(data.valorInvestido) || 0); // ✅ Corrigido (maiúsculo)
         setRendimentoDiario(Number(data.rendimentoDiario) || 0);
         setBonusResidual(Number(data.bonusResidual) || 0);
         setTotalIndicados(Number(data.totalIndicados) || 0);
