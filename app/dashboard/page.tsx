@@ -56,9 +56,9 @@ export default function DashboardPage() {
         if (!res.ok) throw new Error('Erro ao buscar dados do usuário');
         const data = await res.json();
 
-        // 👇 Ajuste: valorinvestido conforme nome no banco
+        // ✅ Ajustado para usar valorInvestido (maiúsculo)
         setSaldo(Number(data.saldo) || 0);
-        setValorInvestido(Number(data.valorinvestido) || 0);
+        setValorInvestido(Number(data.valorInvestido) || 0);
         setRendimentoDiario(Number(data.rendimentoDiario) || 0);
         setBonusResidual(Number(data.bonusResidual) || 0);
         setTotalIndicados(Number(data.totalIndicados) || 0);
