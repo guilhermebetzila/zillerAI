@@ -52,17 +52,17 @@ export default function DashboardPage() {
     const fetchUsuario = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/usuario`, { credentials: 'include' }); // ✅ Corrigido
+        const res = await fetch(`/api/usuario`, { credentials: 'include' });
         if (!res.ok) throw new Error('Erro ao buscar dados do usuário');
         const data = await res.json();
 
-        setSaldo(Number(data.saldo) || 0);
-        setValorInvestido(Number(data.valorInvestido) || 0); // ✅ Corrigido (maiúsculo)
-        setRendimentoDiario(Number(data.rendimentoDiario) || 0);
-        setBonusResidual(Number(data.bonusResidual) || 0);
-        setTotalIndicados(Number(data.totalIndicados) || 0);
-        setPontos(Number(data.pontos) || 0);
-        setUserPhotoUrl(data.photoUrl || '');
+        setSaldo(data.saldo !== undefined ? Number(data.saldo) : saldo);
+        setValorInvestido(data.valorInvestido !== undefined ? Number(data.valorInvestido) : valorInvestido);
+        setRendimentoDiario(data.rendimentoDiario !== undefined ? Number(data.rendimentoDiario) : rendimentoDiario);
+        setBonusResidual(data.bonusResidual !== undefined ? Number(data.bonusResidual) : bonusResidual);
+        setTotalIndicados(data.totalIndicados !== undefined ? Number(data.totalIndicados) : totalIndicados);
+        setPontos(data.pontos !== undefined ? Number(data.pontos) : pontos);
+        setUserPhotoUrl(data.photoUrl || userPhotoUrl);
       } catch (error) {
         console.error(error);
       } finally {
@@ -78,9 +78,9 @@ export default function DashboardPage() {
         const res = await fetch(`/api/rede`, { credentials: 'include' });
         if (!res.ok) throw new Error('Erro ao buscar rede');
         const data = await res.json();
-        setPontosDiretos(Number(data.diretos) || 0);
-        setPontosIndiretos(Number(data.indiretos) || 0);
-        setPontos(Number(data.pontosTotais) || pontos);
+        setPontosDiretos(data.diretos !== undefined ? Number(data.diretos) : pontosDiretos);
+        setPontosIndiretos(data.indiretos !== undefined ? Number(data.indiretos) : pontosIndiretos);
+        setPontos(data.pontosTotais !== undefined ? Number(data.pontosTotais) : pontos);
       } catch (error) {
         console.error(error);
       }
@@ -94,8 +94,8 @@ export default function DashboardPage() {
         const res = await fetch(`/api/rendimentos/usuario`, { credentials: 'include' });
         if (!res.ok) throw new Error('Erro ao buscar rendimento diário');
         const data = await res.json();
-        setRendimentoDiario(Number(data.rendimento) || 0);
-        setBonusResidual(Number(data.bonusResidual) || bonusResidual);
+        setRendimentoDiario(data.rendimento !== undefined ? Number(data.rendimento) : rendimentoDiario);
+        setBonusResidual(data.bonusResidual !== undefined ? Number(data.bonusResidual) : bonusResidual);
       } catch (error) {
         console.error(error);
       }
@@ -144,7 +144,6 @@ export default function DashboardPage() {
     return null;
   }
 
-  // Calcula saldo total considerando rendimento diário + residual
   const saldoTotal = saldo + rendimentoDiario + bonusResidual;
 
   return (
