@@ -15,6 +15,15 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Usuário não identificado" }, { status: 400 });
     }
 
+    const usuario = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { investimentos: true },
+    });
+
+    if (!usuario) {
+      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
+    }
+
     const hoje = new Date().toISOString().split("T")[0];
 
     // 🔹 Rendimento diário do usuário
@@ -41,10 +50,16 @@ export async function GET(req: Request) {
       }
     }
 
+    // 🔹 Calcula o valor investido total (somente investimentos ativos)
+    const valorInvestidoTotal = usuario.investimentos
+      .filter(inv => inv.ativo)
+      .reduce((acc, inv) => acc + Number(inv.valor), 0);
+
     return NextResponse.json({
       userId,
       rendimento: rendimentoDiario.toNumber(),
       bonusResidual: bonusResidual.toNumber(),
+      valorInvestido: valorInvestidoTotal,
       dateKey: hoje,
     });
   } catch (error) {
@@ -149,11 +164,17 @@ export async function POST(req: Request) {
       });
     }
 
+    // 🔹 Calcula o valor investido total (somente investimentos ativos)
+    const valorInvestidoTotal = usuario.investimentos
+      .filter(inv => inv.ativo)
+      .reduce((acc, inv) => acc + Number(inv.valor), 0);
+
     return NextResponse.json({
       message: "Rendimentos atualizados com sucesso!",
       userId,
       rendimento: rendimentoDiario.toNumber(),
       bonusResidual: bonusResidual.toNumber(),
+      valorInvestido: valorInvestidoTotal,
       dateKey: hoje,
     });
   } catch (error) {
