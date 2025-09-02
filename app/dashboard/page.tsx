@@ -65,8 +65,11 @@ export default function DashboardPage() {
       const dataRede = await resRede.json();
       const dataRendimento = await resRendimento.json();
 
+      // 🔧 Ajuste importante: saldo = rendimento diário + bônus residual
+      const saldoCalculado = Number(dataRendimento.rendimento ?? 0) + Number(dataRendimento.bonusResidual ?? 0);
+
       // Atualiza estados garantindo que não fiquem undefined
-      setSaldo(Number(dataUsuario.saldo ?? saldo));
+      setSaldo(saldoCalculado);
       setValorInvestido(Number(dataUsuario.valorInvestido ?? valorInvestido));
       setRendimentoDiario(Number(dataRendimento.rendimento ?? rendimentoDiario));
       setBonusResidual(Number(dataRendimento.bonusResidual ?? bonusResidual));
@@ -132,7 +135,6 @@ export default function DashboardPage() {
     return null;
   }
 
-  // 🔧 Ajuste importante: o saldo total vem do backend, não precisa somar manualmente
   const saldoTotal = saldo;
 
   return (
