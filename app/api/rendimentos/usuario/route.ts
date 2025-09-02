@@ -55,8 +55,10 @@ export async function GET(req: Request) {
       .filter(inv => inv.ativo)
       .reduce((acc, inv) => acc + Number(inv.valor), 0);
 
+    // ✅ Retornando saldo real do usuário, sem somar manualmente
     return NextResponse.json({
       userId,
+      saldo: usuario.saldo instanceof Decimal ? usuario.saldo.toNumber() : Number(usuario.saldo),
       rendimento: rendimentoDiario.toNumber(),
       bonusResidual: bonusResidual.toNumber(),
       valorInvestido: valorInvestidoTotal,
@@ -169,9 +171,17 @@ export async function POST(req: Request) {
       .filter(inv => inv.ativo)
       .reduce((acc, inv) => acc + Number(inv.valor), 0);
 
+    // ✅ Agora retornamos também o saldo atualizado
+    const usuarioAtualizado = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
     return NextResponse.json({
       message: "Rendimentos atualizados com sucesso!",
       userId,
+      saldo: usuarioAtualizado?.saldo instanceof Decimal
+        ? usuarioAtualizado.saldo.toNumber()
+        : Number(usuarioAtualizado?.saldo),
       rendimento: rendimentoDiario.toNumber(),
       bonusResidual: bonusResidual.toNumber(),
       valorInvestido: valorInvestidoTotal,
