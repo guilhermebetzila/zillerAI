@@ -22,7 +22,6 @@ type Rendimento = {
 };
 
 export default function InvestimentosPage() {
-  const [saldo, setSaldo] = useState<number>(0);
   const [valorInvestido, setValorInvestido] = useState<number>(0);
   const [bonusResidual, setBonusResidual] = useState<number>(0);
   const [investimentos, setInvestimentos] = useState<Investimento[]>([]);
@@ -39,9 +38,7 @@ export default function InvestimentosPage() {
       const res = await fetch("/api/investir");
       const data = await res.json();
       if (res.ok) {
-        setSaldo(parseFloat(data.saldo) || 0);
         setValorInvestido(parseFloat(data.valorInvestido) || 0);
-        setBonusResidual(parseFloat(data.bonusResidual) || 0);
         setInvestimentos(data.investimentos || []);
         setRendimentos(data.rendimentos || []);
 
@@ -49,11 +46,12 @@ export default function InvestimentosPage() {
         const ultimoRendimento = data.rendimentos?.[0]?.dateKey;
         setPodeReinvestir(ultimoRendimento !== hoje);
 
-        // Inicializa saldo total
-        const rendimentoHoje = data.rendimentos?.[0]?.amount
-          ? parseFloat(data.rendimentos[0].amount)
-          : 0;
-        setSaldoTotal((parseFloat(data.saldo) || 0) + rendimentoHoje + (parseFloat(data.bonusResidual) || 0));
+        // 🔧 Saldo atual = rendimento diário + bônus residual
+        const rendimentoDiarioHoje = parseFloat(data.rendimentoDiario || "0");
+        const bonusResidualHoje = parseFloat(data.bonusResidual || "0");
+        const saldoAtual = rendimentoDiarioHoje + bonusResidualHoje;
+        setSaldoTotal(saldoAtual);
+        setBonusResidual(bonusResidualHoje);
       } else {
         toast.error(data.error || "Erro ao carregar dados.");
       }
@@ -92,7 +90,7 @@ export default function InvestimentosPage() {
   };
 
   const reinvestir = async () => {
-    if (saldo <= 0) {
+    if (saldoTotal <= 0) {
       toast.error("❌ Você não tem saldo disponível para reinvestir.");
       return;
     }
@@ -102,12 +100,12 @@ export default function InvestimentosPage() {
       const res = await fetch("/api/reinvestir", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ valor: saldo }),
+        body: JSON.stringify({ valor: saldoTotal }),
       });
       const data = await res.json();
       if (res.ok) {
         toast.success("🔄 Reinvestimento realizado com sucesso!");
-        setSaldo(0);
+        setSaldoTotal(0);
         setPodeReinvestir(false);
         carregarDados();
       } else {
@@ -119,25 +117,6 @@ export default function InvestimentosPage() {
       setLoadingReinvestir(false);
     }
   };
-
-  // Atualiza saldo total automaticamente em tempo real
-  useEffect(() => {
-    const intervalo = setInterval(() => {
-      if (investimentos.length > 0) {
-        // calcula rendimento diário total em percentual
-        const rendimentoTotal = investimentos.reduce((acc, inv) => {
-          const valor = parseFloat(inv.valor);
-          const taxa = parseFloat(inv.percentualDiario) / 100;
-          return acc + valor * taxa;
-        }, 0);
-
-        // soma ao saldoTotal
-        setSaldoTotal(prev => prev + rendimentoTotal / 86400); // assume 86400 segundos por dia
-      }
-    }, 1000); // atualiza a cada 1 segundo
-
-    return () => clearInterval(intervalo);
-  }, [investimentos]);
 
   useEffect(() => {
     carregarDados();
