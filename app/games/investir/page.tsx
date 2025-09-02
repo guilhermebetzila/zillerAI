@@ -36,26 +36,31 @@ export default function InvestimentosPage() {
 
   const carregarDados = async () => {
     try {
-      const res = await fetch("/api/investir");
-      const data = await res.json();
-      if (res.ok) {
-        setValorInvestido(parseFloat(data.valorInvestido) || 0);
-        setInvestimentos(data.investimentos || []);
-        setRendimentos(data.rendimentos || []);
+      const [resInvestir, resSaldo] = await Promise.all([
+        fetch("/api/investir"),
+        fetch("/api/saldo"),
+      ]);
+
+      const dataInvestir = await resInvestir.json();
+      const dataSaldo = await resSaldo.json();
+
+      if (resInvestir.ok && resSaldo.ok) {
+        setValorInvestido(parseFloat(dataInvestir.valorInvestido) || 0);
+        setInvestimentos(dataInvestir.investimentos || []);
+        setRendimentos(dataInvestir.rendimentos || []);
 
         const hoje = new Date().toISOString().split("T")[0];
-        const ultimoRendimento = data.rendimentos?.[0]?.dateKey;
+        const ultimoRendimento = dataInvestir.rendimentos?.[0]?.dateKey;
         setPodeReinvestir(ultimoRendimento !== hoje);
 
-        // ✅ Calcular saldo atual = rendimento diário + bônus residual
-        const rendimentoHoje = parseFloat(data.rendimentoDiario || "0");
-        const residualHoje = parseFloat(data.bonusResidual || "0");
+        // ✅ Usa o saldo real da carteira
+        setSaldoTotal(Number(dataSaldo.saldo ?? 0));
 
-        setRendimentoDiario(rendimentoHoje);
-        setBonusResidual(residualHoje);
-        setSaldoTotal(rendimentoHoje + residualHoje);
+        // Também mantém rendimento diário e residual separados
+        setRendimentoDiario(Number(dataSaldo.rendimento ?? 0));
+        setBonusResidual(Number(dataSaldo.bonusResidual ?? 0));
       } else {
-        toast.error(data.error || "Erro ao carregar dados.");
+        toast.error("Erro ao carregar dados.");
       }
     } catch {
       toast.error("❌ Erro de conexão.");
@@ -132,7 +137,7 @@ export default function InvestimentosPage() {
         <div className="bg-gray-800 p-4 rounded-lg shadow text-center">
           <p className="text-gray-400">Saldo Atual</p>
           <p className="text-green-400 text-xl font-bold">
-            {(rendimentoDiario + bonusResidual).toFixed(2)} USDT
+            {saldoTotal.toFixed(2)} USDT
           </p>
         </div>
         <div className="bg-gray-800 p-4 rounded-lg shadow text-center">
