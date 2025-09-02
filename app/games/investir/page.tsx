@@ -132,7 +132,7 @@ export default function InvestimentosPage() {
         <div className="bg-gray-800 p-4 rounded-lg shadow text-center">
           <p className="text-gray-400">Saldo Atual</p>
           <p className="text-green-400 text-xl font-bold">
-            {saldoTotal.toFixed(2)} USDT
+            {(rendimentoDiario + bonusResidual).toFixed(2)} USDT
           </p>
         </div>
         <div className="bg-gray-800 p-4 rounded-lg shadow text-center">
