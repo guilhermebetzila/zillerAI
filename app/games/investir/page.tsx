@@ -24,6 +24,7 @@ type Rendimento = {
 export default function InvestimentosPage() {
   const [valorInvestido, setValorInvestido] = useState<number>(0);
   const [bonusResidual, setBonusResidual] = useState<number>(0);
+  const [rendimentoDiario, setRendimentoDiario] = useState<number>(0);
   const [investimentos, setInvestimentos] = useState<Investimento[]>([]);
   const [rendimentos, setRendimentos] = useState<Rendimento[]>([]);
   const [novoValor, setNovoValor] = useState<string>("");
@@ -46,12 +47,13 @@ export default function InvestimentosPage() {
         const ultimoRendimento = data.rendimentos?.[0]?.dateKey;
         setPodeReinvestir(ultimoRendimento !== hoje);
 
-        // 🔧 Saldo atual = rendimento diário + bônus residual
-        const rendimentoDiarioHoje = parseFloat(data.rendimentoDiario || "0");
-        const bonusResidualHoje = parseFloat(data.bonusResidual || "0");
-        const saldoAtual = rendimentoDiarioHoje + bonusResidualHoje;
-        setSaldoTotal(saldoAtual);
-        setBonusResidual(bonusResidualHoje);
+        // ✅ Calcular saldo atual = rendimento diário + bônus residual
+        const rendimentoHoje = parseFloat(data.rendimentoDiario || "0");
+        const residualHoje = parseFloat(data.bonusResidual || "0");
+
+        setRendimentoDiario(rendimentoHoje);
+        setBonusResidual(residualHoje);
+        setSaldoTotal(rendimentoHoje + residualHoje);
       } else {
         toast.error(data.error || "Erro ao carregar dados.");
       }
@@ -129,11 +131,15 @@ export default function InvestimentosPage() {
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-gray-800 p-4 rounded-lg shadow text-center">
           <p className="text-gray-400">Saldo Atual</p>
-          <p className="text-green-400 text-xl font-bold">{saldoTotal.toFixed(2)} USDT</p>
+          <p className="text-green-400 text-xl font-bold">
+            {saldoTotal.toFixed(2)} USDT
+          </p>
         </div>
         <div className="bg-gray-800 p-4 rounded-lg shadow text-center">
           <p className="text-gray-400">Total Investido</p>
-          <p className="text-yellow-400 text-xl font-bold">{valorInvestido.toFixed(2)} USDT</p>
+          <p className="text-yellow-400 text-xl font-bold">
+            {valorInvestido.toFixed(2)} USDT
+          </p>
         </div>
       </div>
 
