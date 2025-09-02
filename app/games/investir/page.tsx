@@ -24,12 +24,15 @@ type Rendimento = {
 export default function InvestimentosPage() {
   const [saldo, setSaldo] = useState<number>(0);
   const [valorInvestido, setValorInvestido] = useState<number>(0);
+  const [bonusResidual, setBonusResidual] = useState<number>(0);
   const [investimentos, setInvestimentos] = useState<Investimento[]>([]);
   const [rendimentos, setRendimentos] = useState<Rendimento[]>([]);
   const [novoValor, setNovoValor] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [loadingReinvestir, setLoadingReinvestir] = useState(false);
   const [podeReinvestir, setPodeReinvestir] = useState(true);
+
+  const [saldoTotal, setSaldoTotal] = useState<number>(0);
 
   const carregarDados = async () => {
     try {
@@ -38,12 +41,19 @@ export default function InvestimentosPage() {
       if (res.ok) {
         setSaldo(parseFloat(data.saldo) || 0);
         setValorInvestido(parseFloat(data.valorInvestido) || 0);
+        setBonusResidual(parseFloat(data.bonusResidual) || 0);
         setInvestimentos(data.investimentos || []);
         setRendimentos(data.rendimentos || []);
 
         const hoje = new Date().toISOString().split("T")[0];
         const ultimoRendimento = data.rendimentos?.[0]?.dateKey;
         setPodeReinvestir(ultimoRendimento !== hoje);
+
+        // Inicializa saldo total
+        const rendimentoHoje = data.rendimentos?.[0]?.amount
+          ? parseFloat(data.rendimentos[0].amount)
+          : 0;
+        setSaldoTotal((parseFloat(data.saldo) || 0) + rendimentoHoje + (parseFloat(data.bonusResidual) || 0));
       } else {
         toast.error(data.error || "Erro ao carregar dados.");
       }
@@ -110,6 +120,25 @@ export default function InvestimentosPage() {
     }
   };
 
+  // Atualiza saldo total automaticamente em tempo real
+  useEffect(() => {
+    const intervalo = setInterval(() => {
+      if (investimentos.length > 0) {
+        // calcula rendimento diário total em percentual
+        const rendimentoTotal = investimentos.reduce((acc, inv) => {
+          const valor = parseFloat(inv.valor);
+          const taxa = parseFloat(inv.percentualDiario) / 100;
+          return acc + valor * taxa;
+        }, 0);
+
+        // soma ao saldoTotal
+        setSaldoTotal(prev => prev + rendimentoTotal / 86400); // assume 86400 segundos por dia
+      }
+    }, 1000); // atualiza a cada 1 segundo
+
+    return () => clearInterval(intervalo);
+  }, [investimentos]);
+
   useEffect(() => {
     carregarDados();
   }, []);
@@ -121,7 +150,7 @@ export default function InvestimentosPage() {
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-gray-800 p-4 rounded-lg shadow text-center">
           <p className="text-gray-400">Saldo Atual</p>
-          <p className="text-green-400 text-xl font-bold">{saldo.toFixed(2)} USDT</p>
+          <p className="text-green-400 text-xl font-bold">{saldoTotal.toFixed(2)} USDT</p>
         </div>
         <div className="bg-gray-800 p-4 rounded-lg shadow text-center">
           <p className="text-gray-400">Total Investido</p>
@@ -152,11 +181,17 @@ export default function InvestimentosPage() {
         <button
           onClick={reinvestir}
           disabled={loadingReinvestir || !podeReinvestir}
-          className={`w-full mt-2 p-2 rounded disabled:opacity-50 ${podeReinvestir ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600 cursor-not-allowed"}`}
+          className={`w-full mt-2 p-2 rounded disabled:opacity-50 ${
+            podeReinvestir ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600 cursor-not-allowed"
+          }`}
         >
           {loadingReinvestir ? "Processando..." : "🔄 Reinvestir"}
         </button>
-        {!podeReinvestir && <p className="text-sm text-gray-400 mt-1">Aguarde o próximo rendimento do dia para reinvestir novamente.</p>}
+        {!podeReinvestir && (
+          <p className="text-sm text-gray-400 mt-1">
+            Aguarde o próximo rendimento do dia para reinvestir novamente.
+          </p>
+        )}
       </div>
 
       <div className="bg-gray-800 p-4 rounded-lg shadow">

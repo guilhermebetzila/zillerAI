@@ -9,7 +9,7 @@ async function aplicarRendimentos() {
   const hoje = new Date();
   const dateKey = hoje.toISOString().split("T")[0];
 
-  // ✅ removido ": typeof prisma"
+  // Aplica rendimentos em transação
   await prisma.$transaction(async (tx) => {
     for (const usuario of usuarios) {
       for (const investimento of usuario.investimentos) {
@@ -18,7 +18,8 @@ async function aplicarRendimentos() {
         const base = Number(investimento.valor);
         if (base <= 0) continue;
 
-        const rate = 0.025;
+        // ✅ Alterado para 1.5%
+        const rate = 0.015;
         const amount = base * rate;
 
         // Verifica se já aplicou hoje
@@ -34,7 +35,7 @@ async function aplicarRendimentos() {
 
         if (existe) continue;
 
-        // Cria registro do rendimento
+        // Cria registro do rendimento diário
         await tx.rendimentoDiario.create({
           data: {
             userId: usuario.id,

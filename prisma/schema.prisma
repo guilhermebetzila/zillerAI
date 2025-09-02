@@ -74,7 +74,7 @@ model Investimento {
   valor               Decimal
   criadoEm            DateTime           @default(now())
   userId              Int
-  percentualDiario    Decimal            @default(0.025)
+  percentualDiario    Decimal            @default(0.015)
   rendimentoAcumulado Decimal            @default(0)
   ativo               Boolean            @default(true)
   limite              Decimal            @default(0)

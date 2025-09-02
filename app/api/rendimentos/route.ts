@@ -20,9 +20,11 @@ async function gerarRendimentoDiario() {
         if (!inv.ativo) continue;
 
         const base = Number(inv.valor ?? 0);
-        const rate = 0.025;
+        // ✅ Ajuste da taxa diária para 1.5%
+        const rate = 0.015;
         const amount = base * rate;
 
+        // Verifica se já aplicou hoje
         const jaRodou = await tx.rendimentoDiario.findUnique({
           where: {
             userId_investimentoId_dateKey: {
@@ -34,6 +36,7 @@ async function gerarRendimentoDiario() {
         });
         if (jaRodou) continue;
 
+        // Cria registro do rendimento diário
         await tx.rendimentoDiario.create({
           data: {
             userId: usuario.id,
@@ -45,6 +48,7 @@ async function gerarRendimentoDiario() {
           },
         });
 
+        // Atualiza saldo do usuário
         await tx.user.update({
           where: { id: usuario.id },
           data: { saldo: { increment: amount } },
@@ -58,7 +62,7 @@ async function gerarRendimentoDiario() {
   return { totalAplicado };
 }
 
-// POST
+// POST → Aplica rendimentos
 export async function POST() {
   try {
     const resultado = await gerarRendimentoDiario();
@@ -72,7 +76,7 @@ export async function POST() {
   }
 }
 
-// GET
+// GET → Retorna rendimentos do dia
 export async function GET() {
   try {
     const hoje = new Date().toISOString().split("T")[0];

@@ -28,10 +28,12 @@ const PONTOS_OBJETIVO = 1000;
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-
   const user = session?.user as any;
   const displayName = user?.name || user?.email?.split('@')[0] || 'Usuário';
+  const codigoIndicacao = user?.id || user?.email || '';
+  const linkIndicacao = `https://www.ziller.club/register?indicador=${encodeURIComponent(codigoIndicacao)}`;
 
+  // Estados principais
   const [saldo, setSaldo] = useState<number>(0);
   const [valorInvestido, setValorInvestido] = useState<number>(0);
   const [rendimentoDiario, setRendimentoDiario] = useState<number>(0);
@@ -43,64 +45,50 @@ export default function DashboardPage() {
   const [userPhotoUrl, setUserPhotoUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
-  const codigoIndicacao = user?.id || user?.email || '';
-  const linkIndicacao = `https://www.ziller.club/register?indicador=${encodeURIComponent(codigoIndicacao)}`;
   const progresso = Math.min((pontos / PONTOS_OBJETIVO) * 100, 100);
   const pontosRestantes = Math.max(PONTOS_OBJETIVO - pontos, 0);
 
-  useEffect(() => {
-    const fetchUsuario = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/usuario`, { credentials: 'include' });
-        if (!res.ok) throw new Error('Erro ao buscar dados do usuário');
-        const data = await res.json();
+  // Função única de fetch de dados do usuário com retry simples
+  const fetchUsuarioDados = async () => {
+    try {
+      const [resUsuario, resRede, resRendimento] = await Promise.all([
+        fetch('/api/usuario', { credentials: 'include' }),
+        fetch('/api/rede', { credentials: 'include' }),
+        fetch('/api/rendimentos/usuario', { credentials: 'include' })
+      ]);
 
-        setSaldo(data.saldo !== undefined ? Number(data.saldo) : saldo);
-        setValorInvestido(data.valorInvestido !== undefined ? Number(data.valorInvestido) : valorInvestido);
-        setRendimentoDiario(data.rendimentoDiario !== undefined ? Number(data.rendimentoDiario) : rendimentoDiario);
-        setBonusResidual(data.bonusResidual !== undefined ? Number(data.bonusResidual) : bonusResidual);
-        setTotalIndicados(data.totalIndicados !== undefined ? Number(data.totalIndicados) : totalIndicados);
-        setPontos(data.pontos !== undefined ? Number(data.pontos) : pontos);
-        setUserPhotoUrl(data.photoUrl || userPhotoUrl);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (status === 'authenticated') fetchUsuario();
-  }, [status]);
+      if (!resUsuario.ok) throw new Error('Erro ao buscar dados do usuário');
+      if (!resRede.ok) throw new Error('Erro ao buscar rede');
+      if (!resRendimento.ok) throw new Error('Erro ao buscar rendimento');
 
-  useEffect(() => {
-    const fetchRede = async () => {
-      try {
-        const res = await fetch(`/api/rede`, { credentials: 'include' });
-        if (!res.ok) throw new Error('Erro ao buscar rede');
-        const data = await res.json();
-        setPontosDiretos(data.diretos !== undefined ? Number(data.diretos) : pontosDiretos);
-        setPontosIndiretos(data.indiretos !== undefined ? Number(data.indiretos) : pontosIndiretos);
-        setPontos(data.pontosTotais !== undefined ? Number(data.pontosTotais) : pontos);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    if (status === 'authenticated') fetchRede();
-  }, [status]);
+      const dataUsuario = await resUsuario.json();
+      const dataRede = await resRede.json();
+      const dataRendimento = await resRendimento.json();
 
+      // Atualiza estados garantindo que não fiquem undefined
+      setSaldo(Number(dataUsuario.saldo ?? saldo));
+      setValorInvestido(Number(dataUsuario.valorInvestido ?? valorInvestido));
+      setRendimentoDiario(Number(dataRendimento.rendimento ?? rendimentoDiario));
+      setBonusResidual(Number(dataRendimento.bonusResidual ?? bonusResidual));
+      setTotalIndicados(Number(dataUsuario.totalIndicados ?? totalIndicados));
+      setPontos(Number(dataRede.pontosTotais ?? pontos));
+      setPontosDiretos(Number(dataRede.diretos ?? pontosDiretos));
+      setPontosIndiretos(Number(dataRede.indiretos ?? pontosIndiretos));
+      setUserPhotoUrl(dataUsuario.photoUrl || userPhotoUrl);
+    } catch (error) {
+      console.error('Erro ao carregar dados do dashboard:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // useEffect principal com polling
   useEffect(() => {
-    const fetchRendimento = async () => {
-      try {
-        const res = await fetch(`/api/rendimentos/usuario`, { credentials: 'include' });
-        if (!res.ok) throw new Error('Erro ao buscar rendimento diário');
-        const data = await res.json();
-        setRendimentoDiario(data.rendimento !== undefined ? Number(data.rendimento) : rendimentoDiario);
-        setBonusResidual(data.bonusResidual !== undefined ? Number(data.bonusResidual) : bonusResidual);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    if (status === 'authenticated') fetchRendimento();
+    if (status === 'authenticated') {
+      fetchUsuarioDados();
+      const interval = setInterval(fetchUsuarioDados, 10000); // polling a cada 10s para atualizar automaticamente
+      return () => clearInterval(interval);
+    }
   }, [status]);
 
   const handleMenuClick = (item: MenuItem) => {
@@ -280,10 +268,9 @@ export default function DashboardPage() {
             </AccordionItem>
           </Accordion>
 
-          {/* === NOVA SEÇÃO: Carrossel de imagens e cards (acima do rodapé) === */}
+          {/* === Carrossel de imagens e cards (acima do rodapé) === */}
           <div className="mt-8 overflow-x-auto scrollbar-hide">
             <div className="flex gap-3 px-1 py-3 items-stretch">
-              {/* 3 fotos quadradas com bordas arredondadas */}
               <a
                 href="https://t.me/+atEKwprJriVlY2Ex"
                 target="_blank"
@@ -306,34 +293,31 @@ export default function DashboardPage() {
                 <img src="/img/coin.png" alt="Coin" className="w-full h-full object-cover" />
               </div>
 
-              {/* Quarta “imagem”: Em Breve + play.png abaixo */}
               <div className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden shadow-md bg-white/10 flex flex-col items-center justify-center p-1">
                 <span className="text-[10px] leading-tight text-center">Em Breve</span>
                 <img src="/img/play.png" alt="Play" className="w-6 h-6 mt-1" />
               </div>
+            </div>
 
-              {/* Quadrados maiores com textos */}
-              <div className="flex-shrink-0 min-w-[260px] h-28 rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center px-3">
+            {/* Grid dos 5 quadrados abaixo */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
+              <div className="w-full aspect-square rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center p-3">
                 <span className="text-sm font-medium">EM BREVE acesso ao roadmap da empresa</span>
               </div>
-
-              <div className="flex-shrink-0 min-w-[260px] h-28 rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center px-3">
+              <div className="w-full aspect-square rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center p-3">
                 <span className="text-sm font-medium">Em Breve Banco internacional</span>
               </div>
-
-              <div className="flex-shrink-0 min-w-[260px] h-28 rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center px-3">
+              <div className="w-full aspect-square rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center p-3">
                 <span className="text-sm font-medium">
                   Especialista em Desenvolvimento de ferramentas de tecnologia para produtos financeiros
                 </span>
               </div>
-
-              <div className="flex-shrink-0 min-w-[260px] h-28 rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center px-3">
+              <div className="w-full aspect-square rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center p-3">
                 <span className="text-sm font-medium">
                   Participantes para incentivo contra a fome e educação
                 </span>
               </div>
-
-              <div className="flex-shrink-0 min-w-[260px] h-28 rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center px-3">
+              <div className="w-full aspect-square rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center p-3">
                 <span className="text-sm font-medium">
                   Em breve lançamento Criptomoeda e Capital aberto bolsa de valores
                 </span>
@@ -357,12 +341,12 @@ export default function DashboardPage() {
               <div>
                 <h3 className="font-bold mb-2">Comunidade Ziller</h3>
                 <p>Top 10 Zillers com maiores ganhos do mês.</p>
-                <p>Missão: transformar vidas com renda passiva.</p>
+                <p>Grupos exclusivos de suporte e mentoria.</p>
               </div>
             </div>
-            <div className="text-center mt-4">
-              © {new Date().getFullYear()} Ziller.Ia • Todos os direitos reservados
-            </div>
+            <p className="mt-6 text-center text-gray-400 text-xs">
+              © 2025 Ziller.ai - Todos os direitos reservados
+            </p>
           </footer>
         </div>
       </div>

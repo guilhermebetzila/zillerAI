@@ -28,6 +28,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Saldo insuficiente para reinvestir" }, { status: 400 });
     }
 
+    // ✅ Percentual diário ajustado para 1.5% (0.015)
+    const percentualDiario = 0.015;
+
     await prisma.$transaction([
       prisma.user.update({
         where: { id: usuario.id },
@@ -38,9 +41,9 @@ export async function POST(req: Request) {
           userId: usuario.id,
           valor: saldoAtual,
           rendimentoAcumulado: 0,
-          limite: saldoAtual * 3,
+          limite: saldoAtual * 3, // limite de lucro 3x o valor investido
           ativo: true,
-          percentualDiario: 0.025,
+          percentualDiario, // 1.5% diário
         },
       }),
     ]);
