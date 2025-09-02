@@ -132,7 +132,8 @@ export default function DashboardPage() {
     return null;
   }
 
-  const saldoTotal = saldo + rendimentoDiario + bonusResidual;
+  // 🔧 Ajuste importante: o saldo total vem do backend, não precisa somar manualmente
+  const saldoTotal = saldo;
 
   return (
     <LayoutWrapper>
@@ -180,8 +181,7 @@ export default function DashboardPage() {
 
           {/* Card de valores ajustado */}
           <div className="mb-6 p-4 bg-white/10 rounded-2xl shadow-md text-white">
-            <p>💰 Saldo Total: <strong>${saldoTotal.toFixed(2)}</strong></p>
-            <p>💵 Saldo Anterior: <strong>${saldo.toFixed(2)}</strong></p>
+            <p>💰 Saldo Atual: <strong>${saldoTotal.toFixed(2)}</strong></p>
             <p>📈 Valor Investido: <strong>${valorInvestido.toFixed(2)}</strong></p>
             <p>🌟 Rendimento Diário: <strong>${rendimentoDiario.toFixed(2)}</strong></p>
             <p>🎁 Bônus Residual Hoje: <strong>${bonusResidual.toFixed(2)}</strong></p>
