@@ -1,14 +1,19 @@
-import type { Config } from "tailwindcss";
-import tailwindAnimate from "tailwindcss-animate";
-import scrollbarHide from "tailwind-scrollbar-hide";
+import type { Config } from "tailwindcss"
+import tailwindAnimate from "tailwindcss-animate"
+import scrollbarHide from "tailwind-scrollbar-hide"
 
 const config: Config = {
   darkMode: "class",
   content: [
-    "./app/**/*.{ts,tsx}",
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./pages/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./ui/**/*.{js,ts,jsx,tsx}",
+  ],
+  safelist: [
+    "bg-[hsl(var(--background))]",
+    "text-[hsl(var(--foreground))]",
   ],
   theme: {
     container: {
@@ -82,6 +87,6 @@ const config: Config = {
     },
   },
   plugins: [tailwindAnimate, scrollbarHide],
-};
+}
 
-export default config;
+export default config
