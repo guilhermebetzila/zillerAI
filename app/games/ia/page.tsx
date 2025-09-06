@@ -34,7 +34,6 @@ export default function RedePage() {
         if (!res.ok) throw new Error('Erro ao buscar rede');
         const data = await res.json();
 
-        // API retorna { usuario, diretos, indiretos, arvore }
         const usuario: UsuarioComIndicados = data.arvore;
 
         function converter(usuario: UsuarioComIndicados, nivel: number): UsuarioRede {
@@ -111,10 +110,10 @@ export default function RedePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
-              className="relative flex mt-6 justify-center space-x-2 md:space-x-6 overflow-visible"
+              className="relative flex mt-6 justify-center space-x-2 md:space-x-6"
             >
               <svg
-                className="absolute top-0 left-0 w-full h-8 md:h-10 overflow-visible"
+                className="absolute top-0 left-0 w-full h-8 md:h-10"
                 style={{ pointerEvents: 'none' }}
               >
                 {node.indicados.map((_, i) => {
@@ -158,7 +157,7 @@ export default function RedePage() {
   }
 
   return (
-    <div className="min-h-screen bg-transparent text-white p-4 md:p-6 overflow-auto">
+    <div className="min-h-screen bg-transparent text-white p-4 md:p-6 overflow-x-auto overflow-y-auto">
       <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center text-purple-400">
         Minha Rede - Árvore Responsiva
       </h1>
@@ -168,7 +167,7 @@ export default function RedePage() {
       )}
 
       {!carregando && rede && (
-        <div className="overflow-auto p-2 md:p-4 min-w-max flex justify-center">
+        <div className="p-2 md:p-4 min-w-max flex justify-center">
           {renderNode(rede)}
         </div>
       )}
