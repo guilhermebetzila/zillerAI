@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface UsuarioComIndicados {
@@ -23,6 +23,12 @@ interface UsuarioRede {
 export default function RedePage() {
   const [rede, setRede] = useState<UsuarioRede | null>(null);
   const [carregando, setCarregando] = useState(true);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const isDragging = useRef(false);
+  const lastPos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     async function carregarRede() {
@@ -111,6 +117,7 @@ export default function RedePage() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
               className="relative flex mt-6 justify-center space-x-2 md:space-x-6"
+              style={{ minHeight: "100px" }}
             >
               <svg
                 className="absolute top-0 left-0 w-full h-8 md:h-10"
@@ -156,18 +163,93 @@ export default function RedePage() {
     );
   }
 
+  // Mouse Pan
+  function handleMouseDown(e: React.MouseEvent) {
+    isDragging.current = true;
+    lastPos.current = { x: e.clientX, y: e.clientY };
+  }
+
+  function handleMouseMove(e: React.MouseEvent) {
+    if (!isDragging.current) return;
+    const dx = e.clientX - lastPos.current.x;
+    const dy = e.clientY - lastPos.current.y;
+    setPan((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+    lastPos.current = { x: e.clientX, y: e.clientY };
+  }
+
+  function handleMouseUp() {
+    isDragging.current = false;
+  }
+
+  // Touch Pan (mobile)
+  function handleTouchStart(e: React.TouchEvent) {
+    if (e.touches.length === 1) {
+      lastPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      isDragging.current = true;
+    }
+  }
+
+  function handleTouchMove(e: React.TouchEvent) {
+    if (!isDragging.current || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - lastPos.current.x;
+    const dy = e.touches[0].clientY - lastPos.current.y;
+    setPan((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+    lastPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
+
+  function handleTouchEnd() {
+    isDragging.current = false;
+  }
+
   return (
-    <div className="min-h-screen bg-transparent text-white p-4 md:p-6 overflow-x-auto overflow-y-auto">
+    <div
+      className="min-h-screen bg-transparent text-white p-4 md:p-6 overflow-hidden"
+      ref={containerRef}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center text-purple-400">
         Minha Rede - Árvore Responsiva
       </h1>
+
+      {/* Controle de Zoom */}
+      <div className="flex justify-center items-center gap-4 mb-6">
+        <label htmlFor="zoom" className="text-purple-300 font-semibold">
+          Zoom:
+        </label>
+        <input
+          id="zoom"
+          type="range"
+          min="0.5"
+          max="2"
+          step="0.1"
+          value={zoom}
+          onChange={(e) => setZoom(parseFloat(e.target.value))}
+          className="w-64 accent-purple-500"
+        />
+        <span className="text-purple-300">{(zoom * 100).toFixed(0)}%</span>
+      </div>
 
       {carregando && (
         <p className="text-center text-blue-400">Carregando rede...</p>
       )}
 
       {!carregando && rede && (
-        <div className="p-2 md:p-4 min-w-max flex justify-center">
+        <div
+          className="p-2 md:p-4 min-w-max flex justify-center"
+          style={{
+            minHeight: "150vh",
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: "center top",
+            cursor: isDragging.current ? "grabbing" : "grab",
+            touchAction: "none", // impede conflito com scroll do navegador
+          }}
+        >
           {renderNode(rede)}
         </div>
       )}
