@@ -48,23 +48,41 @@ function calcularPontosIndiretos(indicados: UsuarioArvore[]): number {
   return total;
 }
 
-// 📊 Função principal para calcular pontos diretos e indiretos
+// 📊 Função recursiva para contar todos os indiretos
+function contarIndiretos(indicados: UsuarioArvore[]): number {
+  let total = 0;
+  for (const ind of indicados) {
+    total += 1; // conta o próprio indicado
+    if (ind.indicados.length > 0) {
+      total += contarIndiretos(ind.indicados);
+    }
+  }
+  return total;
+}
+
+// 📊 Função principal para calcular pontos diretos e indiretos + quantidade
 function calcularPontos(arvore: UsuarioArvore | null) {
-  if (!arvore) return { pontosDiretos: 0, pontosIndiretos: 0, pontosTotais: 0 };
+  if (!arvore) return { pontosDiretos: 0, pontosIndiretos: 0, pontosTotais: 0, diretos: 0, indiretos: 0 };
 
   // Pontos dos indicados diretos (primeiro nível)
   let pontosDiretos = 0;
   for (const direto of arvore.indicados) {
-    pontosDiretos += 5 + Math.floor(direto.valorInvestido / 2); // 5 pontos fixos + pontos por investimento
+    pontosDiretos += 5 + Math.floor(direto.valorInvestido / 2);
   }
 
   // Pontos dos indiretos (todos os níveis abaixo dos diretos)
   const pontosIndiretos = calcularPontosIndiretos(arvore.indicados);
 
+  // Quantidade de diretos e indiretos
+  const diretos = arvore.indicados.length;
+  const indiretos = contarIndiretos(arvore.indicados);
+
   return {
     pontosDiretos,
     pontosIndiretos,
     pontosTotais: pontosDiretos + pontosIndiretos,
+    diretos,
+    indiretos,
   };
 }
 
@@ -89,14 +107,16 @@ export async function GET(req: Request) {
     // Monta árvore completa do usuário
     const arvore = await carregarArvore(usuario.id);
 
-    // Calcula pontos híbridos
-    const { pontosDiretos, pontosIndiretos, pontosTotais } = calcularPontos(arvore);
+    // Calcula pontos híbridos + quantidade de pessoas
+    const { pontosDiretos, pontosIndiretos, pontosTotais, diretos, indiretos } = calcularPontos(arvore);
 
     return NextResponse.json({
       usuario: usuario.email,
       pontosDiretos,
       pontosIndiretos,
       pontosTotais,
+      diretos,
+      indiretos,
       arvore,
     });
   } catch (error) {
