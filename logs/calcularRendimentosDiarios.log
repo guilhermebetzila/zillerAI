@@ -951,3 +951,313 @@ C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiario
 Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
 
 🏁 Cálculo de rendimentos diário concluído!
+
+=== Calculando rendimentos do dia: 2025-09-05 ===
+❌ Erro ao calcular rendimento do investimento 14: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 15: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 16: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 17: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 18: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 19: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 20: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 21: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 22: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 23: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 24: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 25: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 26: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 27: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 28: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 29: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 30: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 31: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 1: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 2: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 3: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 4: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 5: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 6: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 7: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 8: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 9: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 10: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 11: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 12: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 13: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 32: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 33: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+❌ Erro ao calcular rendimento do investimento 34: PrismaClientKnownRequestError: 
+Invalid `prisma.rendimentoDiario.create()` invocation in
+C:\Users\joao\Desktop\betdreams-appoficial\app\scripts\calcularRendimentosDiarios.ts:35:37
+
+  32 const base = new Decimal(investimento.valor);
+  33 const rendimento = base.mul(rate);
+  34 
+→ 35 await prisma.rendimentoDiario.create(
+Unique constraint failed on the fields: (`userId`,`investimentoId`,`dateKey`)
+
+🏁 Cálculo de rendimentos diário concluído!

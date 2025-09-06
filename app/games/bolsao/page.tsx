@@ -2,148 +2,130 @@
 
 import React, { useEffect, useState } from 'react';
 
-function formatBRL(valor: number) {
-  return valor.toLocaleString('pt-BR', {
+function formatUSD(valor: number) {
+  return valor.toLocaleString('en-US', {
     style: 'currency',
-    currency: 'BRL',
+    currency: 'USD',
     minimumFractionDigits: 2,
   });
 }
 
-export default function BolsaoPage() {
-  const [bolsao, setBolsao] = useState(108_456); // valor inicial
-  const [capital, setCapital] = useState(0);
-  const [zilersAtivos, setZilersAtivos] = useState(0);
-  const [lucrosDistribuidos, setLucrosDistribuidos] = useState(0);
-  const [lucrosAnimados, setLucrosAnimados] = useState(0); // Para animação
+export default function ICOPagina() {
+  const [precoZLR, setPrecoZLR] = useState(0.10); // preço inicial em dólar
+  const [tokensDisponiveis, setTokensDisponiveis] = useState(100_000_000); 
+  const [tokensVendidos, setTokensVendidos] = useState(0);
+  const [capitalCaptado, setCapitalCaptado] = useState(0);
+  const [capitalAnimado, setCapitalAnimado] = useState(0);
 
-  const caixa1 = 100_000;
-  const caixa2 = 100_000;
-
-  // Função para adicionar percentual diário aleatório entre 6% e 8%
-  const atualizarBolsaoDiario = () => {
-    const percentual = 0.06 + Math.random() * 0.02; // 6% a 8%
-    setBolsao(prev => prev + prev * percentual);
-  };
-
-  // Função para buscar dados atualizados do servidor
-  const fetchBolsao = async () => {
+  // Buscar dados da ICO no backend
+  const fetchICO = async () => {
     try {
-      const res = await fetch('/api/bolsao');
-      if (!res.ok) throw new Error('Erro ao buscar dados');
+      const res = await fetch('/api/ico');
+      if (!res.ok) throw new Error('Erro ao buscar ICO');
       const data = await res.json();
 
-      setCapital(data.capitalEmpresa); // capital atualizado do banco
-      setZilersAtivos(data.totalUsuarios); // total de usuários cadastrados
-      setBolsao(data.bolsaoOperacional); // valor do bolsão do banco
-
-      // Soma todos os rendimentos residuais diários para calcular os lucros distribuídos
-      const totalRendimentosResiduais = data.usuarios
-        .map((u: any) => u.rendimentoResidualDiario || 0)
-        .reduce((acc: number, val: number) => acc + val, 0);
-
-      setLucrosDistribuidos(totalRendimentosResiduais);
+      setPrecoZLR(data.precoZLR);
+      setTokensDisponiveis(data.tokensDisponiveis);
+      setTokensVendidos(data.tokensVendidos);
+      setCapitalCaptado(data.capitalCaptado);
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Função para animar os lucros distribuídos
+  // Animação para o capital captado
   useEffect(() => {
-    const intervaloAnimacao = setInterval(() => {
-      setLucrosAnimados(prev => {
-        const incremento = (lucrosDistribuidos - prev) * 0.05; // incrementa 5% da diferença
-        if (Math.abs(lucrosDistribuidos - prev) < 1) return lucrosDistribuidos;
+    const intervalo = setInterval(() => {
+      setCapitalAnimado(prev => {
+        const incremento = (capitalCaptado - prev) * 0.05;
+        if (Math.abs(capitalCaptado - prev) < 1) return capitalCaptado;
         return prev + incremento;
       });
-    }, 50); // atualiza a cada 50ms
+    }, 50);
+    return () => clearInterval(intervalo);
+  }, [capitalCaptado]);
 
-    return () => clearInterval(intervaloAnimacao);
-  }, [lucrosDistribuidos]);
-
-  // Função para registrar novo depósito
-  const adicionarDeposito = async (valor: number) => {
+  // Simulação de compra de tokens
+  const comprarTokens = async (quantidade: number) => {
     try {
-      const res = await fetch('/api/deposito', {
+      const res = await fetch('/api/ico/comprar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ valor }),
+        body: JSON.stringify({ quantidade }),
       });
-      if (!res.ok) throw new Error('Erro ao adicionar depósito');
+      if (!res.ok) throw new Error('Erro na compra');
       const data = await res.json();
-      setCapital(data.novoCapital); // atualiza capital com o depósito
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
-  // Função para registrar saque
-  const realizarSaque = async (valor: number) => {
-    try {
-      const res = await fetch('/api/saque', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ valor }),
-      });
-      if (!res.ok) throw new Error('Erro ao realizar saque');
-      const data = await res.json();
-      setCapital(data.novoCapital); // atualiza capital
-      setBolsao(data.novoBolsao);   // atualiza bolsão proporcional
+      setTokensVendidos(data.tokensVendidos);
+      setTokensDisponiveis(data.tokensDisponiveis);
+      setCapitalCaptado(data.capitalCaptado);
+      alert(`Compra realizada com sucesso! Você adquiriu ${quantidade} ZLR.`);
     } catch (err) {
       console.error(err);
     }
   };
 
   useEffect(() => {
-    fetchBolsao();
-
-    // Atualiza o Bolsão Operacional uma vez por dia (simulação: 24h em ms)
-    const intervaloBolsao = setInterval(atualizarBolsaoDiario, 24 * 60 * 60 * 1000);
-    // Atualiza dados do servidor a cada 3 segundos
-    const intervaloFetch = setInterval(fetchBolsao, 3000);
-
-    return () => {
-      clearInterval(intervaloBolsao);
-      clearInterval(intervaloFetch);
-    };
+    fetchICO();
+    const intervaloFetch = setInterval(fetchICO, 5000);
+    return () => clearInterval(intervaloFetch);
   }, []);
 
   return (
     <div className="min-h-screen text-white flex flex-col items-center justify-start p-6 space-y-8">
-      <h1 className="text-4xl font-bold mb-4 text-center">Bolsão da Inteligência Artificial</h1>
+      <h1 className="text-4xl font-bold text-center mb-6">🚀 ICO da Ziller (ZLR)</h1>
+      <p className="text-lg text-center max-w-2xl">
+        Participe da revolução! Garanta seus tokens <span className="font-bold">ZLR</span> agora
+        na fase inicial da ICO e seja parte do futuro da <span className="text-purple-400">Ziller</span>.
+      </p>
 
-      <div className="rounded-lg p-6 w-full max-w-xl text-center border-2 border-white">
-        <h2 className="text-xl font-semibold mb-2">Bolsão Operacional</h2>
-        <p className="text-4xl font-bold">{formatBRL(bolsao)}</p>
-        <span className="text-sm">Valor total em operações de mercado</span>
-      </div>
-
-      <div className="rounded-lg p-6 w-full max-w-xl text-center border-2 border-white">
-        <h2 className="text-xl font-semibold mb-2">Capital da Empresa</h2>
-        <p className="text-4xl font-bold">{formatBRL(capital)}</p>
-        <span className="text-sm">Capital próprio acompanhando depósitos, saques e oscilações</span>
-      </div>
-
-      <div className="rounded-lg p-6 w-full max-w-xl text-center border-2 border-white">
-        <h2 className="text-xl font-semibold mb-2">Zilers Ativos</h2>
-        <p className="text-4xl font-bold">{zilersAtivos}</p>
-        <span className="text-sm">Total de usuários cadastrados</span>
-      </div>
-
-      <div className="rounded-lg p-6 w-full max-w-xl text-center border-2 border-white">
-        <h2 className="text-xl font-semibold mb-2">Lucros Distribuídos</h2>
-        <p className="text-4xl font-bold">{formatBRL(lucrosAnimados)}</p>
-        <span className="text-sm">Lucros distribuídos dos rendimentos residuais diários</span>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
         <div className="rounded-lg p-6 text-center border-2 border-white">
-          <h3 className="text-lg font-semibold mb-2">Caixa de Proteção 1</h3>
-          <p className="text-3xl font-bold">{formatBRL(caixa1)}</p>
+          <h2 className="text-xl font-semibold mb-2">Preço Atual do ZLR</h2>
+          <p className="text-3xl font-bold">{formatUSD(precoZLR)}</p>
+          <span className="text-sm">Preço por token (em dólar)</span>
         </div>
+
         <div className="rounded-lg p-6 text-center border-2 border-white">
-          <h3 className="text-lg font-semibold mb-2">Caixa de Proteção 2</h3>
-          <p className="text-3xl font-bold">{formatBRL(caixa2)}</p>
+          <h2 className="text-xl font-semibold mb-2">Tokens Disponíveis</h2>
+          <p className="text-3xl font-bold">{tokensDisponiveis.toLocaleString('en-US')}</p>
+          <span className="text-sm">Quantidade total para venda</span>
+        </div>
+
+        <div className="rounded-lg p-6 text-center border-2 border-white">
+          <h2 className="text-xl font-semibold mb-2">Tokens Vendidos</h2>
+          <p className="text-3xl font-bold">{tokensVendidos.toLocaleString('en-US')}</p>
+          <span className="text-sm">Quantidade já adquirida pelos investidores</span>
+        </div>
+
+        <div className="rounded-lg p-6 text-center border-2 border-white">
+          <h2 className="text-xl font-semibold mb-2">Capital Captado</h2>
+          <p className="text-3xl font-bold">{formatUSD(capitalAnimado)}</p>
+          <span className="text-sm">Total levantado na ICO até agora</span>
+        </div>
+      </div>
+
+      <div className="rounded-lg p-6 w-full max-w-xl text-center border-2 border-purple-500">
+        <h3 className="text-xl font-semibold mb-4">💸 Comprar Tokens ZLR</h3>
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+          <button
+            onClick={() => comprarTokens(100)}
+            className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition text-white font-bold shadow-lg"
+          >
+            Comprar 100 ZLR
+          </button>
+          <button
+            onClick={() => comprarTokens(500)}
+            className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition text-white font-bold shadow-lg"
+          >
+            Comprar 500 ZLR
+          </button>
+          <button
+            onClick={() => comprarTokens(1000)}
+            className="px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 transition text-white font-bold shadow-lg"
+          >
+            Comprar 1000 ZLR
+          </button>
         </div>
       </div>
     </div>

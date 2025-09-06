@@ -3,12 +3,12 @@
 🔹 Total de investimentos ativos encontrados: 2
 
 Investimento 1 do usuário 1
-Valor: 100.00, Taxa diária: 0.0250, Rendimento: 2.50
+Valor: 100.00, Taxa diária: 0.0150, Rendimento: 1.50
 Criando novo registro de rendimento diário
 ✅ Atualização concluída para o investimento 1
 
 Investimento 2 do usuário 1
-Valor: 10.00, Taxa diária: 0.0250, Rendimento: 0.25
+Valor: 10.00, Taxa diária: 0.0150, Rendimento: 0.15
 Criando novo registro de rendimento diário
 ✅ Atualização concluída para o investimento 2
 
@@ -178,5 +178,44 @@ Server has closed the connection.
 ✅ Rendimento aplicado: 0.13 USDT para investimento 11, usuário 18
 ✅ Rendimento aplicado: 249.88 USDT para investimento 12, usuário 18
 ✅ Rendimento aplicado: 16.80 USDT para investimento 13, usuário 8
+
+🏁 Atualização concluída!
+
+=== Início da atualização: 2025-09-05 ===
+🔹 Total de investimentos ativos encontrados: 34
+💡 Rendimento já registrado para investimento 14, usuário 6
+💡 Rendimento já registrado para investimento 15, usuário 1
+💡 Rendimento já registrado para investimento 16, usuário 24
+💡 Rendimento já registrado para investimento 17, usuário 9
+💡 Rendimento já registrado para investimento 18, usuário 1
+💡 Rendimento já registrado para investimento 19, usuário 1
+💡 Rendimento já registrado para investimento 20, usuário 1
+💡 Rendimento já registrado para investimento 21, usuário 10
+💡 Rendimento já registrado para investimento 22, usuário 1
+💡 Rendimento já registrado para investimento 23, usuário 16
+💡 Rendimento já registrado para investimento 24, usuário 27
+💡 Rendimento já registrado para investimento 25, usuário 27
+💡 Rendimento já registrado para investimento 26, usuário 6
+💡 Rendimento já registrado para investimento 27, usuário 8
+💡 Rendimento já registrado para investimento 28, usuário 8
+💡 Rendimento já registrado para investimento 29, usuário 8
+💡 Rendimento já registrado para investimento 30, usuário 10
+💡 Rendimento já registrado para investimento 31, usuário 24
+💡 Rendimento já registrado para investimento 1, usuário 1
+💡 Rendimento já registrado para investimento 2, usuário 1
+💡 Rendimento já registrado para investimento 3, usuário 1
+💡 Rendimento já registrado para investimento 4, usuário 1
+💡 Rendimento já registrado para investimento 5, usuário 3
+💡 Rendimento já registrado para investimento 6, usuário 16
+💡 Rendimento já registrado para investimento 7, usuário 16
+💡 Rendimento já registrado para investimento 8, usuário 9
+💡 Rendimento já registrado para investimento 9, usuário 1
+💡 Rendimento já registrado para investimento 10, usuário 1
+💡 Rendimento já registrado para investimento 11, usuário 18
+💡 Rendimento já registrado para investimento 12, usuário 18
+💡 Rendimento já registrado para investimento 13, usuário 8
+✅ Rendimento aplicado: 0.27 USDT para investimento 32, usuário 8
+✅ Rendimento aplicado: 0.24 USDT para investimento 33, usuário 8
+✅ Rendimento aplicado: 0.02 USDT para investimento 34, usuário 9
 
 🏁 Atualização concluída!
