@@ -1,18 +1,19 @@
 // app/api/rede/route.ts
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/authOptions"; // caminho relativo
-import { prisma } from "../../../lib/prisma"; // caminho ajustado para lib/prisma.ts
+import { authOptions } from "../auth/[...nextauth]/authOptions"; 
+import { prisma } from "../../../lib/prisma";
 
+// Tipo da árvore do usuário
 export type UsuarioArvore = {
   id: number;
   nome: string | null;
   email: string;
-  quantidadeDiretos: number;
+  valorInvestido: number;
   indicados: UsuarioArvore[];
 };
 
-// 🔁 Função recursiva para montar a árvore
+// 🔁 Função recursiva para montar a árvore completa
 async function carregarArvore(userId: number): Promise<UsuarioArvore | null> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -22,35 +23,48 @@ async function carregarArvore(userId: number): Promise<UsuarioArvore | null> {
   if (!user) return null;
 
   const filhos = await Promise.all(
-    user.indicados.map((ind: { id: number }) => carregarArvore(ind.id))
+    user.indicados.map((ind) => carregarArvore(ind.id))
   );
 
   return {
     id: user.id,
     nome: user.nome,
     email: user.email,
-    quantidadeDiretos: user.indicados.length,
+    valorInvestido: Number(user.valorInvestido ?? 0),
     indicados: filhos.filter((f): f is UsuarioArvore => f !== null),
   };
 }
 
-// 📊 Contador de diretos e indiretos corrigido
-function contarDiretosEIndiretos(arvore: UsuarioArvore | null) {
-  if (!arvore) return { diretos: 0, indiretos: 0 };
+// 📊 Função recursiva para calcular pontos indiretos (todos os níveis abaixo)
+function calcularPontosIndiretos(indicados: UsuarioArvore[]): number {
+  let total = 0;
+  for (const ind of indicados) {
+    // 5 pontos fixos + pontos por investimento
+    total += 5 + Math.floor(ind.valorInvestido / 2);
+    if (ind.indicados.length > 0) {
+      total += calcularPontosIndiretos(ind.indicados);
+    }
+  }
+  return total;
+}
 
-  const diretos = arvore.indicados.length;
+// 📊 Função principal para calcular pontos diretos e indiretos
+function calcularPontos(arvore: UsuarioArvore | null) {
+  if (!arvore) return { pontosDiretos: 0, pontosIndiretos: 0, pontosTotais: 0 };
 
-  function contarTodosIndiretos(nodes: UsuarioArvore[]): number {
-    return nodes.reduce((acc, node) => {
-      return acc + node.indicados.length + contarTodosIndiretos(node.indicados);
-    }, 0);
+  // Pontos dos indicados diretos (primeiro nível)
+  let pontosDiretos = 0;
+  for (const direto of arvore.indicados) {
+    pontosDiretos += 5 + Math.floor(direto.valorInvestido / 2); // 5 pontos fixos + pontos por investimento
   }
 
-  const totalIndiretos = contarTodosIndiretos(arvore.indicados);
+  // Pontos dos indiretos (todos os níveis abaixo dos diretos)
+  const pontosIndiretos = calcularPontosIndiretos(arvore.indicados);
 
   return {
-    diretos,
-    indiretos: totalIndiretos,
+    pontosDiretos,
+    pontosIndiretos,
+    pontosTotais: pontosDiretos + pontosIndiretos,
   };
 }
 
@@ -72,17 +86,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
+    // Monta árvore completa do usuário
     const arvore = await carregarArvore(usuario.id);
-    const { diretos, indiretos } = contarDiretosEIndiretos(arvore);
 
-    const pontosDiretos = diretos * 5;
-    const pontosIndiretos = indiretos * 5;
-    const pontosTotais = pontosDiretos + pontosIndiretos;
+    // Calcula pontos híbridos
+    const { pontosDiretos, pontosIndiretos, pontosTotais } = calcularPontos(arvore);
 
     return NextResponse.json({
       usuario: usuario.email,
-      diretos,
-      indiretos,
       pontosDiretos,
       pontosIndiretos,
       pontosTotais,
