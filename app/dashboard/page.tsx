@@ -114,7 +114,7 @@ export default function DashboardPage() {
 
   return (
     <LayoutWrapper>
-      <div className="min-h-screen flex flex-col bg-gray-900 text-white relative">
+      <div className="h-screen flex flex-col bg-gray-900 text-white">
         {/* HEADER FIXO */}
         <header className="flex items-center justify-between px-4 py-3 bg-gray-950 shadow-md sticky top-0 z-20">
           <div className="flex items-center gap-3">
@@ -131,90 +131,93 @@ export default function DashboardPage() {
           <Bell className="w-6 h-6 cursor-pointer hover:text-green-400 transition" />
         </header>
 
-        {/* CARD SALDO */}
-        <div className="p-6 text-center bg-gradient-to-r from-green-600 to-green-500 rounded-b-3xl shadow-lg">
-          <p className="text-sm">Saldo disponível</p>
-          <h1 className="text-4xl font-bold mt-1">R$ {saldoTotal.toFixed(2)}</h1>
-          <p className="text-xs mt-2">Investido: R$ {valorInvestido.toFixed(2)}</p>
-        </div>
+        {/* CONTEÚDO ROLÁVEL */}
+        <main className="flex-1 overflow-y-auto pb-24">
+          {/* CARD SALDO */}
+          <div className="p-6 text-center bg-gradient-to-r from-green-600 to-green-500 rounded-b-3xl shadow-lg">
+            <p className="text-sm">Saldo disponível</p>
+            <h1 className="text-4xl font-bold mt-1">R$ {saldoTotal.toFixed(2)}</h1>
+            <p className="text-xs mt-2">Investido: R$ {valorInvestido.toFixed(2)}</p>
+          </div>
 
-        {/* AÇÕES RÁPIDAS EM GRID */}
-        <div className="grid grid-cols-2 gap-4 p-4">
-          {menuItems.map((item, index) => (
-            <button
-              key={index}
-              onClick={() => handleMenuClick(item)}
-              className="flex flex-col items-center justify-center bg-white/10 p-4 rounded-2xl shadow-md hover:bg-white/20 transition"
-            >
-              <img src={item.img} alt={item.label} className="w-10 h-10 mb-2" />
-              <span className="text-sm font-medium">{item.label}</span>
-            </button>
-          ))}
-        </div>
+          {/* AÇÕES RÁPIDAS EM GRID */}
+          <div className="grid grid-cols-2 gap-4 p-4">
+            {menuItems.map((item, index) => (
+              <button
+                key={index}
+                onClick={() => handleMenuClick(item)}
+                className="flex flex-col items-center justify-center bg-white/10 p-4 rounded-2xl shadow-md hover:bg-white/20 transition"
+              >
+                <img src={item.img} alt={item.label} className="w-10 h-10 mb-2" />
+                <span className="text-sm font-medium">{item.label}</span>
+              </button>
+            ))}
+          </div>
 
-        {/* SEÇÕES - ACCORDION */}
-        <div className="px-4">
-          <Accordion type="single" collapsible className="mt-4 space-y-2">
-            <AccordionItem value="pontuacao" className="border-0">
-              <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold">
-                📊 Pontuação & Indicação
-              </AccordionTrigger>
-              <AccordionContent className="px-4 py-3 text-sm space-y-2">
-                <p>Você já indicou <strong>{totalIndicados}</strong> pessoa(s)!</p>
-                <p>Pontos acumulados: {pontos}</p>
-                <p>Diretos: {pontosDiretos} | Indiretos: {pontosIndiretos}</p>
-                <div className="w-full bg-white/20 rounded-xl h-4">
-                  <div
-                    className="bg-green-500 h-4 rounded-xl transition-all duration-500"
-                    style={{ width: `${progresso}%` }}
-                  ></div>
-                </div>
-                <p>Faltam {pontosRestantes} pontos para desbloquear o próximo prêmio.</p>
-              </AccordionContent>
-            </AccordionItem>
+          {/* SEÇÕES - ACCORDION */}
+          <div className="px-4 pb-4">
+            <Accordion type="single" collapsible className="mt-4 space-y-2">
+              <AccordionItem value="pontuacao" className="border-0">
+                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold">
+                  📊 Pontuação & Indicação
+                </AccordionTrigger>
+                <AccordionContent className="px-4 py-3 text-sm space-y-2">
+                  <p>Você já indicou <strong>{totalIndicados}</strong> pessoa(s)!</p>
+                  <p>Pontos acumulados: {pontos}</p>
+                  <p>Diretos: {pontosDiretos} | Indiretos: {pontosIndiretos}</p>
+                  <div className="w-full bg-white/20 rounded-xl h-4">
+                    <div
+                      className="bg-green-500 h-4 rounded-xl transition-all duration-500"
+                      style={{ width: `${progresso}%` }}
+                    ></div>
+                  </div>
+                  <p>Faltam {pontosRestantes} pontos para desbloquear o próximo prêmio.</p>
+                </AccordionContent>
+              </AccordionItem>
 
-            <AccordionItem value="indicacao" className="border-0">
-              <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold">
-                🎁 Seu Código de Indicação
-              </AccordionTrigger>
-              <AccordionContent className="px-4 py-3 text-sm">
-                <div className="flex items-center justify-between bg-black/20 px-3 py-2 rounded-xl">
-                  <a
-                    href={linkIndicacao}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="truncate underline"
-                  >
-                    {linkIndicacao}
-                  </a>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(linkIndicacao)}
-                    className="ml-2 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-xl text-sm"
-                  >
-                    Copiar
-                  </button>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
+              <AccordionItem value="indicacao" className="border-0">
+                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold">
+                  🎁 Seu Código de Indicação
+                </AccordionTrigger>
+                <AccordionContent className="px-4 py-3 text-sm">
+                  <div className="flex items-center justify-between bg-black/20 px-3 py-2 rounded-xl">
+                    <a
+                      href={linkIndicacao}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="truncate underline"
+                    >
+                      {linkIndicacao}
+                    </a>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(linkIndicacao)}
+                      className="ml-2 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-xl text-sm"
+                    >
+                      Copiar
+                    </button>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
 
-            <AccordionItem value="empresa" className="border-0">
-              <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold">
-                ℹ️ Info Empresa
-              </AccordionTrigger>
-              <AccordionContent className="px-4 py-3 text-sm space-y-1">
-                <p>📌 CNPJ: 60.483.352/0001-77</p>
-                <p>📧 E-mail: suporteziller@gmail.com</p>
-                <p>📱 WhatsApp: (21) 99652-8434</p>
-                <p>🌐 Site Oficial: www.ziller.club</p>
-                <p>📸 Instagram: @ziller.club</p>
-                <p>📊 Relatórios no Telegram</p>
-                <p>💰 Atualização via USDT: 01/10/2025</p>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
+              <AccordionItem value="empresa" className="border-0">
+                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold">
+                  ℹ️ Info Empresa
+                </AccordionTrigger>
+                <AccordionContent className="px-4 py-3 text-sm space-y-1">
+                  <p>📌 CNPJ: 60.483.352/0001-77</p>
+                  <p>📧 E-mail: suporteziller@gmail.com</p>
+                  <p>📱 WhatsApp: (21) 99652-8434</p>
+                  <p>🌐 Site Oficial: www.ziller.club</p>
+                  <p>📸 Instagram: @ziller.club</p>
+                  <p>📊 Relatórios no Telegram</p>
+                  <p>💰 Atualização via USDT: 01/10/2025</p>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        </main>
 
-        {/* FOOTER FIXO ESTILO BANCO */}
+        {/* FOOTER FIXO */}
         <footer className="sticky bottom-0 w-full bg-gray-950 text-white py-2 px-6 flex justify-between items-center shadow-lg">
           <button onClick={() => router.push('/dashboard')} className="flex flex-col items-center">
             <Home className="w-6 h-6" /> <span className="text-xs">Início</span>
