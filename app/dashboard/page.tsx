@@ -5,7 +5,7 @@ import LayoutWrapper from '@components/LayoutWrapper';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@ui/accordion";
-import { ChevronDown, Bell, Home, User, Wallet, Settings } from "lucide-react";
+import { Bell, Home, User, Wallet, Settings, LogOut } from "lucide-react";
 
 interface MenuItem {
   label: string;
@@ -20,7 +20,6 @@ const menuItems: MenuItem[] = [
   { label: '📄 Cadastrar CPF', action: '/games/cadastrar-cpf', img: '/img/4.png' },
   { label: '💰 Bolsão da IA', action: '/games/bolsao', img: '/img/5.png' },
   { label: '🎓 Mentoria', action: '/games/mentoria', img: '/img/6.png' },
-  { label: '🚪 Sair', action: 'logout', img: '/img/7.png' },
 ];
 
 const PONTOS_OBJETIVO = 1000;
@@ -90,11 +89,6 @@ export default function DashboardPage() {
     }
   }, [status]);
 
-  const handleMenuClick = (item: MenuItem) => {
-    if (item.action === 'logout') signOut({ callbackUrl: '/login' });
-    else router.push(item.action);
-  };
-
   if (status === 'loading' || loading) {
     return (
       <LayoutWrapper>
@@ -128,7 +122,13 @@ export default function DashboardPage() {
               <p className="text-xs text-gray-400">{user?.email}</p>
             </div>
           </div>
-          <Bell className="w-6 h-6 cursor-pointer hover:text-green-400 transition" />
+          <div className="flex items-center gap-4">
+            <Bell className="w-6 h-6 cursor-pointer hover:text-green-400 transition" />
+            <LogOut
+              onClick={() => signOut({ callbackUrl: '/login' })}
+              className="w-6 h-6 cursor-pointer hover:text-red-400 transition"
+            />
+          </div>
         </header>
 
         {/* CONTEÚDO ROLÁVEL */}
@@ -145,7 +145,7 @@ export default function DashboardPage() {
             {menuItems.map((item, index) => (
               <button
                 key={index}
-                onClick={() => handleMenuClick(item)}
+                onClick={() => router.push(item.action)}
                 className="flex flex-col items-center justify-center bg-white/10 p-4 rounded-2xl shadow-md hover:bg-white/20 transition"
               >
                 <img src={item.img} alt={item.label} className="w-10 h-10 mb-2" />
