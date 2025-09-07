@@ -49,10 +49,7 @@ export default function DashboardPage() {
   const [userPhotoUrl, setUserPhotoUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [mostrarSaldo, setMostrarSaldo] = useState<boolean>(true);
-
   const [ultimasAtividades, setUltimasAtividades] = useState<Atividade[]>([]);
-
-  const progresso = Math.min((pontos / PONTOS_OBJETIVO) * 100, 100);
 
   const fetchUsuarioDados = async () => {
     try {
@@ -154,6 +151,12 @@ export default function DashboardPage() {
               {mostrarSaldo ? `R$ ${saldo.toFixed(2)}` : '••••••'}
             </h1>
             <p className="text-xs mt-2">Investido: {mostrarSaldo ? `R$ ${valorInvestido.toFixed(2)}` : '••••'}</p>
+
+            {/* EXIBIR PONTOS E INDICADOS DIRETOS/INDIRETOS ABAIXO DO SALDO */}
+            <div className="mt-4 text-sm text-white/90 w-full">
+              <p>Indicados: {totalIndicados}</p>
+              <p>Pontos: {pontos} (Diretos: {pontosDiretos} | Indiretos: {pontosIndiretos})</p>
+            </div>
           </div>
 
           {/* ÚLTIMAS ATIVIDADES */}
@@ -253,7 +256,7 @@ export default function DashboardPage() {
             </Accordion>
           </div>
 
-          {/* FEEDBACK DO USUÁRIO - movido para o final */}
+          {/* FEEDBACK DO USUÁRIO */}
           <div className="w-full max-w-md bg-gray-800 rounded-2xl p-4 mt-4 shadow-md text-center">
             <p>Como foi sua experiência com a tela inicial?</p>
             <div className="flex justify-center gap-4 mt-2">
