@@ -148,9 +148,17 @@ export default function DashboardPage() {
               </button>
             </div>
             <h1 className="text-4xl font-bold mt-1">
-              {mostrarSaldo ? `R$ ${saldo.toFixed(2)}` : '••••••'}
+              {mostrarSaldo ? `$ ${saldo.toFixed(2)}` : '••••••'}
             </h1>
             <p className="text-xs mt-2">Investido: {mostrarSaldo ? `R$ ${valorInvestido.toFixed(2)}` : '••••'}</p>
+          </div>
+
+          {/* BLOCO MINHAS CRIPTOMOEDAS */}
+          <div className="p-4 w-full max-w-md">
+            <h3 className="font-semibold mb-2">💎 Minhas Criptomoedas</h3>
+            <div className="bg-white/10 rounded-xl p-4 shadow-md text-center cursor-pointer hover:bg-white/20 transition">
+              <p className="font-medium">Criptomoeda Ziller</p>
+            </div>
           </div>
 
           {/* AÇÕES RÁPIDAS EM GRID */}
@@ -231,9 +239,9 @@ export default function DashboardPage() {
             </Accordion>
           </div>
 
-          {/* --- BLOCOS EXTRAS IGUAIS AO MERCADO PAGO --- */}
+          {/* --- BLOCOS EXTRAS --- */}
           <div className="px-4 pb-6 w-full max-w-md space-y-4">
-            {/* Últimas Atividades FIXO */}
+            {/* Últimas Atividades */}
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
               <h3 className="font-semibold mb-3">📝 Sua última atividade</h3>
               {ultimasAtividades.length === 0 ? (
