@@ -14,6 +14,7 @@
     "atualizarInvestimentos": "tsx app/scripts/atualizarInvestimentos.ts",
     "corrigirRendimentos": "tsx app/scripts/corrigirRendimentos.ts",
     "resetarDados": "tsx app/scripts/resetarDados.ts",
+    "aplicarRendimentos15Dias": "tsx app/scripts/aplicarRendimentos15Dias.ts",
     "migrate:users": "tsx app/scripts/migrateUsers.ts",
     "db:push": "prisma db push",
     "db:push:local": "cross-env DATABASE_URL=\"postgresql://postgres:KqPpaxIvaJwhSbcZVPMZxLWGFptQmlSg@metro.proxy.rlwy.net:12732/railway\" prisma db push",
