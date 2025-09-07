@@ -14,10 +14,7 @@
     "socket": "tsx app/socket/server.ts",
 
     "atualizarInvestimentos": "tsx app/scripts/atualizarInvestimentos.ts",
-    "calcularRendimentos": "tsx app/scripts/calcularRendimentosDiarios.ts",
-    "gerarRendimento": "tsx app/scripts/rendimento.ts",
-    "rodarTodos": "npm run atualizarInvestimentos && npm run calcularRendimentos && npm run gerarRendimento",
-    "investimentos": "npm run rodarTodos",
+    "corrigirRendimentos": "tsx app/scripts/corrigirRendimentos.ts",
 
     "migrate:users": "tsx app/scripts/migrateUsers.ts",
     "db:push": "prisma db push",
