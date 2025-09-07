@@ -151,31 +151,6 @@ export default function DashboardPage() {
               {mostrarSaldo ? `R$ ${saldo.toFixed(2)}` : '••••••'}
             </h1>
             <p className="text-xs mt-2">Investido: {mostrarSaldo ? `R$ ${valorInvestido.toFixed(2)}` : '••••'}</p>
-
-            {/* EXIBIR PONTOS E INDICADOS DIRETOS/INDIRETOS ABAIXO DO SALDO */}
-            <div className="mt-4 text-sm text-white/90 w-full">
-              <p>Indicados: {totalIndicados}</p>
-              <p>Pontos: {pontos} (Diretos: {pontosDiretos} | Indiretos: {pontosIndiretos})</p>
-            </div>
-          </div>
-
-          {/* ÚLTIMAS ATIVIDADES */}
-          <div className="w-full max-w-md bg-gray-800 rounded-2xl p-4 mt-4 shadow-md">
-            <h2 className="font-semibold mb-2 text-lg">Últimas Atividades</h2>
-            {ultimasAtividades.length === 0 ? (
-              <p className="text-sm text-gray-400">Nenhuma atividade recente.</p>
-            ) : (
-              <ul className="space-y-2">
-                {ultimasAtividades.map((atividade, index) => (
-                  <li key={index} className="flex justify-between bg-gray-700 p-2 rounded-xl">
-                    <span className="text-sm">{atividade.descricao}</span>
-                    <span className={`text-sm ${atividade.valor >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {atividade.valor >= 0 ? `+ R$ ${atividade.valor.toFixed(2)}` : `- R$ ${Math.abs(atividade.valor).toFixed(2)}`}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
 
           {/* AÇÕES RÁPIDAS EM GRID */}
@@ -253,16 +228,30 @@ export default function DashboardPage() {
                   <p>💰 Atualização via USDT: 01/10/2025</p>
                 </AccordionContent>
               </AccordionItem>
-            </Accordion>
-          </div>
 
-          {/* FEEDBACK DO USUÁRIO */}
-          <div className="w-full max-w-md bg-gray-800 rounded-2xl p-4 mt-4 shadow-md text-center">
-            <p>Como foi sua experiência com a tela inicial?</p>
-            <div className="flex justify-center gap-4 mt-2">
-              <button className="bg-green-500 px-4 py-1 rounded-xl">👍 Bom</button>
-              <button className="bg-red-500 px-4 py-1 rounded-xl">👎 Ruim</button>
-            </div>
+              {/* Últimas Atividades */}
+              <AccordionItem value="atividades" className="border-0">
+                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold w-full text-center">
+                  📝 Últimas Atividades
+                </AccordionTrigger>
+                <AccordionContent className="px-4 py-3 text-sm space-y-2">
+                  {ultimasAtividades.length === 0 ? (
+                    <p className="text-sm text-gray-400">Nenhuma atividade recente.</p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {ultimasAtividades.map((atividade, index) => (
+                        <li key={index} className="flex justify-between bg-gray-700 p-2 rounded-xl">
+                          <span className="text-sm">{atividade.descricao}</span>
+                          <span className={`text-sm ${atividade.valor >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {atividade.valor >= 0 ? `+ R$ ${atividade.valor.toFixed(2)}` : `- R$ ${Math.abs(atividade.valor).toFixed(2)}`}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </main>
 
