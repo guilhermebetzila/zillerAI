@@ -5,7 +5,7 @@ import LayoutWrapper from '@components/LayoutWrapper';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@ui/accordion";
-import { Bell, Home, User, Wallet, Settings, LogOut } from "lucide-react";
+import { Bell, Home, User, Wallet, Settings, LogOut, Eye, EyeOff } from "lucide-react";
 
 interface MenuItem {
   label: string;
@@ -17,7 +17,7 @@ const menuItems: MenuItem[] = [
   { label: '📥 Depositar', action: '/games/depositar' },
   { label: '📤 Saque via Pix', action: '/games/saque' },
   { label: '📄 Cadastrar CPF', action: '/games/cadastrar-cpf' },
-  { label: '💰 Bolsão da IA', action: '/games/bolsao' },
+  { label: '💰 Ico', action: '/games/bolsao' },
   { label: '🎓 Mentoria', action: '/games/mentoria' },
 ];
 
@@ -41,6 +41,7 @@ export default function DashboardPage() {
   const [pontosIndiretos, setPontosIndiretos] = useState<number>(0);
   const [userPhotoUrl, setUserPhotoUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [mostrarSaldo, setMostrarSaldo] = useState<boolean>(true);
 
   const progresso = Math.min((pontos / PONTOS_OBJETIVO) * 100, 100);
   const pontosRestantes = Math.max(PONTOS_OBJETIVO - pontos, 0);
@@ -102,8 +103,6 @@ export default function DashboardPage() {
     return null;
   }
 
-  const saldoTotal = saldo;
-
   return (
     <LayoutWrapper>
       <div className="h-screen flex flex-col bg-gray-900 text-white">
@@ -130,21 +129,28 @@ export default function DashboardPage() {
         </header>
 
         {/* CONTEÚDO ROLÁVEL */}
-        <main className="flex-1 overflow-y-auto pb-24">
-          {/* CARD SALDO */}
-          <div className="p-6 text-center bg-gradient-to-r from-green-600 to-green-500 rounded-b-3xl shadow-lg">
-            <p className="text-sm">Saldo disponível</p>
-            <h1 className="text-4xl font-bold mt-1">R$ {saldoTotal.toFixed(2)}</h1>
-            <p className="text-xs mt-2">Investido: R$ {valorInvestido.toFixed(2)}</p>
+        <main className="flex-1 overflow-y-auto pb-24 flex flex-col items-center">
+          {/* CARD SALDO COM OLHO */}
+          <div className="p-6 text-center bg-gradient-to-r from-green-600 to-green-500 rounded-b-3xl shadow-lg flex flex-col items-center w-full max-w-md">
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-sm">Saldo disponível:</p>
+              <button onClick={() => setMostrarSaldo(!mostrarSaldo)}>
+                {mostrarSaldo ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+              </button>
+            </div>
+            <h1 className="text-4xl font-bold mt-1">
+              {mostrarSaldo ? `R$ ${saldo.toFixed(2)}` : '••••••'}
+            </h1>
+            <p className="text-xs mt-2">Investido: {mostrarSaldo ? `R$ ${valorInvestido.toFixed(2)}` : '••••'}</p>
           </div>
 
           {/* AÇÕES RÁPIDAS EM GRID */}
-          <div className="grid grid-cols-2 gap-4 p-4">
+          <div className="grid grid-cols-2 gap-4 p-4 w-full max-w-md">
             {menuItems.map((item, index) => (
               <button
                 key={index}
                 onClick={() => router.push(item.action)}
-                className="flex flex-col items-center justify-center bg-white/10 p-4 rounded-2xl shadow-md hover:bg-white/20 transition"
+                className="flex flex-col items-center justify-center bg-white/10 p-4 rounded-2xl shadow-md hover:bg-white/20 transition w-full"
               >
                 <span className="text-sm font-medium">{item.label}</span>
               </button>
@@ -152,10 +158,10 @@ export default function DashboardPage() {
           </div>
 
           {/* SEÇÕES - ACCORDION */}
-          <div className="px-4 pb-4">
-            <Accordion type="single" collapsible className="mt-4 space-y-2">
+          <div className="px-4 pb-4 w-full max-w-md">
+            <Accordion type="single" collapsible className="mt-4 space-y-4">
               <AccordionItem value="pontuacao" className="border-0">
-                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold">
+                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold w-full text-center">
                   📊 Pontuação & Indicação
                 </AccordionTrigger>
                 <AccordionContent className="px-4 py-3 text-sm space-y-2">
@@ -165,15 +171,15 @@ export default function DashboardPage() {
                   <div className="w-full bg-white/20 rounded-xl h-4">
                     <div
                       className="bg-green-500 h-4 rounded-xl transition-all duration-500"
-                      style={{ width: `${progresso}%` }}
+                      style={{ width: `${(pontos / PONTOS_OBJETIVO) * 100}%` }}
                     ></div>
                   </div>
-                  <p>Faltam {pontosRestantes} pontos para desbloquear o próximo prêmio.</p>
+                  <p>Faltam {PONTOS_OBJETIVO - pontos} pontos para desbloquear o próximo prêmio.</p>
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="indicacao" className="border-0">
-                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold">
+                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold w-full text-center">
                   🎁 Seu Código de Indicação
                 </AccordionTrigger>
                 <AccordionContent className="px-4 py-3 text-sm">
@@ -197,7 +203,7 @@ export default function DashboardPage() {
               </AccordionItem>
 
               <AccordionItem value="empresa" className="border-0">
-                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold">
+                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold w-full text-center">
                   ℹ️ Info Empresa
                 </AccordionTrigger>
                 <AccordionContent className="px-4 py-3 text-sm space-y-1">
