@@ -1,4 +1,3 @@
-// app/scripts/corrigirRendimentos.ts
 import prisma from "../../lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
 
@@ -12,11 +11,11 @@ async function corrigirRendimentos() {
   let corrigidos = 0;
   let ajustados = 0;
 
-  // Agrupar por userId + investimentoId + dateKey
+  // 🔑 Agrupar por userId + investimentoId + dateKey (ignorar creditedAt)
   const mapa = new Map<string, typeof rendimentos>();
 
   for (const r of rendimentos) {
-    const chave = `${r.userId}-${r.investimentoId}-${r.dateKey}`;
+    const chave = `${r.userId}-${r.investimentoId}-${r.dateKey.split("T")[0]}`;
     if (!mapa.has(chave)) mapa.set(chave, []);
     mapa.get(chave)!.push(r);
   }
@@ -27,8 +26,9 @@ async function corrigirRendimentos() {
       const investimento = lista[0].investimento;
       const user = lista[0].user;
 
-      // Valor correto deveria ser 1.5% do investimento
-      const valorCorreto = new Decimal(investimento.valor).mul(0.015);
+      // Valor correto baseado no percentual do investimento
+      const percentual = Number(investimento.percentualDiario) || 0.015; // fallback 1.5%
+      const valorCorreto = new Decimal(investimento.valor).mul(percentual);
 
       // Soma de todos os rendimentos registrados
       const soma = lista.reduce((acc, r) => acc.add(r.amount), new Decimal(0));
