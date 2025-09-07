@@ -161,24 +161,27 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* --- NOVO BANNER --- */}
-         <div className="p-4 w-full max-w-md">
+          {/* BANNER */}
+          <div className="p-4 w-full max-w-md">
             <img
-              src="/img/banneroficial.png"
-              alt="Banner Oficial"
-              className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
+              src="/banneroficial.png"
+              alt="Banner oficial"
+              className="rounded-2xl shadow-md w-full"
             />
           </div>
 
-          {/* AÇÕES RÁPIDAS EM GRID */}
-          <div className="grid grid-cols-2 gap-4 p-4 w-full max-w-md">
+          {/* AÇÕES RÁPIDAS - ESTILO MERCADO PAGO */}
+          <div className="grid grid-cols-4 gap-4 p-4 w-full max-w-md">
             {menuItems.map((item, index) => (
               <button
                 key={index}
                 onClick={() => router.push(item.action)}
-                className="flex flex-col items-center justify-center bg-white/10 p-4 rounded-2xl shadow-md hover:bg-white/20 transition w-full"
+                className="flex flex-col items-center justify-center"
               >
-                <span className="text-sm font-medium">{item.label}</span>
+                <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center mb-1 shadow-md hover:bg-white/20 transition">
+                  <span className="text-lg">{item.label.split(" ")[0]}</span>
+                </div>
+                <span className="text-xs text-center">{item.label.replace(/^[^\s]+\s/, "")}</span>
               </button>
             ))}
           </div>
