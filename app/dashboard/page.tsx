@@ -164,9 +164,9 @@ export default function DashboardPage() {
           {/* BANNER */}
           <div className="p-4 w-full max-w-md">
             <img
-              src="/banneroficial.png"
-              alt="Banner oficial"
-              className="rounded-2xl shadow-md w-full"
+              src="/img/banneroficial.png"
+              alt="Banner Oficial"
+              className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
             />
           </div>
 
