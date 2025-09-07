@@ -10,16 +10,15 @@ import { Bell, Home, User, Wallet, Settings, LogOut } from "lucide-react";
 interface MenuItem {
   label: string;
   action: string;
-  img: string;
 }
 
 const menuItems: MenuItem[] = [
-  { label: '🤖 IA', action: '/games/ia', img: '/img/ia.png' },
-  { label: '📥 Depositar', action: '/games/depositar', img: '/img/2.png' },
-  { label: '📤 Saque via Pix', action: '/games/saque', img: '/img/3.png' },
-  { label: '📄 Cadastrar CPF', action: '/games/cadastrar-cpf', img: '/img/4.png' },
-  { label: '💰 Bolsão da IA', action: '/games/bolsao', img: '/img/5.png' },
-  { label: '🎓 Mentoria', action: '/games/mentoria', img: '/img/6.png' },
+  { label: '🤖 IA', action: '/games/ia' },
+  { label: '📥 Depositar', action: '/games/depositar' },
+  { label: '📤 Saque via Pix', action: '/games/saque' },
+  { label: '📄 Cadastrar CPF', action: '/games/cadastrar-cpf' },
+  { label: '💰 Bolsão da IA', action: '/games/bolsao' },
+  { label: '🎓 Mentoria', action: '/games/mentoria' },
 ];
 
 const PONTOS_OBJETIVO = 1000;
@@ -32,7 +31,6 @@ export default function DashboardPage() {
   const codigoIndicacao = user?.id || user?.email || '';
   const linkIndicacao = `https://www.ziller.club/register?indicador=${encodeURIComponent(codigoIndicacao)}`;
 
-  // Estados principais
   const [saldo, setSaldo] = useState<number>(0);
   const [valorInvestido, setValorInvestido] = useState<number>(0);
   const [rendimentoDiario, setRendimentoDiario] = useState<number>(0);
@@ -148,7 +146,6 @@ export default function DashboardPage() {
                 onClick={() => router.push(item.action)}
                 className="flex flex-col items-center justify-center bg-white/10 p-4 rounded-2xl shadow-md hover:bg-white/20 transition"
               >
-                <img src={item.img} alt={item.label} className="w-10 h-10 mb-2" />
                 <span className="text-sm font-medium">{item.label}</span>
               </button>
             ))}
