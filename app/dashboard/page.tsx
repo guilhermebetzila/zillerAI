@@ -23,6 +23,13 @@ const menuItems: MenuItem[] = [
 
 const PONTOS_OBJETIVO = 1000;
 
+interface Atividade {
+  descricao: string;
+  valor: number;
+  tipo: string;
+  data: string;
+}
+
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -43,24 +50,28 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [mostrarSaldo, setMostrarSaldo] = useState<boolean>(true);
 
+  const [ultimasAtividades, setUltimasAtividades] = useState<Atividade[]>([]);
+
   const progresso = Math.min((pontos / PONTOS_OBJETIVO) * 100, 100);
-  const pontosRestantes = Math.max(PONTOS_OBJETIVO - pontos, 0);
 
   const fetchUsuarioDados = async () => {
     try {
-      const [resUsuario, resRede, resRendimento] = await Promise.all([
+      const [resUsuario, resRede, resRendimento, resAtividades] = await Promise.all([
         fetch('/api/usuario', { credentials: 'include' }),
         fetch('/api/rede', { credentials: 'include' }),
-        fetch('/api/rendimentos/usuario', { credentials: 'include' })
+        fetch('/api/rendimentos/usuario', { credentials: 'include' }),
+        fetch('/api/atividades/usuario', { credentials: 'include' }) // API nova para atividades
       ]);
 
       if (!resUsuario.ok) throw new Error('Erro ao buscar dados do usuário');
       if (!resRede.ok) throw new Error('Erro ao buscar rede');
       if (!resRendimento.ok) throw new Error('Erro ao buscar rendimento');
+      if (!resAtividades.ok) throw new Error('Erro ao buscar atividades');
 
       const dataUsuario = await resUsuario.json();
       const dataRede = await resRede.json();
       const dataRendimento = await resRendimento.json();
+      const dataAtividades = await resAtividades.json();
 
       const saldoCalculado = Number(dataRendimento.rendimento ?? 0) + Number(dataRendimento.bonusResidual ?? 0);
 
@@ -73,6 +84,7 @@ export default function DashboardPage() {
       setPontosDiretos(Number(dataRede.diretos ?? pontosDiretos));
       setPontosIndiretos(Number(dataRede.indiretos ?? pontosIndiretos));
       setUserPhotoUrl(dataUsuario.photoUrl || userPhotoUrl);
+      setUltimasAtividades(dataAtividades.slice(0, 5)); // Mostra apenas as 5 últimas atividades
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error);
     } finally {
@@ -144,6 +156,34 @@ export default function DashboardPage() {
             <p className="text-xs mt-2">Investido: {mostrarSaldo ? `R$ ${valorInvestido.toFixed(2)}` : '••••'}</p>
           </div>
 
+          {/* ÚLTIMAS ATIVIDADES */}
+          <div className="w-full max-w-md bg-gray-800 rounded-2xl p-4 mt-4 shadow-md">
+            <h2 className="font-semibold mb-2 text-lg">Últimas Atividades</h2>
+            {ultimasAtividades.length === 0 ? (
+              <p className="text-sm text-gray-400">Nenhuma atividade recente.</p>
+            ) : (
+              <ul className="space-y-2">
+                {ultimasAtividades.map((atividade, index) => (
+                  <li key={index} className="flex justify-between bg-gray-700 p-2 rounded-xl">
+                    <span className="text-sm">{atividade.descricao}</span>
+                    <span className={`text-sm ${atividade.valor >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {atividade.valor >= 0 ? `+ R$ ${atividade.valor.toFixed(2)}` : `- R$ ${Math.abs(atividade.valor).toFixed(2)}`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* FEEDBACK DO USUÁRIO */}
+          <div className="w-full max-w-md bg-gray-800 rounded-2xl p-4 mt-4 shadow-md text-center">
+            <p>Como foi sua experiência com a tela inicial?</p>
+            <div className="flex justify-center gap-4 mt-2">
+              <button className="bg-green-500 px-4 py-1 rounded-xl">👍 Bom</button>
+              <button className="bg-red-500 px-4 py-1 rounded-xl">👎 Ruim</button>
+            </div>
+          </div>
+
           {/* AÇÕES RÁPIDAS EM GRID */}
           <div className="grid grid-cols-2 gap-4 p-4 w-full max-w-md">
             {menuItems.map((item, index) => (
@@ -160,6 +200,7 @@ export default function DashboardPage() {
           {/* SEÇÕES - ACCORDION */}
           <div className="px-4 pb-4 w-full max-w-md">
             <Accordion type="single" collapsible className="mt-4 space-y-4">
+              {/* Pontuação & Indicação */}
               <AccordionItem value="pontuacao" className="border-0">
                 <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold w-full text-center">
                   📊 Pontuação & Indicação
@@ -178,6 +219,7 @@ export default function DashboardPage() {
                 </AccordionContent>
               </AccordionItem>
 
+              {/* Código de Indicação */}
               <AccordionItem value="indicacao" className="border-0">
                 <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold w-full text-center">
                   🎁 Seu Código de Indicação
@@ -202,6 +244,7 @@ export default function DashboardPage() {
                 </AccordionContent>
               </AccordionItem>
 
+              {/* Info Empresa */}
               <AccordionItem value="empresa" className="border-0">
                 <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold w-full text-center">
                   ℹ️ Info Empresa
