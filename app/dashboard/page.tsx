@@ -60,7 +60,7 @@ export default function DashboardPage() {
         fetch('/api/usuario', { credentials: 'include' }),
         fetch('/api/rede', { credentials: 'include' }),
         fetch('/api/rendimentos/usuario', { credentials: 'include' }),
-        fetch('/api/atividades/usuario', { credentials: 'include' }) // API nova para atividades
+        fetch('/api/atividades/usuario', { credentials: 'include' })
       ]);
 
       if (!resUsuario.ok) throw new Error('Erro ao buscar dados do usuário');
@@ -84,7 +84,7 @@ export default function DashboardPage() {
       setPontosDiretos(Number(dataRede.diretos ?? pontosDiretos));
       setPontosIndiretos(Number(dataRede.indiretos ?? pontosIndiretos));
       setUserPhotoUrl(dataUsuario.photoUrl || userPhotoUrl);
-      setUltimasAtividades(dataAtividades.slice(0, 5)); // Mostra apenas as 5 últimas atividades
+      setUltimasAtividades(dataAtividades.slice(0, 5));
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error);
     } finally {
@@ -175,15 +175,6 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* FEEDBACK DO USUÁRIO */}
-          <div className="w-full max-w-md bg-gray-800 rounded-2xl p-4 mt-4 shadow-md text-center">
-            <p>Como foi sua experiência com a tela inicial?</p>
-            <div className="flex justify-center gap-4 mt-2">
-              <button className="bg-green-500 px-4 py-1 rounded-xl">👍 Bom</button>
-              <button className="bg-red-500 px-4 py-1 rounded-xl">👎 Ruim</button>
-            </div>
-          </div>
-
           {/* AÇÕES RÁPIDAS EM GRID */}
           <div className="grid grid-cols-2 gap-4 p-4 w-full max-w-md">
             {menuItems.map((item, index) => (
@@ -260,6 +251,15 @@ export default function DashboardPage() {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
+          </div>
+
+          {/* FEEDBACK DO USUÁRIO - movido para o final */}
+          <div className="w-full max-w-md bg-gray-800 rounded-2xl p-4 mt-4 shadow-md text-center">
+            <p>Como foi sua experiência com a tela inicial?</p>
+            <div className="flex justify-center gap-4 mt-2">
+              <button className="bg-green-500 px-4 py-1 rounded-xl">👍 Bom</button>
+              <button className="bg-red-500 px-4 py-1 rounded-xl">👎 Ruim</button>
+            </div>
           </div>
         </main>
 
