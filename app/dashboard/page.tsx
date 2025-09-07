@@ -228,30 +228,39 @@ export default function DashboardPage() {
                   <p>💰 Atualização via USDT: 01/10/2025</p>
                 </AccordionContent>
               </AccordionItem>
-
-              {/* Últimas Atividades */}
-              <AccordionItem value="atividades" className="border-0">
-                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold w-full text-center">
-                  📝 Últimas Atividades
-                </AccordionTrigger>
-                <AccordionContent className="px-4 py-3 text-sm space-y-2">
-                  {ultimasAtividades.length === 0 ? (
-                    <p className="text-sm text-gray-400">Nenhuma atividade recente.</p>
-                  ) : (
-                    <ul className="space-y-2">
-                      {ultimasAtividades.map((atividade, index) => (
-                        <li key={index} className="flex justify-between bg-gray-700 p-2 rounded-xl">
-                          <span className="text-sm">{atividade.descricao}</span>
-                          <span className={`text-sm ${atividade.valor >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {atividade.valor >= 0 ? `+ R$ ${atividade.valor.toFixed(2)}` : `- R$ ${Math.abs(atividade.valor).toFixed(2)}`}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </AccordionContent>
-              </AccordionItem>
             </Accordion>
+          </div>
+
+          {/* --- BLOCOS EXTRAS IGUAIS AO MERCADO PAGO --- */}
+          <div className="px-4 pb-6 w-full max-w-md space-y-4">
+            {/* Últimas Atividades FIXO */}
+            <div className="bg-white/10 rounded-2xl p-4 shadow-md">
+              <h3 className="font-semibold mb-3">📝 Sua última atividade</h3>
+              {ultimasAtividades.length === 0 ? (
+                <p className="text-sm text-gray-400">Nenhuma atividade recente.</p>
+              ) : (
+                <ul className="space-y-2">
+                  {ultimasAtividades.map((atividade, index) => (
+                    <li key={index} className="flex justify-between bg-gray-800 p-2 rounded-xl">
+                      <span className="text-sm">{atividade.descricao}</span>
+                      <span className={`text-sm ${atividade.valor >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {atividade.valor >= 0 ? `+ R$ ${atividade.valor.toFixed(2)}` : `- R$ ${Math.abs(atividade.valor).toFixed(2)}`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Feedback Experiência */}
+            <div className="bg-white/10 rounded-2xl p-4 shadow-md">
+              <h3 className="font-semibold mb-2">💡 Como foi sua experiência com a tela inicial?</h3>
+              <div className="flex gap-2">
+                <button className="flex-1 bg-green-600 hover:bg-green-700 px-3 py-2 rounded-xl text-sm">Boa</button>
+                <button className="flex-1 bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded-xl text-sm">Neutra</button>
+                <button className="flex-1 bg-red-500 hover:bg-red-600 px-3 py-2 rounded-xl text-sm">Ruim</button>
+              </div>
+            </div>
           </div>
         </main>
 
