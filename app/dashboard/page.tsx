@@ -5,7 +5,7 @@ import LayoutWrapper from '@components/LayoutWrapper';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@ui/accordion";
-import { ChevronDown, Bell } from "lucide-react";
+import { ChevronDown, Bell, Home, User, Wallet, Settings } from "lucide-react";
 
 interface MenuItem {
   label: string;
@@ -48,7 +48,6 @@ export default function DashboardPage() {
   const progresso = Math.min((pontos / PONTOS_OBJETIVO) * 100, 100);
   const pontosRestantes = Math.max(PONTOS_OBJETIVO - pontos, 0);
 
-  // Função única de fetch de dados do usuário com retry simples
   const fetchUsuarioDados = async () => {
     try {
       const [resUsuario, resRede, resRendimento] = await Promise.all([
@@ -65,10 +64,8 @@ export default function DashboardPage() {
       const dataRede = await resRede.json();
       const dataRendimento = await resRendimento.json();
 
-      // 🔧 Ajuste importante: saldo = rendimento diário + bônus residual
       const saldoCalculado = Number(dataRendimento.rendimento ?? 0) + Number(dataRendimento.bonusResidual ?? 0);
 
-      // Atualiza estados garantindo que não fiquem undefined
       setSaldo(saldoCalculado);
       setValorInvestido(Number(dataUsuario.valorInvestido ?? valorInvestido));
       setRendimentoDiario(Number(dataRendimento.rendimento ?? rendimentoDiario));
@@ -85,11 +82,10 @@ export default function DashboardPage() {
     }
   };
 
-  // useEffect principal com polling
   useEffect(() => {
     if (status === 'authenticated') {
       fetchUsuarioDados();
-      const interval = setInterval(fetchUsuarioDados, 10000); // polling a cada 10s para atualizar automaticamente
+      const interval = setInterval(fetchUsuarioDados, 10000);
       return () => clearInterval(interval);
     }
   }, [status]);
@@ -97,27 +93,6 @@ export default function DashboardPage() {
   const handleMenuClick = (item: MenuItem) => {
     if (item.action === 'logout') signOut({ callbackUrl: '/login' });
     else router.push(item.action);
-  };
-
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
-      const uploadData = await uploadRes.json();
-      if (uploadData.url) {
-        setUserPhotoUrl(uploadData.url);
-        await fetch('/api/user/update-photo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ photoUrl: uploadData.url }),
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao enviar foto:', error);
-    }
   };
 
   if (status === 'loading' || loading) {
@@ -139,79 +114,52 @@ export default function DashboardPage() {
 
   return (
     <LayoutWrapper>
-      <div className="min-h-screen px-4 py-4 text-white relative overflow-y-auto">
-        <header className="flex justify-between items-center mb-6 px-2">
-          <div className="flex-1"></div>
-          <h1 className="text-2xl font-bold text-center flex-1">ZILLER.ai</h1>
-          <div className="flex-1 flex justify-end">
-            <Bell className="w-6 h-6 cursor-pointer hover:text-green-400 transition" />
+      <div className="min-h-screen flex flex-col bg-gray-900 text-white relative">
+        {/* HEADER FIXO */}
+        <header className="flex items-center justify-between px-4 py-3 bg-gray-950 shadow-md sticky top-0 z-20">
+          <div className="flex items-center gap-3">
+            <img
+              src={userPhotoUrl || '/img/avatar.png'}
+              alt="avatar"
+              className="w-10 h-10 rounded-full border-2 border-green-500"
+            />
+            <div>
+              <p className="font-semibold">{displayName}</p>
+              <p className="text-xs text-gray-400">{user?.email}</p>
+            </div>
           </div>
+          <Bell className="w-6 h-6 cursor-pointer hover:text-green-400 transition" />
         </header>
 
-        <div className="mb-6 max-w-3xl mx-auto">
-          {/* Card do usuário */}
-          <div className="flex flex-col items-center p-6 rounded-2xl mb-4 bg-white/5">
-            <div className="relative w-28 h-28 mb-3">
-              <img
-                src={userPhotoUrl || '/img/avatar.png'}
-                alt="Foto do usuário"
-                className="w-full h-full object-cover rounded-full border-2 border-green-500"
-              />
-              <label
-                htmlFor="upload-photo"
-                className="absolute bottom-0 right-0 bg-green-500 hover:bg-green-600 text-white p-1 rounded-full cursor-pointer shadow-md text-sm"
-              >
-                ✏️
-              </label>
-              <input
-                type="file"
-                id="upload-photo"
-                className="hidden"
-                accept="image/*"
-                onChange={handlePhotoUpload}
-              />
-            </div>
-            <h2 className="text-xl font-semibold text-white">{displayName}</h2>
-            <p className="text-sm text-gray-300">{user?.email}</p>
+        {/* CARD SALDO */}
+        <div className="p-6 text-center bg-gradient-to-r from-green-600 to-green-500 rounded-b-3xl shadow-lg">
+          <p className="text-sm">Saldo disponível</p>
+          <h1 className="text-4xl font-bold mt-1">R$ {saldoTotal.toFixed(2)}</h1>
+          <p className="text-xs mt-2">Investido: R$ {valorInvestido.toFixed(2)}</p>
+        </div>
+
+        {/* AÇÕES RÁPIDAS EM GRID */}
+        <div className="grid grid-cols-2 gap-4 p-4">
+          {menuItems.map((item, index) => (
             <button
-              className="mt-3 w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-2xl shadow-lg font-medium transition text-base"
-              onClick={() => router.push('/editar-perfil')}
+              key={index}
+              onClick={() => handleMenuClick(item)}
+              className="flex flex-col items-center justify-center bg-white/10 p-4 rounded-2xl shadow-md hover:bg-white/20 transition"
             >
-              Editar Perfil
+              <img src={item.img} alt={item.label} className="w-10 h-10 mb-2" />
+              <span className="text-sm font-medium">{item.label}</span>
             </button>
-          </div>
+          ))}
+        </div>
 
-          {/* Card de valores ajustado */}
-          <div className="mb-6 p-4 bg-white/10 rounded-2xl shadow-md text-white">
-            <p>💰 Saldo Atual: <strong>${saldoTotal.toFixed(2)}</strong></p>
-            <p>📈 Valor Investido: <strong>${valorInvestido.toFixed(2)}</strong></p>
-            <p>🌟 Rendimento Diário: <strong>${rendimentoDiario.toFixed(2)}</strong></p>
-            <p>🎁 Bônus Residual Hoje: <strong>${bonusResidual.toFixed(2)}</strong></p>
-          </div>
-
-          {/* Menu horizontal */}
-          <div className="mb-6 overflow-x-auto scrollbar-hide">
-            <div className="flex gap-2 px-1 py-2 justify-start">
-              {menuItems.map((item, index) => (
-                <div
-                  key={index}
-                  onClick={() => handleMenuClick(item)}
-                  className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200 shadow-md"
-                >
-                  <img src={item.img} alt={item.label} className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Accordion */}
-          <Accordion type="single" collapsible className="mt-6 space-y-2">
+        {/* SEÇÕES - ACCORDION */}
+        <div className="px-4">
+          <Accordion type="single" collapsible className="mt-4 space-y-2">
             <AccordionItem value="pontuacao" className="border-0">
-              <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold flex justify-between items-center border-0">
-                <span>📊 Pontuação & Indicação</span>
-                <ChevronDown className="w-5 h-5 transition-transform duration-300 data-[state=open]:rotate-180" />
+              <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold">
+                📊 Pontuação & Indicação
               </AccordionTrigger>
-              <AccordionContent className="px-4 py-3 space-y-2 text-sm border-0">
+              <AccordionContent className="px-4 py-3 text-sm space-y-2">
                 <p>Você já indicou <strong>{totalIndicados}</strong> pessoa(s)!</p>
                 <p>Pontos acumulados: {pontos}</p>
                 <p>Diretos: {pontosDiretos} | Indiretos: {pontosIndiretos}</p>
@@ -226,11 +174,10 @@ export default function DashboardPage() {
             </AccordionItem>
 
             <AccordionItem value="indicacao" className="border-0">
-              <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold flex justify-between items-center border-0">
-                <span>🎁 Seu Código de Indicação</span>
-                <ChevronDown className="w-5 h-5 transition-transform duration-300 data-[state=open]:rotate-180" />
+              <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold">
+                🎁 Seu Código de Indicação
               </AccordionTrigger>
-              <AccordionContent className="px-4 py-3 text-sm border-0">
+              <AccordionContent className="px-4 py-3 text-sm">
                 <div className="flex items-center justify-between bg-black/20 px-3 py-2 rounded-xl">
                   <a
                     href={linkIndicacao}
@@ -251,106 +198,37 @@ export default function DashboardPage() {
             </AccordionItem>
 
             <AccordionItem value="empresa" className="border-0">
-              <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold flex justify-between items-center border-0">
-                <span>ℹ️ Info Empresa</span>
-                <ChevronDown className="w-5 h-5 transition-transform duration-300 data-[state=open]:rotate-180" />
+              <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold">
+                ℹ️ Info Empresa
               </AccordionTrigger>
-              <AccordionContent className="px-4 py-3 text-sm space-y-1 border-0">
+              <AccordionContent className="px-4 py-3 text-sm space-y-1">
                 <p>📌 CNPJ: 60.483.352/0001-77</p>
                 <p>📧 E-mail: suporteziller@gmail.com</p>
                 <p>📱 WhatsApp: (21) 99652-8434</p>
                 <p>🌐 Site Oficial: www.ziller.club</p>
                 <p>📸 Instagram: @ziller.club</p>
-                <p>📊 Relatórios entregues no grupo do Telegram</p>
-                <p>💰 Atualização de recebimento via USDT: 01/10/2025</p>
-                <p>📅 Segunda: Mentoria Ao Vivo</p>
-                <p>📅 Terça: Apresentação Ziller</p>
-                <p>📅 Sexta: Alinhamento com a Liderança</p>
+                <p>📊 Relatórios no Telegram</p>
+                <p>💰 Atualização via USDT: 01/10/2025</p>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-
-          {/* === Carrossel de imagens e cards (acima do rodapé) === */}
-          <div className="mt-8 overflow-x-auto scrollbar-hide">
-            <div className="flex gap-3 px-1 py-3 items-stretch">
-              <a
-                href="https://t.me/+atEKwprJriVlY2Ex"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden shadow-md"
-              >
-                <img src="/img/telegram.png" alt="Telegram" className="w-full h-full object-cover" />
-              </a>
-
-              <a
-                href="https://wa.me/5521996528434"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden shadow-md"
-              >
-                <img src="/img/whats.png" alt="WhatsApp" className="w-full h-full object-cover" />
-              </a>
-
-              <div className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden shadow-md bg-white/10">
-                <img src="/img/coin.png" alt="Coin" className="w-full h-full object-cover" />
-              </div>
-
-              <div className="flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden shadow-md bg-white/10 flex flex-col items-center justify-center p-1">
-                <span className="text-[10px] leading-tight text-center">Em Breve</span>
-                <img src="/img/play.png" alt="Play" className="w-6 h-6 mt-1" />
-              </div>
-            </div>
-
-            {/* Grid dos 5 quadrados abaixo */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
-              <div className="w-full aspect-square rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center p-3">
-                <span className="text-sm font-medium">EM BREVE acesso ao roadmap da empresa</span>
-              </div>
-              <div className="w-full aspect-square rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center p-3">
-                <span className="text-sm font-medium">Em Breve Banco internacional</span>
-              </div>
-              <div className="w-full aspect-square rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center p-3">
-                <span className="text-sm font-medium">
-                  Especialista em Desenvolvimento de ferramentas de tecnologia para produtos financeiros
-                </span>
-              </div>
-              <div className="w-full aspect-square rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center p-3">
-                <span className="text-sm font-medium">
-                  Participantes para incentivo contra a fome e educação
-                </span>
-              </div>
-              <div className="w-full aspect-square rounded-2xl bg-white/10 shadow-md flex items-center justify-center text-center p-3">
-                <span className="text-sm font-medium">
-                  Em breve lançamento Criptomoeda e Capital aberto bolsa de valores
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <footer className="w-full mt-8 text-white py-4 px-4 text-sm">
-            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <h3 className="font-bold mb-2">Segurança & Confiança</h3>
-                <p>Auditoria independente concluída com sucesso.</p>
-                <p>IA operando com precisão validada de 87,9%.</p>
-              </div>
-              <div>
-                <h3 className="font-bold mb-2">Transparência Total</h3>
-                <p>Painel com histórico completo e transparente.</p>
-                <p>Saque e depósito via Pix 100% confiáveis.</p>
-              </div>
-              <div>
-                <h3 className="font-bold mb-2">Comunidade Ziller</h3>
-                <p>Top 10 Zillers com maiores ganhos do mês.</p>
-                <p>Grupos exclusivos de suporte e mentoria.</p>
-              </div>
-            </div>
-            <p className="mt-6 text-center text-gray-400 text-xs">
-              © 2025 Ziller.ai - Todos os direitos reservados
-            </p>
-          </footer>
         </div>
+
+        {/* FOOTER FIXO ESTILO BANCO */}
+        <footer className="sticky bottom-0 w-full bg-gray-950 text-white py-2 px-6 flex justify-between items-center shadow-lg">
+          <button onClick={() => router.push('/dashboard')} className="flex flex-col items-center">
+            <Home className="w-6 h-6" /> <span className="text-xs">Início</span>
+          </button>
+          <button onClick={() => router.push('/carteira')} className="flex flex-col items-center">
+            <Wallet className="w-6 h-6" /> <span className="text-xs">Carteira</span>
+          </button>
+          <button onClick={() => router.push('/perfil')} className="flex flex-col items-center">
+            <User className="w-6 h-6" /> <span className="text-xs">Perfil</span>
+          </button>
+          <button onClick={() => router.push('/config')} className="flex flex-col items-center">
+            <Settings className="w-6 h-6" /> <span className="text-xs">Config</span>
+          </button>
+        </footer>
       </div>
     </LayoutWrapper>
   );
