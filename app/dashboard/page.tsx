@@ -161,6 +161,15 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          {/* --- NOVO BANNER --- */}
+          <div className="p-4 w-full max-w-md">
+            <img
+              src="/banneroficial.png"
+              alt="Banner Oficial"
+              className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
+            />
+          </div>
+
           {/* AÇÕES RÁPIDAS EM GRID */}
           <div className="grid grid-cols-2 gap-4 p-4 w-full max-w-md">
             {menuItems.map((item, index) => (
