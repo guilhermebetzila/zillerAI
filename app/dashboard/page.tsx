@@ -56,35 +56,50 @@ export default function DashboardPage() {
 
   const fetchUsuarioDados = async () => {
     try {
-      const [resUsuario, resRede, resRendimento, resAtividades] = await Promise.all([
+      // ✅ Buscar todas as informações necessárias
+      const [resUsuario, resRede, resSaldoInvestimentos, resAtividades] = await Promise.all([
         fetch('/api/usuario', { credentials: 'include' }),
         fetch('/api/rede', { credentials: 'include' }),
-        fetch('/api/rendimentos/usuario', { credentials: 'include' }),
+        Promise.all([
+          fetch('/api/saldo', { credentials: 'include' }),
+          fetch('/api/investir', { credentials: 'include' })
+        ]),
         fetch('/api/atividades/usuario', { credentials: 'include' })
       ]);
 
       if (!resUsuario.ok) throw new Error('Erro ao buscar dados do usuário');
       if (!resRede.ok) throw new Error('Erro ao buscar rede');
-      if (!resRendimento.ok) throw new Error('Erro ao buscar rendimento');
+      if (!resSaldoInvestimentos[0].ok || !resSaldoInvestimentos[1].ok) throw new Error('Erro ao buscar saldo ou investimentos');
       if (!resAtividades.ok) throw new Error('Erro ao buscar atividades');
 
       const dataUsuario = await resUsuario.json();
       const dataRede = await resRede.json();
-      const dataRendimento = await resRendimento.json();
+      const dataSaldo = await resSaldoInvestimentos[0].json();
+      const dataInvestir = await resSaldoInvestimentos[1].json();
       const dataAtividades = await resAtividades.json();
 
-      const saldoCalculado = Number(dataRendimento.rendimento ?? 0) + Number(dataRendimento.bonusResidual ?? 0);
+      // --- Saldo total calculado
+      const saldoCalculado = Number(dataSaldo.saldo ?? 0);
 
       setSaldo(saldoCalculado);
-      setValorInvestido(Number(dataUsuario.valorInvestido ?? valorInvestido));
-      setRendimentoDiario(Number(dataRendimento.rendimento ?? rendimentoDiario));
-      setBonusResidual(Number(dataRendimento.bonusResidual ?? bonusResidual));
-      setTotalIndicados(Number(dataUsuario.totalIndicados ?? totalIndicados));
-      setPontos(Number(dataRede.pontosTotais ?? pontos));
-      setPontosDiretos(Number(dataRede.diretos ?? pontosDiretos));
-      setPontosIndiretos(Number(dataRede.indiretos ?? pontosIndiretos));
-      setUserPhotoUrl(dataUsuario.photoUrl || userPhotoUrl);
+      setValorInvestido(Number(dataInvestir.valorInvestido ?? 0));
+      setRendimentoDiario(Number(dataSaldo.rendimento ?? 0));
+      setBonusResidual(Number(dataSaldo.bonusResidual ?? 0));
+
+      // --- Indicados
+      setTotalIndicados(Number(dataUsuario.totalIndicados ?? 0));
+
+      // --- Pontos
+      setPontos(Number(dataRede.pontosTotais ?? 0));
+      setPontosDiretos(Number(dataRede.diretos ?? 0));
+      setPontosIndiretos(Number(dataRede.indiretos ?? 0));
+
+      // --- Avatar
+      setUserPhotoUrl(dataUsuario.photoUrl || '');
+
+      // --- Últimas atividades
       setUltimasAtividades(dataAtividades.slice(0, 5));
+
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error);
     } finally {
@@ -192,6 +207,8 @@ export default function DashboardPage() {
               {mostrarSaldo ? `R$ ${saldo.toFixed(2)}` : '••••••'}
             </h1>
             <p className="text-xs mt-2">Investido: {mostrarSaldo ? `R$ ${valorInvestido.toFixed(2)}` : '••••'}</p>
+            <p className="text-xs mt-1">Rendimento diário: {rendimentoDiario.toFixed(2)} USDT</p>
+            <p className="text-xs">Bônus residual: {bonusResidual.toFixed(2)} USDT</p>
           </div>
 
           {/* BLOCO MINHAS CRIPTOMOEDAS */}
