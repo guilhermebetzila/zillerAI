@@ -14,7 +14,7 @@ export default function Sidebar() {
     <>
       {/* Sidebar inferior para mobile */}
       <nav
-        className="fixed bottom-0 left-0 right-0 bg-gray-900 text-white h-16 z-50 border-t border-gray-800 shadow-lg"
+        className="fixed bottom-0 left-0 right-0 bg-gray-900 text-white h-16 z-40 border-t border-gray-800 shadow-lg"
         role="navigation"
         aria-label="Menu inferior"
       >
@@ -22,8 +22,8 @@ export default function Sidebar() {
           <SidebarItem href="/dashboard" icon={<FaChartLine />} label="Painel" />
           <SidebarItem href="/ziller" icon={<FaRocket />} label="IA" />
 
-          {/* Botão central estilo Mercado Pago - perfeitamente centralizado */}
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          {/* Botão central estilo Mercado Pago - acima da linha de países */}
+          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-50">
             <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center shadow-2xl border-4 border-gray-900">
               <Image
                 src="/img/logosidebar.png"
@@ -36,7 +36,7 @@ export default function Sidebar() {
           </div>
 
           <SidebarItem href="/games/investir" icon={<FaWallet />} label="Investir" />
-          <SidebarItem href="/ecossistema" icon={<FaGlobe />} label="Ecossistema" />
+          <SidebarItem href="/ecossistema" icon={<FaGlobe />} label="Eco" />
         </div>
       </nav>
 
@@ -51,7 +51,7 @@ export default function Sidebar() {
           <SidebarItem href="/dashboard" icon={<FaChartLine />} label="Painel" />
           <SidebarItem href="/ziller" icon={<FaRocket />} label="IA" />
           <SidebarItem href="/games/investir" icon={<FaWallet />} label="Investir" />
-          <SidebarItem href="/ecossistema" icon={<FaGlobe />} label="Ecossistema" />
+          <SidebarItem href="/ecossistema" icon={<FaGlobe />} label="Eco" />
         </div>
       </aside>
     </>
