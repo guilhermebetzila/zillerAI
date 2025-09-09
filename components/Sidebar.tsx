@@ -22,14 +22,14 @@ export default function Sidebar() {
           <SidebarItem href="/dashboard" icon={<FaChartLine />} label="Painel" />
           <SidebarItem href="/ziller" icon={<FaRocket />} label="IA" />
 
-          {/* Botão central estilo Mercado Pago - acima da linha de países */}
-          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-50">
-            <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center shadow-2xl border-4 border-gray-900">
+          {/* Botão central estilo Mercado Pago - acima da esteira de países */}
+          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 z-[70]">
+            <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center shadow-2xl border-4 border-gray-900">
               <Image
                 src="/img/logosidebar.png"
                 alt="Logo"
-                width={48}
-                height={48}
+                width={40}
+                height={40}
                 className="object-contain"
               />
             </div>
