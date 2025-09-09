@@ -8,33 +8,36 @@ import {
   FaWallet,
   FaGlobe,
 } from 'react-icons/fa';
+import { EsteiraParceiros } from './EsteiraParceiros';
 
 export default function Sidebar() {
   return (
     <>
+      {/* Esteira de países */}
+      <EsteiraParceiros />
+
+      {/* Botão central estilo Mercado Pago - fora do nav, acima da esteira */}
+      <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-[80]">
+        <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center shadow-2xl border-4 border-gray-900">
+          <Image
+            src="/img/logosidebar.png"
+            alt="Logo"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+        </div>
+      </div>
+
       {/* Sidebar inferior para mobile */}
       <nav
         className="fixed bottom-0 left-0 right-0 bg-gray-900 text-white h-16 z-40 border-t border-gray-800 shadow-lg"
         role="navigation"
         aria-label="Menu inferior"
       >
-        <div className="relative flex justify-around items-center h-full">
+        <div className="flex justify-around items-center h-full">
           <SidebarItem href="/dashboard" icon={<FaChartLine />} label="Painel" />
           <SidebarItem href="/ziller" icon={<FaRocket />} label="IA" />
-
-          {/* Botão central estilo Mercado Pago - acima da esteira de países */}
-          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 z-[70]">
-            <div className="w-20 h-20 bg-black rounded-full flex items-center justify-center shadow-2xl border-4 border-gray-900">
-              <Image
-                src="/img/logosidebar.png"
-                alt="Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-            </div>
-          </div>
-
           <SidebarItem href="/games/investir" icon={<FaWallet />} label="Investir" />
           <SidebarItem href="/ecossistema" icon={<FaGlobe />} label="Eco" />
         </div>
