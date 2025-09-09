@@ -5,7 +5,7 @@ import LayoutWrapper from '@components/LayoutWrapper';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@ui/accordion";
-import { Bell, Home, User, Wallet, Settings, LogOut, Eye, EyeOff } from "lucide-react";
+import { Bell, Home, User, Wallet, Settings, LogOut, Eye, EyeOff, MessageCircle } from "lucide-react";
 
 interface MenuItem {
   label: string;
@@ -129,6 +129,16 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {/* Suporte WhatsApp */}
+            <a
+              href="https://wa.me/5521971410840"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-green-400 transition"
+              title="Suporte no WhatsApp"
+            >
+              <MessageCircle className="w-6 h-6 cursor-pointer" />
+            </a>
             <Bell className="w-6 h-6 cursor-pointer hover:text-green-400 transition" />
             <LogOut
               onClick={() => signOut({ callbackUrl: '/login' })}
@@ -165,6 +175,15 @@ export default function DashboardPage() {
           <div className="p-4 w-full max-w-md">
             <img
               src="/img/banneroficial.png"
+              alt="Banner Oficial"
+              className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
+            />
+          </div>
+
+          {/* BANNER */}
+          <div className="p-4 w-full max-w-md">
+            <img
+              src="/img/banneroficial1.png"
               alt="Banner Oficial"
               className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
             />
