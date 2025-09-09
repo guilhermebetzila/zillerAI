@@ -16,14 +16,14 @@ export default function Sidebar() {
       {/* Esteira de países */}
       <EsteiraParceiros />
 
-      {/* Botão central estilo Mercado Pago - acima da linha da esteira */}
-      <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-[90]">
-        <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center shadow-2xl border-4 border-gray-900">
+      {/* Botão central estilo Mercado Pago - metade dentro do nav inferior */}
+      <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[90]">
+        <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center shadow-2xl border-4 border-gray-900">
           <Image
             src="/img/logosidebar.png"
             alt="Logo"
-            width={48}
-            height={48}
+            width={36}
+            height={36}
             className="object-contain"
           />
         </div>
