@@ -51,6 +51,9 @@ export default function DashboardPage() {
   const [mostrarSaldo, setMostrarSaldo] = useState<boolean>(true);
   const [ultimasAtividades, setUltimasAtividades] = useState<Atividade[]>([]);
 
+  // --- NOVO: controla badge do sino até o usuário abrir /notificacoes
+  const [temAviso, setTemAviso] = useState<boolean>(false);
+
   const fetchUsuarioDados = async () => {
     try {
       const [resUsuario, resRede, resRendimento, resAtividades] = await Promise.all([
@@ -97,6 +100,24 @@ export default function DashboardPage() {
     }
   }, [status]);
 
+  // --- NOVO: lê do localStorage se o usuário já abriu /notificacoes
+  useEffect(() => {
+    try {
+      const visto = typeof window !== 'undefined' ? localStorage.getItem('notificacoes_vistas') : 'true';
+      setTemAviso(visto !== 'true'); // se não viu ainda, mostra badge
+    } catch {
+      setTemAviso(true);
+    }
+  }, []);
+
+  const abrirNotificacoes = () => {
+    try {
+      localStorage.setItem('notificacoes_vistas', 'true');
+    } catch {}
+    setTemAviso(false);
+    router.push('/notificacoes');
+  };
+
   if (status === 'loading' || loading) {
     return (
       <LayoutWrapper>
@@ -139,7 +160,15 @@ export default function DashboardPage() {
             >
               <MessageCircle className="w-6 h-6 cursor-pointer" />
             </a>
-            <Bell className="w-6 h-6 cursor-pointer hover:text-green-400 transition" />
+            {/* Sino -> /notificacoes com badge se ainda não visto */}
+            <div className="relative cursor-pointer" onClick={abrirNotificacoes} title="Notificações">
+              <Bell className="w-6 h-6 hover:text-green-400 transition" />
+              {temAviso && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                  1
+                </span>
+              )}
+            </div>
             <LogOut
               onClick={() => signOut({ callbackUrl: '/login' })}
               className="w-6 h-6 cursor-pointer hover:text-red-400 transition"
