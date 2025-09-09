@@ -51,8 +51,8 @@ export default function DashboardPage() {
   const [mostrarSaldo, setMostrarSaldo] = useState<boolean>(true);
   const [ultimasAtividades, setUltimasAtividades] = useState<Atividade[]>([]);
 
-  // --- NOVO: controla badge do sino até o usuário abrir /notificacoes
-  const [temAviso, setTemAviso] = useState<boolean>(false);
+  // --- NOVO: controla quantidade de avisos
+  const [qtdAvisos, setQtdAvisos] = useState<number>(0);
 
   const fetchUsuarioDados = async () => {
     try {
@@ -100,21 +100,23 @@ export default function DashboardPage() {
     }
   }, [status]);
 
-  // --- NOVO: lê do localStorage se o usuário já abriu /notificacoes
+  // --- NOVO: ler quantidade de notificações não lidas
   useEffect(() => {
     try {
-      const visto = typeof window !== 'undefined' ? localStorage.getItem('notificacoes_vistas') : 'true';
-      setTemAviso(visto !== 'true'); // se não viu ainda, mostra badge
+      const naoLidas = typeof window !== 'undefined'
+        ? parseInt(localStorage.getItem('notificacoes_nao_lidas') || '0')
+        : 0;
+      setQtdAvisos(naoLidas);
     } catch {
-      setTemAviso(true);
+      setQtdAvisos(0);
     }
   }, []);
 
   const abrirNotificacoes = () => {
     try {
-      localStorage.setItem('notificacoes_vistas', 'true');
+      localStorage.setItem('notificacoes_nao_lidas', '0'); // zera contador
     } catch {}
-    setTemAviso(false);
+    setQtdAvisos(0);
     router.push('/notificacoes');
   };
 
@@ -160,12 +162,12 @@ export default function DashboardPage() {
             >
               <MessageCircle className="w-6 h-6 cursor-pointer" />
             </a>
-            {/* Sino -> /notificacoes com badge se ainda não visto */}
+            {/* Sino -> /notificacoes com badge numérico */}
             <div className="relative cursor-pointer" onClick={abrirNotificacoes} title="Notificações">
               <Bell className="w-6 h-6 hover:text-green-400 transition" />
-              {temAviso && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                  1
+              {qtdAvisos > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                  {qtdAvisos}
                 </span>
               )}
             </div>
@@ -187,7 +189,7 @@ export default function DashboardPage() {
               </button>
             </div>
             <h1 className="text-4xl font-bold mt-1">
-              {mostrarSaldo ? `$ ${saldo.toFixed(2)}` : '••••••'}
+              {mostrarSaldo ? `R$ ${saldo.toFixed(2)}` : '••••••'}
             </h1>
             <p className="text-xs mt-2">Investido: {mostrarSaldo ? `R$ ${valorInvestido.toFixed(2)}` : '••••'}</p>
           </div>
@@ -200,7 +202,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* BANNER */}
+          {/* BANNERS */}
           <div className="p-4 w-full max-w-md">
             <img
               src="/img/banneroficial.png"
@@ -209,7 +211,6 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* BANNER */}
           <div className="p-4 w-full max-w-md">
             <img
               src="/img/banneroficial1.png"
