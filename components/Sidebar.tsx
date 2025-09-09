@@ -6,7 +6,6 @@ import {
   FaChartLine,
   FaRocket,
   FaWallet,
-  FaBrain,
   FaGlobe,
 } from 'react-icons/fa';
 
@@ -15,30 +14,30 @@ export default function Sidebar() {
     <>
       {/* Sidebar inferior para mobile */}
       <nav
-        className="fixed bottom-0 left-0 right-0 bg-gray-900 text-white flex justify-around items-center h-16 z-50 border-t border-gray-800 md:hidden shadow-lg"
+        className="fixed bottom-0 left-0 right-0 bg-gray-900 text-white h-16 z-50 border-t border-gray-800 shadow-lg"
         role="navigation"
         aria-label="Menu inferior"
       >
-        <SidebarItem href="/dashboard" icon={<FaChartLine />} label="Painel" />
-        <SidebarItem href="/ziller" icon={<FaRocket />} label="IA" />
+        <div className="relative flex justify-around items-center h-full">
+          <SidebarItem href="/dashboard" icon={<FaChartLine />} label="Painel" />
+          <SidebarItem href="/ziller" icon={<FaRocket />} label="IA" />
 
-        {/* Botão central estilo Mercado Pago */}
-        <div className="relative -mt-8">
-          <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center shadow-lg border-4 border-gray-900">
-            {/* Logo da empresa */}
-            <Image
-              src="/img/logosidebar.png" // coloque sua imagem em public/img/logosidebar.png
-              alt="Logo"
-              width={28}
-              height={28}
-              className="object-contain"
-            />
+          {/* Botão central estilo Mercado Pago - perfeitamente centralizado */}
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <div className="w-24 h-24 bg-black rounded-full flex items-center justify-center shadow-2xl border-4 border-gray-900">
+              <Image
+                src="/img/logosidebar.png"
+                alt="Logo"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
+            </div>
           </div>
-        </div>
 
-        <SidebarItem href="/games/investir" icon={<FaWallet />} label="Investir" />
-        <SidebarItem href="/como-funciona" icon={<FaBrain />} label="Como Funciona" />
-        <SidebarItem href="/ecossistema" icon={<FaGlobe />} label="Ecossistema" />
+          <SidebarItem href="/games/investir" icon={<FaWallet />} label="Investir" />
+          <SidebarItem href="/ecossistema" icon={<FaGlobe />} label="Ecossistema" />
+        </div>
       </nav>
 
       {/* Sidebar lateral fixa para desktop */}
