@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   FaChartLine,
   FaRocket,
@@ -20,6 +21,21 @@ export default function Sidebar() {
       >
         <SidebarItem href="/dashboard" icon={<FaChartLine />} label="Painel" />
         <SidebarItem href="/ziller" icon={<FaRocket />} label="IA" />
+
+        {/* Botão central estilo Mercado Pago */}
+        <div className="relative -mt-8">
+          <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center shadow-lg border-4 border-gray-900">
+            {/* Logo da empresa */}
+            <Image
+              src="/img/logosidebar.png" // coloque sua imagem em public/img/logosidebar.png
+              alt="Logo"
+              width={28}
+              height={28}
+              className="object-contain"
+            />
+          </div>
+        </div>
+
         <SidebarItem href="/games/investir" icon={<FaWallet />} label="Investir" />
         <SidebarItem href="/como-funciona" icon={<FaBrain />} label="Como Funciona" />
         <SidebarItem href="/ecossistema" icon={<FaGlobe />} label="Ecossistema" />
