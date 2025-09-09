@@ -139,7 +139,7 @@ export default function DashboardPage() {
 
         {/* CONTEÚDO ROLÁVEL */}
         <main className="flex-1 overflow-y-auto pb-24 flex flex-col items-center">
-          {/* CARD SALDO COM OLHO */}
+          {/* CARD SALDO */}
           <div className="p-6 text-center bg-gradient-to-r from-green-600 to-green-500 rounded-b-3xl shadow-lg flex flex-col items-center w-full max-w-md">
             <div className="flex items-center justify-center gap-2">
               <p className="text-sm">Saldo disponível:</p>
@@ -170,7 +170,7 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* AÇÕES RÁPIDAS - ESTILO MERCADO PAGO */}
+          {/* AÇÕES RÁPIDAS */}
           <div className="grid grid-cols-4 gap-4 p-4 w-full max-w-md">
             {menuItems.map((item, index) => (
               <button
@@ -186,72 +186,58 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* SEÇÕES - ACCORDION */}
-          <div className="px-4 pb-4 w-full max-w-md">
-            <Accordion type="single" collapsible className="mt-4 space-y-4">
-              {/* Pontuação & Indicação */}
-              <AccordionItem value="pontuacao" className="border-0">
-                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold w-full text-center">
-                  📊 Pontuação & Indicação
-                </AccordionTrigger>
-                <AccordionContent className="px-4 py-3 text-sm space-y-2">
-                  <p>Você já indicou <strong>{totalIndicados}</strong> pessoa(s)!</p>
-                  <p>Pontos acumulados: {pontos}</p>
-                  <p>Diretos: {pontosDiretos} | Indiretos: {pontosIndiretos}</p>
-                  <div className="w-full bg-white/20 rounded-xl h-4">
-                    <div
-                      className="bg-green-500 h-4 rounded-xl transition-all duration-500"
-                      style={{ width: `${(pontos / PONTOS_OBJETIVO) * 100}%` }}
-                    ></div>
-                  </div>
-                  <p>Faltam {PONTOS_OBJETIVO - pontos} pontos para desbloquear o próximo prêmio.</p>
-                </AccordionContent>
-              </AccordionItem>
+          {/* SEÇÕES - SEMPRE ABERTAS */}
+          <div className="px-4 pb-4 w-full max-w-md space-y-4">
+            {/* Pontuação & Indicação */}
+            <div className="bg-white/10 rounded-2xl p-4 shadow-md">
+              <h3 className="font-semibold text-center mb-2">📊 Pontuação & Indicação</h3>
+              <p>Você já indicou <strong>{totalIndicados}</strong> pessoa(s)!</p>
+              <p>Pontos acumulados: {pontos}</p>
+              <p>Diretos: {pontosDiretos} | Indiretos: {pontosIndiretos}</p>
+              <div className="w-full bg-white/20 rounded-xl h-4 mt-2">
+                <div
+                  className="bg-green-500 h-4 rounded-xl transition-all duration-500"
+                  style={{ width: `${(pontos / PONTOS_OBJETIVO) * 100}%` }}
+                ></div>
+              </div>
+              <p className="mt-1">Faltam {PONTOS_OBJETIVO - pontos} pontos para desbloquear o próximo prêmio.</p>
+            </div>
 
-              {/* Código de Indicação */}
-              <AccordionItem value="indicacao" className="border-0">
-                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold w-full text-center">
-                  🎁 Seu Código de Indicação
-                </AccordionTrigger>
-                <AccordionContent className="px-4 py-3 text-sm">
-                  <div className="flex items-center justify-between bg-black/20 px-3 py-2 rounded-xl">
-                    <a
-                      href={linkIndicacao}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="truncate underline"
-                    >
-                      {linkIndicacao}
-                    </a>
-                    <button
-                      onClick={() => navigator.clipboard.writeText(linkIndicacao)}
-                      className="ml-2 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-xl text-sm"
-                    >
-                      Copiar
-                    </button>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+            {/* Código de Indicação */}
+            <div className="bg-white/10 rounded-2xl p-4 shadow-md">
+              <h3 className="font-semibold text-center mb-2">🎁 Seu Código de Indicação</h3>
+              <div className="flex items-center justify-between bg-black/20 px-3 py-2 rounded-xl">
+                <a
+                  href={linkIndicacao}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="truncate underline"
+                >
+                  {linkIndicacao}
+                </a>
+                <button
+                  onClick={() => navigator.clipboard.writeText(linkIndicacao)}
+                  className="ml-2 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-xl text-sm"
+                >
+                  Copiar
+                </button>
+              </div>
+            </div>
 
-              {/* Info Empresa */}
-              <AccordionItem value="empresa" className="border-0">
-                <AccordionTrigger className="rounded-2xl bg-white/10 px-4 py-3 font-semibold w-full text-center">
-                  ℹ️ Info Empresa
-                </AccordionTrigger>
-                <AccordionContent className="px-4 py-3 text-sm space-y-1">
-                  <p>📌 CNPJ: 60.483.352/0001-77</p>
-                  <p>📧 E-mail: suporteziller@gmail.com</p>
-                  <p>📱 WhatsApp: (21) 99652-8434</p>
-                  <p>🌐 Site Oficial: www.ziller.club</p>
-                  <p>📸 Instagram: @ziller.club</p>
-                  <p>📊 Relatórios no Telegram</p>
-                  <p>💰 Atualização via USDT: 01/10/2025</p>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+            {/* Info Empresa */}
+            <div className="bg-white/10 rounded-2xl p-4 shadow-md">
+              <h3 className="font-semibold text-center mb-2">ℹ️ Info Empresa</h3>
+              <p>📌 CNPJ: 60.483.352/0001-77</p>
+              <p>📧 E-mail: suporteziller@gmail.com</p>
+              <p>📱 WhatsApp: (21) 99652-8434</p>
+              <p>🌐 Site Oficial: www.ziller.club</p>
+              <p>📸 Instagram: @ziller.club</p>
+              <p>📊 Relatórios no Telegram</p>
+              <p>💰 Atualização via USDT: 01/10/2025</p>
+            </div>
           </div>
 
-          {/* --- BLOCOS EXTRAS --- */}
+          {/* BLOCOS EXTRAS */}
           <div className="px-4 pb-6 w-full max-w-md space-y-4">
             {/* Últimas Atividades */}
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
