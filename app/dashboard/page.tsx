@@ -74,14 +74,14 @@ export default function DashboardPage() {
       const dataAtividades = await resAtividades.json();
 
       setSaldo(Number(dataSaldo.saldo ?? 0));
-      setValorInvestido(Number(dataInvestir.valorInvestido ?? 0));
-      setRendimentoDiario(Number(dataSaldo.rendimento ?? 0));
+      setValorInvestido(Number(dataSaldo.valorInvestido ?? 0));
+      setRendimentoDiario(Number(dataUsuario.rendimentoDiario ?? 0)); // corrigido
       setBonusResidual(Number(dataSaldo.bonusResidual ?? 0));
 
       setTotalIndicados(Number(dataUsuario.totalIndicados ?? 0));
       setPontos(Number(dataRede.pontosTotais ?? 0));
-      setPontosDiretos(Number(dataRede.diretos ?? 0));
-      setPontosIndiretos(Number(dataRede.indiretos ?? 0));
+      setPontosDiretos(Number(dataRede.pontosDiretos ?? 0));   // corrigido
+      setPontosIndiretos(Number(dataRede.pontosIndiretos ?? 0)); // corrigido
 
       setUserPhotoUrl(dataUsuario.photoUrl || '');
       setUltimasAtividades(dataAtividades.slice(0, 5));
