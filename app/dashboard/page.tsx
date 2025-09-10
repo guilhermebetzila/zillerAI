@@ -13,7 +13,7 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { label: '🤖 IA', action: '/games/ia' },
+  { label: '🤖 Rede', action: '/games/ia' },
   { label: '📥 Depositar', action: '/games/depositar' },
   { label: '📤 Saque via Pix', action: '/games/saque' },
   { label: '📄 Cadastrar CPF', action: '/games/cadastrar-cpf' },
