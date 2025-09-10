@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import LayoutWrapper from '@components/LayoutWrapper';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@ui/accordion";
 import { Bell, Home, User, Wallet, Settings, LogOut, Eye, EyeOff, MessageCircle } from "lucide-react";
 
 interface MenuItem {
@@ -50,56 +49,42 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [mostrarSaldo, setMostrarSaldo] = useState<boolean>(true);
   const [ultimasAtividades, setUltimasAtividades] = useState<Atividade[]>([]);
-
-  // --- NOVO: controla quantidade de avisos
   const [qtdAvisos, setQtdAvisos] = useState<number>(0);
 
   const fetchUsuarioDados = async () => {
     try {
-      // ✅ Buscar todas as informações necessárias
-      const [resUsuario, resRede, resSaldoInvestimentos, resAtividades] = await Promise.all([
+      const [resUsuario, resRede, resSaldo, resInvestir, resAtividades] = await Promise.all([
         fetch('/api/usuario', { credentials: 'include' }),
         fetch('/api/rede', { credentials: 'include' }),
-        Promise.all([
-          fetch('/api/saldo', { credentials: 'include' }),
-          fetch('/api/investir', { credentials: 'include' })
-        ]),
-        fetch('/api/atividades/usuario', { credentials: 'include' })
+        fetch('/api/saldo', { credentials: 'include' }),
+        fetch('/api/investir', { credentials: 'include' }),
+        fetch('/api/atividades/usuario', { credentials: 'include' }),
       ]);
 
-      if (!resUsuario.ok) throw new Error('Erro ao buscar dados do usuário');
+      if (!resUsuario.ok) throw new Error('Erro ao buscar usuário');
       if (!resRede.ok) throw new Error('Erro ao buscar rede');
-      if (!resSaldoInvestimentos[0].ok || !resSaldoInvestimentos[1].ok) throw new Error('Erro ao buscar saldo ou investimentos');
+      if (!resSaldo.ok) throw new Error('Erro ao buscar saldo');
+      if (!resInvestir.ok) throw new Error('Erro ao buscar investimento');
       if (!resAtividades.ok) throw new Error('Erro ao buscar atividades');
 
       const dataUsuario = await resUsuario.json();
       const dataRede = await resRede.json();
-      const dataSaldo = await resSaldoInvestimentos[0].json();
-      const dataInvestir = await resSaldoInvestimentos[1].json();
+      const dataSaldo = await resSaldo.json();
+      const dataInvestir = await resInvestir.json();
       const dataAtividades = await resAtividades.json();
 
-      // --- Saldo total calculado
-      const saldoCalculado = Number(dataSaldo.saldo ?? 0);
-
-      setSaldo(saldoCalculado);
+      setSaldo(Number(dataSaldo.saldo ?? 0));
       setValorInvestido(Number(dataInvestir.valorInvestido ?? 0));
       setRendimentoDiario(Number(dataSaldo.rendimento ?? 0));
       setBonusResidual(Number(dataSaldo.bonusResidual ?? 0));
 
-      // --- Indicados
       setTotalIndicados(Number(dataUsuario.totalIndicados ?? 0));
-
-      // --- Pontos
       setPontos(Number(dataRede.pontosTotais ?? 0));
       setPontosDiretos(Number(dataRede.diretos ?? 0));
       setPontosIndiretos(Number(dataRede.indiretos ?? 0));
 
-      // --- Avatar
       setUserPhotoUrl(dataUsuario.photoUrl || '');
-
-      // --- Últimas atividades
       setUltimasAtividades(dataAtividades.slice(0, 5));
-
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error);
     } finally {
@@ -115,7 +100,6 @@ export default function DashboardPage() {
     }
   }, [status]);
 
-  // --- NOVO: ler quantidade de notificações não lidas
   useEffect(() => {
     try {
       const naoLidas = typeof window !== 'undefined'
@@ -129,7 +113,7 @@ export default function DashboardPage() {
 
   const abrirNotificacoes = () => {
     try {
-      localStorage.setItem('notificacoes_nao_lidas', '0'); // zera contador
+      localStorage.setItem('notificacoes_nao_lidas', '0');
     } catch {}
     setQtdAvisos(0);
     router.push('/notificacoes');
@@ -153,7 +137,7 @@ export default function DashboardPage() {
   return (
     <LayoutWrapper>
       <div className="h-screen flex flex-col bg-gray-900 text-white">
-        {/* HEADER FIXO */}
+        {/* HEADER */}
         <header className="flex items-center justify-between px-4 py-3 bg-gray-950 shadow-md sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <img
@@ -167,7 +151,6 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            {/* Suporte WhatsApp */}
             <a
               href="https://wa.me/5521971410840"
               target="_blank"
@@ -177,7 +160,6 @@ export default function DashboardPage() {
             >
               <MessageCircle className="w-6 h-6 cursor-pointer" />
             </a>
-            {/* Sino -> /notificacoes com badge numérico */}
             <div className="relative cursor-pointer" onClick={abrirNotificacoes} title="Notificações">
               <Bell className="w-6 h-6 hover:text-green-400 transition" />
               {qtdAvisos > 0 && (
@@ -193,9 +175,9 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        {/* CONTEÚDO ROLÁVEL */}
+        {/* CONTEÚDO */}
         <main className="flex-1 overflow-y-auto pb-24 flex flex-col items-center">
-          {/* CARD SALDO */}
+          {/* SALDO */}
           <div className="p-6 text-center bg-gradient-to-r from-green-600 to-green-500 rounded-b-3xl shadow-lg flex flex-col items-center w-full max-w-md">
             <div className="flex items-center justify-center gap-2">
               <p className="text-sm">Saldo disponível:</p>
@@ -211,7 +193,7 @@ export default function DashboardPage() {
             <p className="text-xs">Bônus residual: {bonusResidual.toFixed(2)} USDT</p>
           </div>
 
-          {/* BLOCO MINHAS CRIPTOMOEDAS */}
+          {/* CRIPTOMOEDAS */}
           <div className="p-4 w-full max-w-md">
             <h3 className="font-semibold mb-2">💎 Minhas Criptomoedas</h3>
             <div className="bg-white/10 rounded-xl p-4 shadow-md text-center cursor-pointer hover:bg-white/20 transition">
@@ -221,29 +203,16 @@ export default function DashboardPage() {
 
           {/* BANNERS */}
           <div className="p-4 w-full max-w-md">
-            <img
-              src="/img/banneroficial.png"
-              alt="Banner Oficial"
-              className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
-            />
+            <img src="/img/banneroficial.png" alt="Banner Oficial" className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition" />
           </div>
-
           <div className="p-4 w-full max-w-md">
-            <img
-              src="/img/banneroficial1.png"
-              alt="Banner Oficial"
-              className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
-            />
+            <img src="/img/banneroficial1.png" alt="Banner Oficial" className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition" />
           </div>
 
-          {/* AÇÕES RÁPIDAS */}
+          {/* MENU RÁPIDO */}
           <div className="grid grid-cols-4 gap-4 p-4 w-full max-w-md">
             {menuItems.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => router.push(item.action)}
-                className="flex flex-col items-center justify-center"
-              >
+              <button key={index} onClick={() => router.push(item.action)} className="flex flex-col items-center justify-center">
                 <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center mb-1 shadow-md hover:bg-white/20 transition">
                   <span className="text-lg">{item.label.split(" ")[0]}</span>
                 </div>
@@ -252,45 +221,33 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* SEÇÕES - SEMPRE ABERTAS */}
+          {/* PONTUAÇÃO */}
           <div className="px-4 pb-4 w-full max-w-md space-y-4">
-            {/* Pontuação & Indicação */}
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
               <h3 className="font-semibold text-center mb-2">📊 Pontuação & Indicação</h3>
               <p>Você já indicou <strong>{totalIndicados}</strong> pessoa(s)!</p>
               <p>Pontos acumulados: {pontos}</p>
               <p>Diretos: {pontosDiretos} | Indiretos: {pontosIndiretos}</p>
               <div className="w-full bg-white/20 rounded-xl h-4 mt-2">
-                <div
-                  className="bg-green-500 h-4 rounded-xl transition-all duration-500"
-                  style={{ width: `${(pontos / PONTOS_OBJETIVO) * 100}%` }}
-                ></div>
+                <div className="bg-green-500 h-4 rounded-xl transition-all duration-500" style={{ width: `${(pontos / PONTOS_OBJETIVO) * 100}%` }}></div>
               </div>
               <p className="mt-1">Faltam {PONTOS_OBJETIVO - pontos} pontos para desbloquear o próximo prêmio.</p>
             </div>
 
-            {/* Código de Indicação */}
+            {/* INDICAÇÃO */}
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
               <h3 className="font-semibold text-center mb-2">🎁 Seu Código de Indicação</h3>
               <div className="flex items-center justify-between bg-black/20 px-3 py-2 rounded-xl">
-                <a
-                  href={linkIndicacao}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="truncate underline"
-                >
+                <a href={linkIndicacao} target="_blank" rel="noopener noreferrer" className="truncate underline">
                   {linkIndicacao}
                 </a>
-                <button
-                  onClick={() => navigator.clipboard.writeText(linkIndicacao)}
-                  className="ml-2 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-xl text-sm"
-                >
+                <button onClick={() => navigator.clipboard.writeText(linkIndicacao)} className="ml-2 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-xl text-sm">
                   Copiar
                 </button>
               </div>
             </div>
 
-            {/* Info Empresa */}
+            {/* INFO */}
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
               <h3 className="font-semibold text-center mb-2">ℹ️ Info Empresa</h3>
               <p>📌 CNPJ: 60.483.352/0001-77</p>
@@ -303,9 +260,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* BLOCOS EXTRAS */}
+          {/* ATIVIDADES */}
           <div className="px-4 pb-6 w-full max-w-md space-y-4">
-            {/* Últimas Atividades */}
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
               <h3 className="font-semibold mb-3">📝 Sua última atividade</h3>
               {ultimasAtividades.length === 0 ? (
@@ -324,7 +280,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* Feedback Experiência */}
+            {/* FEEDBACK */}
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
               <h3 className="font-semibold mb-2">💡 Como foi sua experiência com a tela inicial?</h3>
               <div className="flex gap-2">
@@ -336,7 +292,7 @@ export default function DashboardPage() {
           </div>
         </main>
 
-        {/* FOOTER FIXO */}
+        {/* FOOTER */}
         <footer className="sticky bottom-0 w-full bg-gray-950 text-white py-2 px-6 flex justify-between items-center shadow-lg">
           <button onClick={() => router.push('/dashboard')} className="flex flex-col items-center">
             <Home className="w-6 h-6" /> <span className="text-xs">Início</span>
