@@ -53,38 +53,32 @@ export default function DashboardPage() {
 
   const fetchUsuarioDados = async () => {
     try {
-      const [resUsuario, resRede, resSaldo, resInvestir, resAtividades] = await Promise.all([
+      const [resUsuario, resRede] = await Promise.all([
         fetch('/api/usuario', { credentials: 'include' }),
         fetch('/api/rede', { credentials: 'include' }),
-        fetch('/api/saldo', { credentials: 'include' }),
-        fetch('/api/investir', { credentials: 'include' }),
-        fetch('/api/atividades/usuario', { credentials: 'include' }),
       ]);
 
       if (!resUsuario.ok) throw new Error('Erro ao buscar usuário');
       if (!resRede.ok) throw new Error('Erro ao buscar rede');
-      if (!resSaldo.ok) throw new Error('Erro ao buscar saldo');
-      if (!resInvestir.ok) throw new Error('Erro ao buscar investimento');
-      if (!resAtividades.ok) throw new Error('Erro ao buscar atividades');
 
       const dataUsuario = await resUsuario.json();
       const dataRede = await resRede.json();
-      const dataSaldo = await resSaldo.json();
-      const dataInvestir = await resInvestir.json();
-      const dataAtividades = await resAtividades.json();
 
-      setSaldo(Number(dataSaldo.saldo ?? 0));
-      setValorInvestido(Number(dataSaldo.valorInvestido ?? 0));
-      setRendimentoDiario(Number(dataUsuario.rendimentoDiario ?? 0)); // corrigido
-      setBonusResidual(Number(dataSaldo.bonusResidual ?? 0));
-
+      // ✅ Dados do usuário
+      setSaldo(Number(dataUsuario.saldo ?? 0));
+      setValorInvestido(Number(dataUsuario.valorInvestido ?? 0));
+      setRendimentoDiario(Number(dataUsuario.rendimentoDiario ?? 0));
+      setBonusResidual(Number(dataUsuario.bonusResidual ?? 0));
       setTotalIndicados(Number(dataUsuario.totalIndicados ?? 0));
-      setPontos(Number(dataRede.pontosTotais ?? 0));
-      setPontosDiretos(Number(dataRede.pontosDiretos ?? 0));   // corrigido
-      setPontosIndiretos(Number(dataRede.pontosIndiretos ?? 0)); // corrigido
-
+      setPontos(Number(dataUsuario.pontos ?? 0));
       setUserPhotoUrl(dataUsuario.photoUrl || '');
-      setUltimasAtividades(dataAtividades.slice(0, 5));
+
+      // ✅ Rede
+      setPontosDiretos(Number(dataRede.pontosDiretos ?? 0));
+      setPontosIndiretos(Number(dataRede.pontosIndiretos ?? 0));
+
+      // Últimas atividades (mantido, mas ficará vazio sem fetch de atividades)
+      setUltimasAtividades([]);
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error);
     } finally {
