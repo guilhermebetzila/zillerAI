@@ -182,7 +182,7 @@ export default function DashboardPage() {
             <h1 className="text-4xl font-bold mt-1">
               {mostrarSaldo ? `$ ${saldo.toFixed(2)}` : '••••••'}
             </h1>
-            <p className="text-xs mt-2">Investido: {mostrarSaldo ? `R$ ${valorInvestido.toFixed(2)}` : '••••'}</p>
+            <p className="text-xs mt-2">Investido: {mostrarSaldo ? `$ ${valorInvestido.toFixed(2)}` : '••••'}</p>
             <p className="text-xs mt-1">Rendimento diário: {rendimentoDiario.toFixed(2)} USDT</p>
             <p className="text-xs">Bônus residual: {bonusResidual.toFixed(2)} USDT</p>
           </div>
