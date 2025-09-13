@@ -45,6 +45,8 @@ export default function DashboardPage() {
   const [pontos, setPontos] = useState<number>(0);
   const [pontosDiretos, setPontosDiretos] = useState<number>(0);
   const [pontosIndiretos, setPontosIndiretos] = useState<number>(0);
+  const [qtdDiretos, setQtdDiretos] = useState<number>(0);
+  const [qtdIndiretos, setQtdIndiretos] = useState<number>(0);
   const [userPhotoUrl, setUserPhotoUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [mostrarSaldo, setMostrarSaldo] = useState<boolean>(true);
@@ -73,9 +75,11 @@ export default function DashboardPage() {
       setPontos(Number(dataUsuario.pontos ?? 0));
       setUserPhotoUrl(dataUsuario.photoUrl || '');
 
-      // ✅ Rede
+      // ✅ Rede (separando quantidade de pessoas e pontuação)
       setPontosDiretos(Number(dataRede.pontosDiretos ?? 0));
       setPontosIndiretos(Number(dataRede.pontosIndiretos ?? 0));
+      setQtdDiretos(Number(dataRede.diretos ?? 0));
+      setQtdIndiretos(Number(dataRede.indiretos ?? 0));
 
       // Últimas atividades (mantido, mas ficará vazio sem fetch de atividades)
       setUltimasAtividades([]);
@@ -219,9 +223,12 @@ export default function DashboardPage() {
           <div className="px-4 pb-4 w-full max-w-md space-y-4">
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
               <h3 className="font-semibold text-center mb-2">📊 Pontuação & Indicação</h3>
-              <p>Você já indicou <strong>{totalIndicados}</strong> pessoa(s)!</p>
+              <p>
+                Você já indicou <strong>{qtdDiretos}</strong> pessoa(s) diretas e{" "}
+                <strong>{qtdIndiretos}</strong> indiretas!
+              </p>
               <p>Pontos acumulados: {pontos}</p>
-              <p>Diretos: {pontosDiretos} | Indiretos: {pontosIndiretos}</p>
+              <p>Pontos Diretos: {pontosDiretos} | Pontos Indiretos: {pontosIndiretos}</p>
               <div className="w-full bg-white/20 rounded-xl h-4 mt-2">
                 <div className="bg-green-500 h-4 rounded-xl transition-all duration-500" style={{ width: `${(pontos / PONTOS_OBJETIVO) * 100}%` }}></div>
               </div>
