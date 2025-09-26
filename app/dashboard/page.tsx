@@ -150,7 +150,7 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <a
-              href="https://wa.me/5521971410840"
+              href="https://wa.me/5521991146984"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-green-400 transition"
@@ -253,7 +253,7 @@ export default function DashboardPage() {
               <h3 className="font-semibold text-center mb-2">ℹ️ Info Empresa</h3>
               <p>📌 CNPJ: 60.483.352/0001-77</p>
               <p>📧 E-mail: suporteziller@gmail.com</p>
-              <p>📱 WhatsApp: (21) 99652-8434</p>
+              <p>📱 WhatsApp: (21) 99114-6984</p>
               <p>🌐 Site Oficial: www.ziller.club</p>
               <p>📸 Instagram: @ziller.club</p>
               <p>📊 Relatórios no Telegram</p>
