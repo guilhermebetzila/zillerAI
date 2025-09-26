@@ -29,9 +29,6 @@ export default function InvestimentosPage() {
   const [rendimentos, setRendimentos] = useState<Rendimento[]>([]);
   const [novoValor, setNovoValor] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [loadingReinvestir, setLoadingReinvestir] = useState(false);
-  const [podeReinvestir, setPodeReinvestir] = useState(true);
-
   const [saldoTotal, setSaldoTotal] = useState<number>(0);
 
   const carregarDados = async () => {
@@ -48,10 +45,6 @@ export default function InvestimentosPage() {
         setValorInvestido(parseFloat(dataInvestir.valorInvestido) || 0);
         setInvestimentos(dataInvestir.investimentos || []);
         setRendimentos(dataInvestir.rendimentos || []);
-
-        const hoje = new Date().toISOString().split("T")[0];
-        const ultimoRendimento = dataInvestir.rendimentos?.[0]?.dateKey;
-        setPodeReinvestir(ultimoRendimento !== hoje);
 
         // ✅ Usa o saldo real da carteira
         setSaldoTotal(Number(dataSaldo.saldo ?? 0));
@@ -96,35 +89,6 @@ export default function InvestimentosPage() {
     }
   };
 
-  const reinvestir = async () => {
-    if (saldoTotal <= 0) {
-      toast.error("❌ Você não tem saldo disponível para reinvestir.");
-      return;
-    }
-
-    setLoadingReinvestir(true);
-    try {
-      const res = await fetch("/api/reinvestir", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ valor: saldoTotal }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast.success("🔄 Reinvestimento realizado com sucesso!");
-        setSaldoTotal(0);
-        setPodeReinvestir(false);
-        carregarDados();
-      } else {
-        toast.error(data.error || "Erro ao reinvestir.");
-      }
-    } catch {
-      toast.error("❌ Erro de conexão.");
-    } finally {
-      setLoadingReinvestir(false);
-    }
-  };
-
   useEffect(() => {
     carregarDados();
   }, []);
@@ -164,24 +128,6 @@ export default function InvestimentosPage() {
         >
           {loading ? "Processando..." : "Investir"}
         </button>
-      </div>
-
-      <div className="bg-gray-800 p-4 rounded-lg shadow space-y-3">
-        <p>💰 Deseja reinvestir todo o saldo disponível?</p>
-        <button
-          onClick={reinvestir}
-          disabled={loadingReinvestir || !podeReinvestir}
-          className={`w-full mt-2 p-2 rounded disabled:opacity-50 ${
-            podeReinvestir ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-600 cursor-not-allowed"
-          }`}
-        >
-          {loadingReinvestir ? "Processando..." : "🔄 Reinvestir"}
-        </button>
-        {!podeReinvestir && (
-          <p className="text-sm text-gray-400 mt-1">
-            Aguarde o próximo rendimento do dia para reinvestir novamente.
-          </p>
-        )}
       </div>
 
       <div className="bg-gray-800 p-4 rounded-lg shadow">

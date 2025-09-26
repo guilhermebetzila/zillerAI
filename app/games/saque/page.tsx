@@ -69,7 +69,7 @@ export default function SaquePage() {
       2
     )}%0A🏦 Método: ${metodo.toUpperCase()}%0A🔑 Chave: ${chaveAtual}%0A⏰ Horário: ${horario}%0A⏳ Prazo: até 60 minutos`;
 
-    const whatsappUrl = `https://wa.me/5521996528434?text=${mensagem}`;
+    const whatsappUrl = `https://wa.me/5521991146984?text=${mensagem}`;
     window.open(whatsappUrl, "_blank");
   };
 
