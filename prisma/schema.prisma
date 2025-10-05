@@ -36,7 +36,7 @@ model User {
   withdrawalRequests  WithdrawalRequest[]
   passwordResetTokens PasswordResetToken[]
 
-  @@map("User")
+  @@map("users") // ✅ tabela no Railway
 }
 
 model PasswordResetToken {
@@ -47,7 +47,7 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
   expiresAt DateTime
 
-  @@map("PasswordResetToken")
+  @@map("password_reset_tokens")
 }
 
 model Saque {
@@ -66,7 +66,7 @@ model Saque {
   txId         String?
   user         User        @relation(fields: [userId], references: [id])
 
-  @@map("Saque")
+  @@map("saques")
 }
 
 model Deposito {
@@ -78,7 +78,7 @@ model Deposito {
   metodo   String         @default("manual")
   user     User           @relation(fields: [userId], references: [id])
 
-  @@map("Deposito")
+  @@map("depositos")
 }
 
 model Investimento {
@@ -93,7 +93,7 @@ model Investimento {
   user                User               @relation(fields: [userId], references: [id])
   rendimentos         RendimentoDiario[]
 
-  @@map("Investimento")
+  @@map("investimentos")
 }
 
 model RendimentoDiario {
@@ -109,7 +109,7 @@ model RendimentoDiario {
   user           User         @relation(fields: [userId], references: [id])
 
   @@unique([userId, investimentoId, dateKey], name: "userId_investimentoId_dateKey")
-  @@map("RendimentoDiario")
+  @@map("rendimentos_diarios")
 }
 
 model Graduacao {
@@ -118,7 +118,7 @@ model Graduacao {
   pontos Int    @unique
   users  User[]
 
-  @@map("Graduacao")
+  @@map("graduacoes")
 }
 
 model OnChainDeposit {
@@ -133,7 +133,7 @@ model OnChainDeposit {
   confirmadoEm DateTime?
   user         User?          @relation(fields: [userId], references: [id])
 
-  @@map("OnChainDeposit")
+  @@map("on_chain_deposits")
 }
 
 model WithdrawalRequest {
@@ -147,7 +147,7 @@ model WithdrawalRequest {
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id])
 
-  @@map("WithdrawalRequest")
+  @@map("withdrawal_requests")
 }
 
 enum StatusDeposito {
