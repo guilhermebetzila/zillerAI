@@ -26,7 +26,7 @@ export default function LoginPage() {
     const result = await signIn('credentials', {
       email: emailOrCpf,
       password: senha,
-      redirect: false, // mudamos para false para controlar os erros manualmente
+      redirect: false,
     });
 
     if (result?.error) {
@@ -53,7 +53,11 @@ export default function LoginPage() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen px-4 bg-black text-white">
       <h1 className="text-3xl font-bold mb-6">Login</h1>
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-sm space-y-5 bg-zinc-900/40 p-6 rounded-2xl shadow-lg border border-zinc-800"
+      >
         <div>
           <input
             type="text"
@@ -64,6 +68,7 @@ export default function LoginPage() {
             required
           />
         </div>
+
         <div>
           <input
             type="password"
@@ -76,21 +81,27 @@ export default function LoginPage() {
         </div>
 
         {/* Link "Esqueci minha senha" */}
-        <div className="flex justify-end">
+        <div className="flex justify-between items-center">
           <button
             type="button"
             onClick={handleForgotPassword}
-            className="text-yellow-400 text-sm mt-2 hover:underline hover:text-yellow-300 transition-all duration-300 flex items-center"
+            className="text-yellow-400 text-sm hover:underline hover:text-yellow-300 transition-all duration-300"
             disabled={forgotLoading}
           >
-            {forgotLoading ? <span className="animate-pulse">Redirecionando...</span> : 'Esqueci minha senha'}
+            {forgotLoading ? (
+              <span className="animate-pulse">Redirecionando...</span>
+            ) : (
+              'Esqueci minha senha'
+            )}
           </button>
         </div>
 
         <button
           type="submit"
           className={`w-full py-2 rounded text-white transition-all duration-300 ${
-            carregando ? 'bg-green-700 cursor-not-allowed animate-pulse' : 'bg-green-600 hover:bg-green-700'
+            carregando
+              ? 'bg-green-700 cursor-not-allowed animate-pulse'
+              : 'bg-green-600 hover:bg-green-700'
           }`}
           disabled={carregando}
         >
@@ -99,7 +110,9 @@ export default function LoginPage() {
       </form>
 
       {mensagem && (
-        <p className="mt-4 text-sm text-red-400 text-center transition-opacity duration-300">{mensagem}</p>
+        <p className="mt-4 text-sm text-red-400 text-center transition-opacity duration-300">
+          {mensagem}
+        </p>
       )}
     </main>
   );
