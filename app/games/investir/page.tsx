@@ -21,18 +21,24 @@ type Rendimento = {
   creditedAt: string;
 };
 
+type NovoInvestimento = {
+  key: number; // para React map
+  valor: string;
+  loading: boolean;
+  bloqueado: boolean;
+  progresso: number;
+  falta: number;
+};
+
 export default function InvestimentosPage() {
   const [valorInvestido, setValorInvestido] = useState<number>(0);
   const [bonusResidual, setBonusResidual] = useState<number>(0);
   const [rendimentoDiario, setRendimentoDiario] = useState<number>(0);
   const [investimentos, setInvestimentos] = useState<Investimento[]>([]);
   const [rendimentos, setRendimentos] = useState<Rendimento[]>([]);
-  const [novoValor, setNovoValor] = useState<string>("");
-  const [loading, setLoading] = useState(false);
+  const [novoInvestimentos, setNovoInvestimentos] = useState<NovoInvestimento[]>([]);
   const [saldoTotal, setSaldoTotal] = useState<number>(0);
-  const [bloqueado, setBloqueado] = useState<boolean>(false);
-  const [progresso, setProgresso] = useState<number>(0);
-  const [falta, setFalta] = useState<number>(0);
+  const [nextKey, setNextKey] = useState<number>(1);
 
   const carregarDados = async () => {
     try {
@@ -48,34 +54,7 @@ export default function InvestimentosPage() {
         setValorInvestido(parseFloat(dataInvestir.valorInvestido) || 0);
         setInvestimentos(dataInvestir.investimentos || []);
         setRendimentos(dataInvestir.rendimentos || []);
-
-        // ✅ Usa o saldo real da carteira
         setSaldoTotal(Number(dataSaldo.saldo ?? 0));
-        setRendimentoDiario(Number(dataSaldo.rendimento ?? 0));
-        setBonusResidual(Number(dataSaldo.bonusResidual ?? 0));
-
-        // 🚫 Nova regra + progresso visual
-        const ativo = dataInvestir.investimentos?.find((inv: Investimento) => inv.ativo);
-        if (ativo) {
-          const valor = parseFloat(ativo.valor);
-          const acumulado = parseFloat(ativo.rendimentoAcumulado);
-          const pct = (acumulado / valor) * 100; // porcentagem atual
-          const faltando = Math.max(valor * 2 - acumulado, 0);
-
-          setProgresso(Math.min(pct, 200));
-          setFalta(faltando);
-
-          if (acumulado < valor * 2) {
-            setBloqueado(true);
-          } else {
-            setBloqueado(false);
-          }
-        } else {
-          setBloqueado(false);
-          setProgresso(0);
-          setFalta(0);
-        }
-
       } else {
         toast.error("Erro ao carregar dados.");
       }
@@ -84,14 +63,39 @@ export default function InvestimentosPage() {
     }
   };
 
-  const investir = async () => {
-    const valorNum = parseFloat(novoValor);
+  const adicionarNovoInvestimento = () => {
+    setNovoInvestimentos((prev) => [
+      ...prev,
+      { key: nextKey, valor: "", loading: false, bloqueado: false, progresso: 0, falta: 0 },
+    ]);
+    setNextKey((k) => k + 1);
+  };
+
+  const handleChangeValor = (key: number, valor: string) => {
+    setNovoInvestimentos((prev) =>
+      prev.map((inv) => (inv.key === key ? { ...inv, valor } : inv))
+    );
+  };
+
+  const investir = async (key: number) => {
+    const investimento = novoInvestimentos.find((inv) => inv.key === key);
+    if (!investimento) return;
+
+    const valorNum = parseFloat(investimento.valor);
     if (!valorNum || valorNum <= 0) {
       toast.error("Digite um valor válido.");
       return;
     }
 
-    setLoading(true);
+    if (valorNum > saldoTotal) {
+      toast.error("Saldo insuficiente.");
+      return;
+    }
+
+    setNovoInvestimentos((prev) =>
+      prev.map((inv) => (inv.key === key ? { ...inv, loading: true } : inv))
+    );
+
     try {
       const res = await fetch("/api/investir/novo", {
         method: "POST",
@@ -99,17 +103,28 @@ export default function InvestimentosPage() {
         body: JSON.stringify({ valor: valorNum }),
       });
       const data = await res.json();
+
       if (res.ok) {
         toast.success("✅ Investimento realizado!");
-        setNovoValor("");
+        setNovoInvestimentos((prev) =>
+          prev.map((inv) =>
+            inv.key === key
+              ? { ...inv, valor: "", loading: false, bloqueado: true, progresso: 0, falta: valorNum * 2 }
+              : inv
+          )
+        );
         carregarDados();
       } else {
         toast.error(data.error || "Erro ao investir.");
+        setNovoInvestimentos((prev) =>
+          prev.map((inv) => (inv.key === key ? { ...inv, loading: false } : inv))
+        );
       }
     } catch {
       toast.error("❌ Erro de conexão.");
-    } finally {
-      setLoading(false);
+      setNovoInvestimentos((prev) =>
+        prev.map((inv) => (inv.key === key ? { ...inv, loading: false } : inv))
+      );
     }
   };
 
@@ -118,72 +133,73 @@ export default function InvestimentosPage() {
   }, []);
 
   return (
-    <div className="max-w-3xl mx-auto p-6 text-white space-y-6">
+    <div className="max-w-4xl mx-auto p-6 text-white space-y-6">
       <h1 className="text-2xl font-bold text-center">📈 Área de Investimentos</h1>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-gray-800 p-4 rounded-lg shadow text-center">
           <p className="text-gray-400">Saldo Atual</p>
-          <p className="text-green-400 text-xl font-bold">
-            {saldoTotal.toFixed(2)} USDT
-          </p>
+          <p className="text-green-400 text-xl font-bold">{saldoTotal.toFixed(2)} USDT</p>
         </div>
         <div className="bg-gray-800 p-4 rounded-lg shadow text-center">
           <p className="text-gray-400">Total Investido</p>
-          <p className="text-yellow-400 text-xl font-bold">
-            {valorInvestido.toFixed(2)} USDT
-          </p>
+          <p className="text-yellow-400 text-xl font-bold">{valorInvestido.toFixed(2)} USDT</p>
         </div>
       </div>
 
-      <div className="bg-gray-800 p-4 rounded-lg shadow space-y-3">
-        <label className="block">Valor para investir (USDT)</label>
-        <input
-          type="number"
-          value={novoValor}
-          onChange={(e) => setNovoValor(e.target.value)}
-          placeholder="Ex: 100"
-          className="w-full p-2 rounded text-black"
-        />
+      <div className="flex space-x-4 overflow-x-auto">
+        {novoInvestimentos.map((inv) => (
+          <div key={inv.key} className="bg-gray-800 p-4 rounded-lg shadow min-w-[250px] flex-shrink-0">
+            <label className="block">Valor para investir (USDT)</label>
+            <input
+              type="number"
+              value={inv.valor}
+              onChange={(e) => handleChangeValor(inv.key, e.target.value)}
+              placeholder="Ex: 100"
+              className="w-full p-2 rounded text-black mb-2"
+              disabled={inv.bloqueado}
+            />
+            <button
+              onClick={() => investir(inv.key)}
+              disabled={inv.loading || inv.bloqueado}
+              className={`w-full p-2 rounded font-semibold transition ${
+                inv.bloqueado || inv.loading ? "bg-gray-500 cursor-not-allowed" : "bg-yellow-600 hover:bg-yellow-700"
+              }`}
+            >
+              {inv.loading
+                ? "Processando..."
+                : inv.bloqueado
+                ? "Bloqueado até 200%"
+                : "Investir"}
+            </button>
 
-        <button
-          onClick={investir}
-          disabled={loading || bloqueado}
-          className={`w-full mt-2 p-2 rounded font-semibold transition ${
-            bloqueado
-              ? "bg-gray-500 cursor-not-allowed"
-              : "bg-yellow-600 hover:bg-yellow-700"
-          }`}
-        >
-          {loading
-            ? "Processando..."
-            : bloqueado
-            ? "Aguardando retorno de 200%"
-            : "Investir"}
-        </button>
-
-        {bloqueado && (
-          <div className="mt-3">
-            <p className="text-red-400 text-sm text-center mb-2">
-              ⚠ Você só pode investir novamente quando seu investimento ativo dobrar (200%).
-            </p>
-
-            {/* 🔥 Barra de progresso animada */}
-            <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
-              <div
-                className="bg-yellow-500 h-4 transition-all duration-700 ease-in-out"
-                style={{ width: `${Math.min((progresso / 2) * 100 / 100, 100)}%` }}
-              ></div>
-            </div>
-
-            <p className="text-center text-sm text-gray-300 mt-1">
-              Progresso: {progresso.toFixed(1)}% / 200% <br />
-              Falta {falta.toFixed(2)} USDT para liberar novos investimentos.
-            </p>
+            {inv.bloqueado && (
+              <div className="mt-2">
+                <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                  <div
+                    className="bg-yellow-500 h-4 transition-all duration-700 ease-in-out"
+                    style={{ width: `${Math.min((inv.progresso / 2) * 100, 100)}%` }}
+                  ></div>
+                </div>
+                <p className="text-center text-sm text-gray-300 mt-1">
+                  Falta {inv.falta.toFixed(2)} USDT para desbloquear
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        ))}
+
+        <div className="flex items-center">
+          <button
+            onClick={adicionarNovoInvestimento}
+            className="bg-green-600 hover:bg-green-700 p-2 rounded font-semibold"
+          >
+            ➕ Novo Investimento
+          </button>
+        </div>
       </div>
 
+      {/* Investimentos já existentes */}
       <div className="bg-gray-800 p-4 rounded-lg shadow">
         <h2 className="text-lg font-semibold mb-3">📜 Meus Investimentos</h2>
         {investimentos.length === 0 ? (

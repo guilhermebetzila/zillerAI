@@ -9,41 +9,53 @@ datasource db {
 }
 
 model User {
-  id                 Int                  @id @default(autoincrement())
-  email              String               @unique
-  nome               String
-  senha              String
-  saldo              Decimal              @default(0)
-  valorInvestido     Decimal              @default(0)
-  indicadoPorId      Int?
-  cpf                String               @unique
-  pontos             Int                  @default(0)
-  graduacaoId        Int?
-  lastLogin          DateTime?
-  carteira           String?              @unique
-  pix                String?              // Chave PIX do usuário
-  usdt               String?              // Carteira USDT do usuário
-  bonusResidual      Decimal              @default(0)
-  photoUrl           String?
-  depositos          Deposito[]
-  investimentos      Investimento[]
-  onChainDeposits    OnChainDeposit[]
-  rendimentos        RendimentoDiario[]
-  saques             Saque[]
-  graduacao          Graduacao?           @relation(fields: [graduacaoId], references: [id])
-  indicadoPor        User?                @relation("Indicacoes", fields: [indicadoPorId], references: [id])
-  indicados          User[]               @relation("Indicacoes")
-  withdrawalRequests WithdrawalRequest[]
+  id                  Int                  @id @default(autoincrement())
+  email               String               @unique
+  nome                String
+  senha               String
+  saldo               Decimal              @default(0)
+  valorInvestido      Decimal              @default(0)
+  indicadoPorId       Int?
+  cpf                 String               @unique
+  pontos              Int                  @default(0)
+  graduacaoId         Int?
+  lastLogin           DateTime?
+  carteira            String?              @unique
+  pix                 String?
+  usdt                String?
+  bonusResidual       Decimal              @default(0)
+  photoUrl            String?
+  depositos           Deposito[]
+  investimentos       Investimento[]
+  onChainDeposits     OnChainDeposit[]
+  rendimentos         RendimentoDiario[]
+  saques              Saque[]
+  graduacao           Graduacao?           @relation(fields: [graduacaoId], references: [id])
+  indicadoPor         User?                @relation("Indicacoes", fields: [indicadoPorId], references: [id])
+  indicados           User[]               @relation("Indicacoes")
+  withdrawalRequests  WithdrawalRequest[]
+  passwordResetTokens PasswordResetToken[]
 
-  @@map("users")
+  @@map("User")
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  @@map("PasswordResetToken")
 }
 
 model Saque {
   id           Int         @id @default(autoincrement())
   userId       Int
   valor        Decimal
-  metodo       String      // "pix" ou "usdt"
-  chave        String      // chave pix ou carteira usdt
+  metodo       String
+  chave        String
   status       StatusSaque @default(pendente)
   criadoEm     DateTime    @default(now())
   processadoEm DateTime?
@@ -54,7 +66,7 @@ model Saque {
   txId         String?
   user         User        @relation(fields: [userId], references: [id])
 
-  @@map("saques")
+  @@map("Saque")
 }
 
 model Deposito {
@@ -66,7 +78,7 @@ model Deposito {
   metodo   String         @default("manual")
   user     User           @relation(fields: [userId], references: [id])
 
-  @@map("depositos")
+  @@map("Deposito")
 }
 
 model Investimento {
@@ -81,7 +93,7 @@ model Investimento {
   user                User               @relation(fields: [userId], references: [id])
   rendimentos         RendimentoDiario[]
 
-  @@map("investimentos")
+  @@map("Investimento")
 }
 
 model RendimentoDiario {
@@ -97,7 +109,7 @@ model RendimentoDiario {
   user           User         @relation(fields: [userId], references: [id])
 
   @@unique([userId, investimentoId, dateKey], name: "userId_investimentoId_dateKey")
-  @@map("rendimentos_diarios")
+  @@map("RendimentoDiario")
 }
 
 model Graduacao {
@@ -106,7 +118,7 @@ model Graduacao {
   pontos Int    @unique
   users  User[]
 
-  @@map("graduacoes")
+  @@map("Graduacao")
 }
 
 model OnChainDeposit {
@@ -121,7 +133,7 @@ model OnChainDeposit {
   confirmadoEm DateTime?
   user         User?          @relation(fields: [userId], references: [id])
 
-  @@map("onchain_deposits")
+  @@map("OnChainDeposit")
 }
 
 model WithdrawalRequest {
@@ -135,7 +147,7 @@ model WithdrawalRequest {
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id])
 
-  @@map("withdrawal_requests")
+  @@map("WithdrawalRequest")
 }
 
 enum StatusDeposito {
