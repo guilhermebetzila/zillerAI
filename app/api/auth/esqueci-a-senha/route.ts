@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       data: {
         token,
         userId: user.id,
-        expires,
+        expiresAt: expires, // ✅ corrigido
       },
     })
 
