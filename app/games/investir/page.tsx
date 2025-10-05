@@ -22,7 +22,7 @@ type Rendimento = {
 };
 
 type NovoInvestimento = {
-  key: number; // para React map
+  key: number;
   valor: string;
   loading: boolean;
   bloqueado: boolean;
@@ -178,11 +178,11 @@ export default function InvestimentosPage() {
                 <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
                   <div
                     className="bg-yellow-500 h-4 transition-all duration-700 ease-in-out"
-                    style={{ width: `${Math.min((inv.progresso / 2) * 100, 100)}%` }}
+                    style={{ width: `${Math.min(inv.progresso, 100)}%` }}
                   ></div>
                 </div>
                 <p className="text-center text-sm text-gray-300 mt-1">
-                  Falta {inv.falta.toFixed(2)} USDT para desbloquear
+                  {inv.progresso.toFixed(1)}% concluído — falta {inv.falta.toFixed(2)} USDT
                 </p>
               </div>
             )}
@@ -205,15 +205,35 @@ export default function InvestimentosPage() {
         {investimentos.length === 0 ? (
           <p className="text-gray-400">Nenhum investimento realizado.</p>
         ) : (
-          <ul className="space-y-2">
-            {investimentos.map((inv) => (
-              <li key={inv.id} className="bg-gray-700 p-3 rounded">
-                <p>💵 Valor: <span className="text-yellow-400">{inv.valor} USDT</span></p>
-                <p>📅 Criado em: {new Date(inv.criadoEm).toLocaleString()}</p>
-                <p>📊 Acumulado: <span className="text-green-400">{inv.rendimentoAcumulado} USDT</span></p>
-                <p>Status: {inv.ativo ? "✅ Ativo" : "❌ Finalizado"}</p>
-              </li>
-            ))}
+          <ul className="space-y-4">
+            {investimentos.map((inv) => {
+              const valorBase = parseFloat(inv.valor);
+              const acumulado = parseFloat(inv.rendimentoAcumulado);
+              const meta = valorBase * 2;
+              const progresso = Math.min((acumulado / meta) * 100, 100);
+              const falta = Math.max(meta - acumulado, 0);
+
+              return (
+                <li key={inv.id} className="bg-gray-700 p-3 rounded">
+                  <p>💵 Valor: <span className="text-yellow-400">{valorBase} USDT</span></p>
+                  <p>📅 Criado em: {new Date(inv.criadoEm).toLocaleString()}</p>
+                  <p>📊 Acumulado: <span className="text-green-400">{acumulado} USDT</span></p>
+                  <p>Status: {inv.ativo ? "✅ Ativo" : "❌ Finalizado"}</p>
+
+                  <div className="mt-2">
+                    <div className="w-full bg-gray-600 rounded-full h-4 overflow-hidden">
+                      <div
+                        className="bg-green-500 h-4 transition-all duration-700 ease-in-out"
+                        style={{ width: `${progresso}%` }}
+                      ></div>
+                    </div>
+                    <p className="text-sm text-center text-gray-300 mt-1">
+                      {progresso.toFixed(1)}% concluído — falta {falta.toFixed(2)} USDT
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
