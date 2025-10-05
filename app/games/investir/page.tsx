@@ -30,6 +30,9 @@ export default function InvestimentosPage() {
   const [novoValor, setNovoValor] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [saldoTotal, setSaldoTotal] = useState<number>(0);
+  const [bloqueado, setBloqueado] = useState<boolean>(false);
+  const [progresso, setProgresso] = useState<number>(0);
+  const [falta, setFalta] = useState<number>(0);
 
   const carregarDados = async () => {
     try {
@@ -48,10 +51,31 @@ export default function InvestimentosPage() {
 
         // ✅ Usa o saldo real da carteira
         setSaldoTotal(Number(dataSaldo.saldo ?? 0));
-
-        // Também mantém rendimento diário e residual separados
         setRendimentoDiario(Number(dataSaldo.rendimento ?? 0));
         setBonusResidual(Number(dataSaldo.bonusResidual ?? 0));
+
+        // 🚫 Nova regra + progresso visual
+        const ativo = dataInvestir.investimentos?.find((inv: Investimento) => inv.ativo);
+        if (ativo) {
+          const valor = parseFloat(ativo.valor);
+          const acumulado = parseFloat(ativo.rendimentoAcumulado);
+          const pct = (acumulado / valor) * 100; // porcentagem atual
+          const faltando = Math.max(valor * 2 - acumulado, 0);
+
+          setProgresso(Math.min(pct, 200));
+          setFalta(faltando);
+
+          if (acumulado < valor * 2) {
+            setBloqueado(true);
+          } else {
+            setBloqueado(false);
+          }
+        } else {
+          setBloqueado(false);
+          setProgresso(0);
+          setFalta(0);
+        }
+
       } else {
         toast.error("Erro ao carregar dados.");
       }
@@ -121,13 +145,43 @@ export default function InvestimentosPage() {
           placeholder="Ex: 100"
           className="w-full p-2 rounded text-black"
         />
+
         <button
           onClick={investir}
-          disabled={loading}
-          className="bg-yellow-600 w-full mt-2 p-2 rounded hover:bg-yellow-700 disabled:opacity-50"
+          disabled={loading || bloqueado}
+          className={`w-full mt-2 p-2 rounded font-semibold transition ${
+            bloqueado
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-yellow-600 hover:bg-yellow-700"
+          }`}
         >
-          {loading ? "Processando..." : "Investir"}
+          {loading
+            ? "Processando..."
+            : bloqueado
+            ? "Aguardando retorno de 200%"
+            : "Investir"}
         </button>
+
+        {bloqueado && (
+          <div className="mt-3">
+            <p className="text-red-400 text-sm text-center mb-2">
+              ⚠ Você só pode investir novamente quando seu investimento ativo dobrar (200%).
+            </p>
+
+            {/* 🔥 Barra de progresso animada */}
+            <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+              <div
+                className="bg-yellow-500 h-4 transition-all duration-700 ease-in-out"
+                style={{ width: `${Math.min((progresso / 2) * 100 / 100, 100)}%` }}
+              ></div>
+            </div>
+
+            <p className="text-center text-sm text-gray-300 mt-1">
+              Progresso: {progresso.toFixed(1)}% / 200% <br />
+              Falta {falta.toFixed(2)} USDT para liberar novos investimentos.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="bg-gray-800 p-4 rounded-lg shadow">
