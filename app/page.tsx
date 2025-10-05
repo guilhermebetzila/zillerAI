@@ -58,19 +58,29 @@ export default function Home() {
       </div>
 
       {/* Botões */}
-      <div className="flex flex-wrap justify-center gap-6 mt-4 px-4">
-        <Button
-          onClick={() => router.push('/login')}
-          className="bg-black hover:opacity-90 text-white font-extrabold text-lg px-8 py-3 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+      <div className="flex flex-col items-center gap-4 mt-4 px-4">
+        <div className="flex flex-wrap justify-center gap-6">
+          <Button
+            onClick={() => router.push('/login')}
+            className="bg-black hover:opacity-90 text-white font-extrabold text-lg px-8 py-3 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+          >
+            Entrar
+          </Button>
+          <Button
+            onClick={() => router.push('/register')}
+            className="bg-black hover:opacity-90 text-white font-extrabold text-lg px-8 py-3 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+          >
+            Registrar-se
+          </Button>
+        </div>
+
+        {/* Link "Esqueci minha senha" */}
+        <button
+          onClick={() => router.push('/games/forgot-password')}
+          className="text-yellow-400 text-sm mt-2 hover:underline hover:text-yellow-300 transition"
         >
-          Entrar
-        </Button>
-        <Button
-          onClick={() => router.push('/register')}
-          className="bg-black hover:opacity-90 text-white font-extrabold text-lg px-8 py-3 rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-        >
-          Registrar-se
-        </Button>
+          Esqueci minha senha
+        </button>
       </div>
 
       {/* Texto Estratégico da IA */}
@@ -108,7 +118,7 @@ export default function Home() {
         <ul className="list-disc list-inside space-y-2">
           <li>Transparência total com relatórios diários.</li>
           <li>Segurança de dados com criptografia avançada.</li>
-          <li>Comunidade exclusiva dE investidores.</li>
+          <li>Comunidade exclusiva de investidores.</li>
         </ul>
         <p className="text-center font-semibold text-xl">
           💡 Nossa IA Ziller observa, decide, ajusta e gera lucro para você — mesmo enquanto você dorme.
