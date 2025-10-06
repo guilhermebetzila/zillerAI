@@ -14,7 +14,7 @@ interface MenuItem {
   action: string;
 }
 
-// ✅ Adicionando novo botão "Ziller Store" e "Social Finance"
+// ✅ Adicionando novo botão "Zillerverse", além dos existentes
 const menuItems: MenuItem[] = [
   { label: '🤖 Rede', action: '/games/ia' },
   { label: '📥 Depositar', action: '/games/depositar' },
@@ -23,8 +23,9 @@ const menuItems: MenuItem[] = [
   { label: '💰 Ico', action: '/games/bolsao' },
   { label: '🎓 Mentoria', action: '/games/mentoria' },
   { label: '🕹️ Ziller Hub', action: '/games/ziller' },
+  { label: '🪐 Zillerverse', action: '/games/zillerverse' }, // 👈 Botão adicionado
   { label: '🛍️ Ziller Store', action: '/games/store' },
-  { label: '💬 Social Finance', action: '/games/social' }, // 👈 Novo botão adicionado
+  { label: '💬 Social Finance', action: '/games/social' },
 ];
 
 const PONTOS_OBJETIVO = 1000;
