@@ -127,14 +127,16 @@ export default function ZillerStoreCreatePage() {
             </button>
             <h1 className="text-lg font-semibold ml-0 md:ml-2">Publicar produto • Ziller Store</h1>
           </div>
-          <div className="text-xs text-gray-400">Split: <strong>{Math.round(CREATOR_SHARE * 100)}% / {Math.round(ZILLER_SHARE * 100)}%</strong></div>
+          <div className="text-xs text-gray-400">
+            Split: <strong>{Math.round(CREATOR_SHARE * 100)}% / {Math.round(ZILLER_SHARE * 100)}%</strong>
+          </div>
         </header>
 
-        {/* MAIN CONTENT */}
-        <main className="flex-1 overflow-y-auto p-4">
-          <div className="w-full max-w-3xl mx-auto space-y-6">
-
-            {/* Programa Ziller Builders */}
+        {/* MAIN CONTENT — agora com scroll infinito natural */}
+        <main className="flex-1 p-4">
+          <div className="w-full max-w-3xl mx-auto space-y-6 pb-32">
+            
+            {/* PROGRAMA */}
             <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
               <h2 className="font-semibold text-lg mb-2 text-green-400">Programa Ziller Builders</h2>
               <p className="text-sm text-gray-300 mb-2">
@@ -149,7 +151,7 @@ export default function ZillerStoreCreatePage() {
 
             {/* FORMULÁRIO */}
             <form onSubmit={handleSubmit} className="bg-white/6 rounded-2xl p-6 shadow-md space-y-6">
-
+              
               {/* TÍTULO E TIPO */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -188,11 +190,11 @@ export default function ZillerStoreCreatePage() {
 
               {/* THUMBNAIL */}
               <div>
-                <label className="text-xs text-gray-300">Thumbnail (imagem) — JPEG/PNG</label>
+                <label className="text-xs text-gray-300">Thumbnail (imagem)</label>
                 <div className="mt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3">
                   <label className="flex items-center gap-2 cursor-pointer bg-white/5 px-3 py-2 rounded-xl">
                     <ImageIcon className="w-4 h-4" /> Selecionar imagem
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0] || null; setThumbnailFile(f); }} />
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)} />
                   </label>
                   {thumbnailFile && (
                     <div className="flex items-center gap-2 mt-2 sm:mt-0">
@@ -205,13 +207,12 @@ export default function ZillerStoreCreatePage() {
 
               {/* ARQUIVOS */}
               <div>
-                <label className="text-xs text-gray-300">Arquivos do produto (ex: video MP4, ZIP do bot, PDF)</label>
+                <label className="text-xs text-gray-300">Arquivos do produto</label>
                 <div className="mt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3">
                   <label className="flex items-center gap-2 cursor-pointer bg-white/5 px-3 py-2 rounded-xl">
                     <UploadCloud className="w-4 h-4" /> Selecionar arquivos
-                    <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(e) => { const files = Array.from(e.target.files || []); setAssetFiles((prev) => [...prev, ...files]); }} />
+                    <input ref={fileInputRef} type="file" multiple className="hidden" onChange={(e) => setAssetFiles((prev) => [...prev, ...(Array.from(e.target.files || []))])} />
                   </label>
-
                   <div className="flex flex-col w-full">
                     {assetFiles.length === 0 ? (
                       <div className="text-xs text-gray-400 mt-2">Nenhum arquivo adicionado</div>
@@ -289,7 +290,6 @@ export default function ZillerStoreCreatePage() {
                 </ul>
               </div>
             )}
-
           </div>
         </main>
 

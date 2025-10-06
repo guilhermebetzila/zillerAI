@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import LayoutWrapper from '@components/LayoutWrapper';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { Bell, Home, User, Wallet, Settings, LogOut, MessageCircle, Heart, Star } from 'lucide-react';
+import { Bell, Home, User, Wallet, Settings, LogOut, MessageCircle, Heart, Star, Menu } from 'lucide-react';
 
 interface Post {
   id: number;
@@ -38,6 +38,7 @@ export default function SocialFinancePage() {
   const [hasMore, setHasMore] = useState(true);
   const feedRef = useRef<HTMLDivElement | null>(null);
   const [filter, setFilter] = useState<'all' | 'trader' | 'educador' | 'IA'>('all');
+  const [showRanking, setShowRanking] = useState(false);
 
   const user = session?.user as any;
   const displayName = user?.name || user?.email?.split('@')[0] || 'Usuário';
@@ -82,11 +83,12 @@ export default function SocialFinancePage() {
     }
   }, [status]);
 
+  // Scroll infinito (escuta o scroll da tela, não do container)
   useEffect(() => {
     const handleScroll = async () => {
-      if (!feedRef.current || !hasMore) return;
-      const { scrollTop, scrollHeight, clientHeight } = feedRef.current;
-      if (scrollTop + clientHeight >= scrollHeight - 100) {
+      if (!hasMore) return;
+      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+      if (scrollTop + clientHeight >= scrollHeight - 300) {
         const nextPage = page + 1;
         const newPosts = await fetchPosts(nextPage);
         if (newPosts.length === 0) {
@@ -97,9 +99,8 @@ export default function SocialFinancePage() {
         setPage(nextPage);
       }
     };
-    const feedDiv = feedRef.current;
-    feedDiv?.addEventListener('scroll', handleScroll);
-    return () => feedDiv?.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [page, hasMore]);
 
   const filteredPosts = posts.filter(post => {
@@ -111,7 +112,7 @@ export default function SocialFinancePage() {
   if (status === 'loading' || loading) {
     return (
       <LayoutWrapper>
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
         </div>
       </LayoutWrapper>
@@ -125,38 +126,53 @@ export default function SocialFinancePage() {
 
   return (
     <LayoutWrapper>
-      <div className="h-screen flex flex-col bg-gray-900 text-white">
+      <div className="min-h-screen flex flex-col bg-gray-900 text-white">
         {/* HEADER */}
         <header className="flex items-center justify-between px-4 py-3 bg-gray-950 shadow-md sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <img src={userPhotoUrl} alt="avatar" className="w-10 h-10 rounded-full border-2 border-green-500" />
-            <div>
+            <div className="hidden sm:block">
               <p className="font-semibold">{displayName}</p>
               <p className="text-xs text-gray-400">{user?.email}</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <a href="https://wa.me/5521991146984" target="_blank" rel="noopener noreferrer" className="hover:text-green-400 transition" title="Suporte no WhatsApp">
+            <a
+              href="https://wa.me/5521991146984"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-green-400 transition"
+              title="Suporte no WhatsApp"
+            >
               <MessageCircle className="w-6 h-6 cursor-pointer" />
             </a>
             <div className="relative cursor-pointer">
               <Bell className="w-6 h-6 hover:text-green-400 transition" />
             </div>
-            <LogOut onClick={() => signOut({ callbackUrl: '/login' })} className="w-6 h-6 cursor-pointer hover:text-red-400 transition" />
+            <Menu
+              className="w-6 h-6 sm:hidden cursor-pointer hover:text-green-400 transition"
+              onClick={() => setShowRanking(prev => !prev)}
+            />
+            <LogOut
+              onClick={() => signOut({ callbackUrl: '/login' })}
+              className="w-6 h-6 cursor-pointer hover:text-red-400 transition hidden sm:block"
+            />
           </div>
         </header>
 
         {/* MAIN */}
-        <main ref={feedRef} className="flex-1 overflow-y-auto pb-24 flex gap-4 px-4 mt-4">
+        <main className="flex-1 flex flex-col sm:flex-row gap-4 px-4 mt-4">
           {/* FEED */}
           <div className="flex-1 flex flex-col gap-4">
             {/* FILTERS */}
-            <div className="flex gap-2 mb-2">
+            <div className="flex gap-2 mb-2 overflow-x-auto pb-2">
               {['all', 'trader', 'educador', 'IA'].map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f as any)}
-                  className={`px-3 py-1 rounded-xl text-sm ${filter === f ? 'bg-green-500 text-black' : 'bg-white/10'}`}
+                  className={`px-3 py-1 rounded-xl text-sm whitespace-nowrap ${
+                    filter === f ? 'bg-green-500 text-black' : 'bg-white/10'
+                  }`}
                 >
                   {f === 'all' ? 'Todos' : f === 'IA' ? 'Destaque IA' : f === 'trader' ? 'Traders' : 'Educadores'}
                 </button>
@@ -164,16 +180,23 @@ export default function SocialFinancePage() {
             </div>
 
             {filteredPosts.map(post => (
-              <div key={post.id} className={`p-4 rounded-2xl shadow-md ${post.destaqueIA ? 'bg-green-600' : 'bg-white/10'}`}>
+              <div
+                key={post.id}
+                className={`p-4 rounded-2xl shadow-md ${
+                  post.destaqueIA ? 'bg-green-600' : 'bg-white/10'
+                } transition-transform hover:scale-[1.02]`}
+              >
                 <div className="flex items-center gap-3 mb-2">
                   <img src={post.avatar} alt="avatar" className="w-8 h-8 rounded-full" />
                   <div>
-                    <p className="font-semibold">{post.usuario} {post.destaqueIA && <Star className="inline w-4 h-4 text-yellow-400" />}</p>
+                    <p className="font-semibold">
+                      {post.usuario} {post.destaqueIA && <Star className="inline w-4 h-4 text-yellow-400" />}
+                    </p>
                     <p className="text-xs text-gray-400">{post.timestamp}</p>
                   </div>
                 </div>
-                <p className="mb-2">{post.conteudo}</p>
-                <div className="flex items-center gap-4">
+                <p className="mb-2 text-sm">{post.conteudo}</p>
+                <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-1 cursor-pointer">
                     <Heart className="w-5 h-5 hover:text-red-400 transition" /> <span>{post.likes}</span>
                   </div>
@@ -187,14 +210,21 @@ export default function SocialFinancePage() {
           </div>
 
           {/* RANKING */}
-          <div className="w-64 flex-shrink-0">
-            <h3 className="text-lg font-semibold mb-2">🏆 Ranking</h3>
+          <div
+            className={`w-full sm:w-64 flex-shrink-0 transition-all duration-300 ${
+              showRanking ? 'block' : 'hidden sm:block'
+            }`}
+          >
+            <h3 className="text-lg font-semibold mb-2 text-center sm:text-left">🏆 Ranking</h3>
             <div className="flex flex-col gap-2">
               {ranking.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2 p-2 bg-white/10 rounded-xl shadow-md">
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 p-2 bg-white/10 rounded-xl shadow-md hover:bg-white/20 transition"
+                >
                   <img src={item.avatar} alt="avatar" className="w-10 h-10 rounded-full" />
                   <div className="flex-1">
-                    <p className="font-semibold">{item.nome}</p>
+                    <p className="font-semibold text-sm">{item.nome}</p>
                     <p className="text-xs text-gray-400">{item.tipo}</p>
                     <div className="flex gap-1 mt-1">
                       {item.badges?.map((b, i) => (
@@ -202,7 +232,7 @@ export default function SocialFinancePage() {
                       ))}
                     </div>
                   </div>
-                  <p className="font-bold">{item.pontos}</p>
+                  <p className="font-bold text-sm">{item.pontos}</p>
                 </div>
               ))}
             </div>
