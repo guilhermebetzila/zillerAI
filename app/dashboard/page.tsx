@@ -11,6 +11,7 @@ interface MenuItem {
   action: string;
 }
 
+// ✅ Adicionando o novo botão "Ziller Hub"
 const menuItems: MenuItem[] = [
   { label: '🤖 Rede', action: '/games/ia' },
   { label: '📥 Depositar', action: '/games/depositar' },
@@ -18,6 +19,7 @@ const menuItems: MenuItem[] = [
   { label: '📄 Cadastrar CPF', action: '/games/cadastrar-cpf' },
   { label: '💰 Ico', action: '/games/bolsao' },
   { label: '🎓 Mentoria', action: '/games/mentoria' },
+  { label: '🕹️ Ziller Hub', action: '/games/ziller' }, // 👈 Novo botão adicionado aqui
 ];
 
 const PONTOS_OBJETIVO = 1000;
@@ -81,7 +83,7 @@ export default function DashboardPage() {
       setQtdDiretos(Number(dataRede.diretos ?? 0));
       setQtdIndiretos(Number(dataRede.indiretos ?? 0));
 
-      // Últimas atividades (mantido, mas ficará vazio sem fetch de atividades)
+      // Últimas atividades (mantido)
       setUltimasAtividades([]);
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error);
