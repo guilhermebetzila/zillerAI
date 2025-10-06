@@ -25,21 +25,27 @@ model User {
   usdt                String?
   bonusResidual       Decimal              @default(0)
   photoUrl            String?
+
+  // Relações financeiras
   depositos           Deposito[]
   investimentos       Investimento[]
   onChainDeposits     OnChainDeposit[]
   rendimentos         RendimentoDiario[]
   saques              Saque[]
+  withdrawalRequests  WithdrawalRequest[]
+
+  // Relações de rede
   graduacao           Graduacao?           @relation(fields: [graduacaoId], references: [id])
   indicadoPor         User?                @relation("Indicacoes", fields: [indicadoPorId], references: [id])
   indicados           User[]               @relation("Indicacoes")
-  withdrawalRequests  WithdrawalRequest[]
+
+  // Recuperação de senha (tokens temporários)
   passwordResetTokens PasswordResetToken[]
 
-  // relações sociais
-  posts               Post[]               // posts criados por user
-  likes               Like[]               // likes feitos por user
-  comments            Comment[]            // comentários feitos por user
+  // Rede social
+  posts               Post[]
+  likes               Like[]
+  comments            Comment[]
 
   @@map("users")
 }
@@ -162,11 +168,11 @@ model WithdrawalRequest {
 model Post {
   id         Int       @id @default(autoincrement())
   content    String
-  imageUrl   String? 
-  anonName   String?   // se visitante postou
-  authorId   Int?      // se user autenticado
+  imageUrl   String?
+  anonName   String?
+  authorId   Int?
   author     User?     @relation(fields: [authorId], references: [id])
-  likes      Like[] 
+  likes      Like[]
   comments   Comment[]
   destaqueIA Boolean   @default(false)
   tipo       String    @default("trader")
@@ -178,7 +184,7 @@ model Post {
 
 model Like {
   id        Int      @id @default(autoincrement())
-  userId    Int?     // null = visitante
+  userId    Int?
   user      User?    @relation(fields: [userId], references: [id])
   postId    Int
   post      Post     @relation(fields: [postId], references: [id])
@@ -194,7 +200,7 @@ model Comment {
   content   String
   postId    Int
   post      Post     @relation(fields: [postId], references: [id])
-  userId    Int?     // visitante pode comentar sem user
+  userId    Int?
   user      User?    @relation(fields: [userId], references: [id])
   anonName  String?
   createdAt DateTime @default(now())
@@ -204,7 +210,7 @@ model Comment {
 }
 
 /* ---------------------------
-   ENUMS (mantive os seus)
+   ENUMS
    --------------------------- */
 
 enum StatusDeposito {
