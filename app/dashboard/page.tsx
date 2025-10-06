@@ -4,14 +4,17 @@ import React, { useEffect, useState } from 'react';
 import LayoutWrapper from '@components/LayoutWrapper';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { Bell, Home, User, Wallet, Settings, LogOut, Eye, EyeOff, MessageCircle } from "lucide-react";
+import {
+  Bell, Home, User, Wallet, Settings, LogOut,
+  Eye, EyeOff, MessageCircle
+} from "lucide-react";
 
 interface MenuItem {
   label: string;
   action: string;
 }
 
-// ✅ Adicionando novo botão "Ziller Store"
+// ✅ Adicionando novo botão "Ziller Store" e "Social Finance"
 const menuItems: MenuItem[] = [
   { label: '🤖 Rede', action: '/games/ia' },
   { label: '📥 Depositar', action: '/games/depositar' },
@@ -20,7 +23,8 @@ const menuItems: MenuItem[] = [
   { label: '💰 Ico', action: '/games/bolsao' },
   { label: '🎓 Mentoria', action: '/games/mentoria' },
   { label: '🕹️ Ziller Hub', action: '/games/ziller' },
-  { label: '🛍️ Ziller Store', action: '/games/store' }, // 👈 Novo botão adicionado
+  { label: '🛍️ Ziller Store', action: '/games/store' },
+  { label: '💬 Social Finance', action: '/games/social' }, // 👈 Novo botão adicionado
 ];
 
 const PONTOS_OBJETIVO = 1000;
@@ -69,7 +73,6 @@ export default function DashboardPage() {
       const dataUsuario = await resUsuario.json();
       const dataRede = await resRede.json();
 
-      // ✅ Dados do usuário
       setSaldo(Number(dataUsuario.saldo ?? 0));
       setValorInvestido(Number(dataUsuario.valorInvestido ?? 0));
       setRendimentoDiario(Number(dataUsuario.rendimentoDiario ?? 0));
@@ -78,13 +81,11 @@ export default function DashboardPage() {
       setPontos(Number(dataUsuario.pontos ?? 0));
       setUserPhotoUrl(dataUsuario.photoUrl || '');
 
-      // ✅ Rede (separando quantidade de pessoas e pontuação)
       setPontosDiretos(Number(dataRede.pontosDiretos ?? 0));
       setPontosIndiretos(Number(dataRede.pontosIndiretos ?? 0));
       setQtdDiretos(Number(dataRede.diretos ?? 0));
       setQtdIndiretos(Number(dataRede.indiretos ?? 0));
 
-      // Últimas atividades
       setUltimasAtividades([]);
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error);
