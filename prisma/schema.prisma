@@ -36,7 +36,12 @@ model User {
   withdrawalRequests  WithdrawalRequest[]
   passwordResetTokens PasswordResetToken[]
 
-  @@map("users") // ✅ tabela no Railway
+  // relações sociais
+  posts               Post[]               // posts criados por user
+  likes               Like[]               // likes feitos por user
+  comments            Comment[]            // comentários feitos por user
+
+  @@map("users")
 }
 
 model PasswordResetToken {
@@ -149,6 +154,58 @@ model WithdrawalRequest {
 
   @@map("withdrawal_requests")
 }
+
+/* ---------------------------
+   MODELOS DO MURAL / SOCIAL
+   --------------------------- */
+
+model Post {
+  id         Int       @id @default(autoincrement())
+  content    String
+  imageUrl   String? 
+  anonName   String?   // se visitante postou
+  authorId   Int?      // se user autenticado
+  author     User?     @relation(fields: [authorId], references: [id])
+  likes      Like[] 
+  comments   Comment[]
+  destaqueIA Boolean   @default(false)
+  tipo       String    @default("trader")
+  createdAt  DateTime  @default(now())
+
+  @@map("posts")
+  @@index([createdAt])
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     // null = visitante
+  user      User?    @relation(fields: [userId], references: [id])
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId], name: "unique_user_post_like")
+  @@map("likes")
+  @@index([postId])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  userId    Int?     // visitante pode comentar sem user
+  user      User?    @relation(fields: [userId], references: [id])
+  anonName  String?
+  createdAt DateTime @default(now())
+
+  @@map("comments")
+  @@index([postId, createdAt])
+}
+
+/* ---------------------------
+   ENUMS (mantive os seus)
+   --------------------------- */
 
 enum StatusDeposito {
   pendente
