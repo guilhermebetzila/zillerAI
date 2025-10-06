@@ -11,7 +11,7 @@ interface MenuItem {
   action: string;
 }
 
-// ✅ Adicionando o novo botão "Ziller Hub"
+// ✅ Adicionando novo botão "Ziller Store"
 const menuItems: MenuItem[] = [
   { label: '🤖 Rede', action: '/games/ia' },
   { label: '📥 Depositar', action: '/games/depositar' },
@@ -19,7 +19,8 @@ const menuItems: MenuItem[] = [
   { label: '📄 Cadastrar CPF', action: '/games/cadastrar-cpf' },
   { label: '💰 Ico', action: '/games/bolsao' },
   { label: '🎓 Mentoria', action: '/games/mentoria' },
-  { label: '🕹️ Ziller Hub', action: '/games/ziller' }, // 👈 Novo botão adicionado aqui
+  { label: '🕹️ Ziller Hub', action: '/games/ziller' },
+  { label: '🛍️ Ziller Store', action: '/games/store' }, // 👈 Novo botão adicionado
 ];
 
 const PONTOS_OBJETIVO = 1000;
@@ -83,7 +84,7 @@ export default function DashboardPage() {
       setQtdDiretos(Number(dataRede.diretos ?? 0));
       setQtdIndiretos(Number(dataRede.indiretos ?? 0));
 
-      // Últimas atividades (mantido)
+      // Últimas atividades
       setUltimasAtividades([]);
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error);
@@ -114,7 +115,7 @@ export default function DashboardPage() {
   const abrirNotificacoes = () => {
     try {
       localStorage.setItem('notificacoes_nao_lidas', '0');
-    } catch {}
+    } catch { }
     setQtdAvisos(0);
     router.push('/notificacoes');
   };
