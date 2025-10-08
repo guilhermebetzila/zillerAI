@@ -152,6 +152,24 @@ export default function Depositar() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-4 py-10">
+      {/* 🔔 Mensagem no topo */}
+      <div className="bg-yellow-400 text-black text-sm p-3 rounded-lg mb-6 text-center max-w-md">
+        ⚠️ <b>ATENÇÃO:</b> Após realizar o investimento em USDT, envie o <b>hash da transação</b> 
+        pelo WhatsApp para confirmação do seu depósito.
+        <br />
+        ⏱️ <b>Tempo médio de resposta: 1 a 5 minutos.</b>
+        <div className="mt-3">
+          <a
+            href="https://wa.me/5521971410840"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-green-500 hover:bg-green-600 text-black font-semibold py-2 px-4 rounded-lg transition inline-block"
+          >
+            💬 Enviar Hash via WhatsApp
+          </a>
+        </div>
+      </div>
+
       <button
         onClick={() => router.back()}
         className="mb-6 bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg"
