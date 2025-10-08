@@ -1,5 +1,5 @@
 // app/scripts/atualizarInvestimentos.ts
-import prisma from "../../lib/prisma";
+import { prisma } from "../../lib/prisma";
 import { Decimal } from "@prisma/client/runtime/library";
 import fs from "fs";
 import path from "path";
@@ -100,7 +100,7 @@ export async function atualizarInvestimentos() {
   await prisma.$disconnect();
 }
 
-// Permite rodar via CLI: `ts-node app/scripts/atualizarInvestimentos.ts`
+// Permite rodar via CLI: `npm run atualizarInvestimentos`
 if (process.argv[1].includes("atualizarInvestimentos")) {
   atualizarInvestimentos();
 }
