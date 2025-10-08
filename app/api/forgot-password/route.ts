@@ -1,67 +1,64 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import nodemailer from "nodemailer";
-import crypto from "crypto";
+import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import nodemailer from 'nodemailer'
+import crypto from 'crypto'
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
+    const { email } = await req.json()
 
     if (!email) {
-      return NextResponse.json({ error: "E-mail é obrigatório." }, { status: 400 });
+      return NextResponse.json({ error: 'E-mail é obrigatório.' }, { status: 400 })
     }
 
-    // Verifica se o usuário existe
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({
+      where: { email },
+    })
+
     if (!user) {
-      return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
+      return NextResponse.json({ error: 'Usuário não encontrado.' }, { status: 404 })
     }
 
-    // Gera token e define expiração (1 hora)
-    const token = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+    // 🔹 Gerar token único e expiração
+    const token = crypto.randomBytes(32).toString('hex')
+    const expires = new Date(Date.now() + 1000 * 60 * 30) // 30 minutos
 
-    // Remove tokens antigos e cria um novo
-    await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
     await prisma.passwordResetToken.create({
-      data: { token, userId: user.id, expiresAt },
-    });
+      data: {
+        email,
+        token,
+        expires,
+      },
+    })
 
-    // Link de redefinição (ajuste o domínio se necessário)
-    const resetLink = `https://betzila.com.br/reset-password/${token}`;
+    // 🔹 Cria o link de redefinição
+    const resetLink = `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password?token=${token}`
 
-    // Configura transporte SMTP (Gmail ou outro provedor)
+    // 🔹 Configura o transporte de e-mail
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
-    });
+    })
 
-    // Envia o e-mail
     await transporter.sendMail({
       from: `"BetZila Suporte" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: "Redefinição de senha - BetZila",
+      subject: 'Redefinição de senha - BetZila',
       html: `
-        <div style="font-family: Arial; line-height:1.5; color:#333;">
-          <h2>Redefinição de Senha</h2>
-          <p>Você solicitou redefinir sua senha. Clique no botão abaixo:</p>
-          <p>
-            <a href="${resetLink}" style="background:#0d6efd; color:#fff; padding:10px 20px; border-radius:6px; text-decoration:none;">Redefinir senha</a>
-          </p>
-          <p>Ou copie e cole este link no navegador:</p>
-          <p>${resetLink}</p>
-          <br/>
-          <small>Este link expira em 1 hora.</small>
-        </div>
+        <h2>Redefinição de Senha</h2>
+        <p>Olá! Recebemos uma solicitação para redefinir sua senha.</p>
+        <p>Clique no link abaixo para criar uma nova senha:</p>
+        <a href="${resetLink}" target="_blank">${resetLink}</a>
+        <p>⚠️ Este link expira em 30 minutos.</p>
       `,
-    });
+    })
 
-    return NextResponse.json({ success: true, message: "E-mail de recuperação enviado com sucesso!" });
-  } catch (error) {
-    console.error("Erro ao enviar e-mail de recuperação:", error);
-    return NextResponse.json({ error: "Erro interno ao enviar e-mail." }, { status: 500 });
+    return NextResponse.json({ message: 'E-mail de redefinição enviado com sucesso.' })
+  } catch (error: any) {
+    console.error('Erro ao enviar e-mail:', error)
+    return NextResponse.json({ error: 'Erro interno ao enviar e-mail.' }, { status: 500 })
   }
 }
