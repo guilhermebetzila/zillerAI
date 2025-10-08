@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import {
   Bell, Home, User, Wallet, Settings, LogOut,
-  Eye, EyeOff, MessageCircle, Coins
+  Eye, EyeOff, MessageCircle
 } from "lucide-react";
 
 interface MenuItem {
@@ -14,6 +14,7 @@ interface MenuItem {
   action: string;
 }
 
+// ✅ Botões do menu
 const menuItems: MenuItem[] = [
   { label: '🤖 Rede', action: '/games/ia' },
   { label: '📥 Depositar', action: '/games/depositar' },
@@ -55,11 +56,11 @@ export default function DashboardPage() {
   const [qtdDiretos, setQtdDiretos] = useState<number>(0);
   const [qtdIndiretos, setQtdIndiretos] = useState<number>(0);
   const [userPhotoUrl, setUserPhotoUrl] = useState<string>('');
+  const [quantidadeZiller, setQuantidadeZiller] = useState<number>(0); // 👈 novo estado
   const [loading, setLoading] = useState(true);
   const [mostrarSaldo, setMostrarSaldo] = useState<boolean>(true);
   const [ultimasAtividades, setUltimasAtividades] = useState<Atividade[]>([]);
   const [qtdAvisos, setQtdAvisos] = useState<number>(0);
-  const [zillerQuantidade, setZillerQuantidade] = useState<number>(0); // 👈 Novo estado
 
   const fetchUsuarioDados = async () => {
     try {
@@ -81,7 +82,7 @@ export default function DashboardPage() {
       setTotalIndicados(Number(dataUsuario.totalIndicados ?? 0));
       setPontos(Number(dataUsuario.pontos ?? 0));
       setUserPhotoUrl(dataUsuario.photoUrl || '');
-      setZillerQuantidade(Number(dataUsuario.zillerQuantidade ?? 0)); // 👈 Novo dado
+      setQuantidadeZiller(Number(dataUsuario.quantidadeZiller ?? 0)); // 👈 busca quantidade Ziller
 
       setPontosDiretos(Number(dataRede.pontosDiretos ?? 0));
       setPontosIndiretos(Number(dataRede.pontosIndiretos ?? 0));
@@ -197,13 +198,19 @@ export default function DashboardPage() {
             <p className="text-xs">Bônus residual: {bonusResidual.toFixed(2)} USDT</p>
           </div>
 
-          {/* BLOCO ZILLER QUANTIDADE */}
+          {/* CRIPTOMOEDAS */}
           <div className="p-4 w-full max-w-md">
-            <h3 className="font-semibold mb-2">🪙 Suas Zillers</h3>
-            <div className="bg-white/10 rounded-xl p-4 shadow-md text-center flex flex-col items-center justify-center hover:bg-white/20 transition">
-              <Coins className="w-8 h-8 mb-2 text-green-400" />
-              <p className="text-3xl font-bold text-green-400">{zillerQuantidade.toFixed(2)}</p>
-              <p className="text-sm text-gray-300">Zillers adquiridas</p>
+            <h3 className="font-semibold mb-2">💎 Minhas Criptomoedas</h3>
+
+            {/* Bloco principal */}
+            <div className="bg-white/10 rounded-xl p-4 shadow-md text-center mb-3">
+              <p className="font-medium">Criptomoeda Ziller</p>
+            </div>
+
+            {/* 👇 Novo bloco com quantidade de Zillers */}
+            <div className="bg-white/10 rounded-xl p-4 shadow-md text-center">
+              <p className="text-sm text-gray-300">Quantidade de Zillers:</p>
+              <p className="text-3xl font-bold text-green-400 mt-1">{quantidadeZiller.toFixed(2)}</p>
             </div>
           </div>
 
