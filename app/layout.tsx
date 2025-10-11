@@ -1,5 +1,4 @@
 import './globals.css'
-import Providers from './Providers'
 import { Topbar } from '../components/TopBar'
 import BackgroundDots from '../components/BackgroundDots'
 import Sidebar from '../components/Sidebar'
@@ -16,14 +15,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-br" className="dark">
       <body className="relative w-full min-h-screen m-0 p-0 overflow-x-hidden bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
         <BackgroundDots />
-        <Providers>
-          <div className="flex flex-col w-full min-h-screen">
-            <Topbar />
-            <main className="flex-1 w-full">{children}</main>
-            <EsteiraParceiros />
-            <Sidebar />
-          </div>
-        </Providers>
+        <div className="flex flex-col w-full min-h-screen">
+          <Topbar />
+          <main className="flex-1 w-full">{children}</main>
+          <EsteiraParceiros />
+          <Sidebar />
+        </div>
         <Toaster richColors position="bottom-right" />
       </body>
     </html>
