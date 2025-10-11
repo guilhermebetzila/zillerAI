@@ -19,7 +19,8 @@
       "@/*": ["*"],
       "@components/*": ["components/*"],
       "@hooks/*": ["hooks/*"],
-      "@ui/*": ["components/ui/*"]
+      "@ui/*": ["components/ui/*"],
+      "@lib/*": ["lib/*"]
     }
   },
   "include": [
