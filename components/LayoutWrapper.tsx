@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { SidebarProvider } from '@/app/hooks/context/sidebar-context'
 
 interface LayoutWrapperProps {
