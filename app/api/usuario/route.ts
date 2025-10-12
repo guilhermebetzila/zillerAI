@@ -5,7 +5,7 @@ import prisma from "@lib/prisma";
 
 export async function GET() {
   try {
-    // Pega a sessão do usuário
+    // Pega a sessão do usuário logado
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -17,7 +17,8 @@ export async function GET() {
     const usuario = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: {
-        saldo: true, // ✅ só pega o saldo por enquanto
+        id: true,
+        saldo: true,
       },
     });
 
@@ -26,13 +27,41 @@ export async function GET() {
       return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
-    console.log("✅ Saldo do usuário:", usuario.saldo);
+    // 🟩 Busca o total investido pelo usuário
+    const totalInvestido = await prisma.investimentos.aggregate({
+      _sum: {
+        valor: true,
+      },
+      where: {
+        userId: usuario.id,
+      },
+    });
 
+    // 🟨 Busca o total de rendimento diário do usuário
+    const totalRendimentoDiario = await prisma.rendimentos_diarios.aggregate({
+      _sum: {
+        valor: true,
+      },
+      where: {
+        userId: usuario.id,
+      },
+    });
+
+    // Converte os valores para número e garante que não sejam nulos
+    const saldo = Number(usuario.saldo) || 0;
+    const investido = Number(totalInvestido._sum.valor) || 0;
+    const rendimentoDiario = Number(totalRendimentoDiario._sum.valor) || 0;
+
+    console.log("✅ Dados do usuário:", { saldo, investido, rendimentoDiario });
+
+    // Retorna os dados
     return NextResponse.json({
-      saldo: Number(usuario.saldo) || 0,
+      saldo,
+      investido,
+      rendimentoDiario,
     });
   } catch (error) {
-    console.error("❌ Erro ao buscar saldo do usuário:", error);
+    console.error("❌ Erro ao buscar dados do usuário:", error);
     return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
   }
 }
