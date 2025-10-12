@@ -25,6 +25,7 @@ model User {
   usdt                String?
   bonusResidual       Decimal              @default(0)
   photoUrl            String?
+  quantidadeZiller    Decimal              @default(0) // ✅ novo campo adicionado
 
   // Relações financeiras
   depositos           Deposito[]
