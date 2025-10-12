@@ -8,24 +8,15 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 
-    // 🔒 Verifica se o usuário está autenticado
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    // 🔍 Busca usuário completo no banco
     const usuario = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: {
-        id: true,
-        nome: true,
-        email: true,
-        saldo: true,
-        valorInvestido: true,
-        bonusResidual: true,
-        pontos: true,
-        photoUrl: true,
-        indicados: { select: { id: true } },
+      include: {
+        indicados: true,
+        investimentos: true,
       },
     });
 
@@ -33,21 +24,27 @@ export async function GET() {
       return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
-    // 💰 Calcula o rendimento diário (1.5%)
-    const valorInvestidoDecimal = new Decimal(usuario.valorInvestido || 0);
-    const rendimentoDiario = valorInvestidoDecimal.mul(0.015).toNumber();
+    // 🔹 Calcula valor total investido ativo
+    const valorInvestidoTotal = usuario.investimentos
+      .filter(inv => inv.ativo)
+      .reduce((acc, inv) => acc.plus(inv.valor), new Decimal(0));
 
-    // ✅ Retorna todos os dados formatados
+    // 🔹 Calcula rendimento diário total (soma dos investimentos ativos * percentualDiario)
+    const rendimentoDiarioTotal = usuario.investimentos
+      .filter(inv => inv.ativo)
+      .reduce((acc, inv) => acc.plus(new Decimal(inv.valor).mul(inv.percentualDiario)), new Decimal(0));
+
     return NextResponse.json({
       id: usuario.id,
       nome: usuario.nome,
       email: usuario.email,
       saldo: Number(usuario.saldo) || 0,
-      valorInvestido: Number(usuario.valorInvestido) || 0,
-      rendimentoDiario,
+      valorInvestido: valorInvestidoTotal.toNumber(),
+      rendimentoDiario: rendimentoDiarioTotal.toNumber(),
       bonusResidual: Number(usuario.bonusResidual) || 0,
       pontos: Number(usuario.pontos) || 0,
       totalIndicados: usuario.indicados.length,
+      photoUrl: usuario.photoUrl || '',
     });
   } catch (error) {
     console.error("❌ Erro ao buscar dados do usuário:", error);
