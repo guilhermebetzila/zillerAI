@@ -1,21 +1,18 @@
 // app/api/posts/[id]/comments/route.ts
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import prisma from '@lib/prisma';
 import { getServerSession } from 'next-auth/next';
 import type { Session } from 'next-auth';
 import { authOptions } from '@lib/auth';
 
-export async function GET(
-  req: Request,
-  context: { params: { id: string } }
-) {
+export async function GET(req: NextRequest) {
   try {
-    const postId = Number(context.params.id);
+    // Pega o ID do post diretamente da URL
+    const postIdStr = req.nextUrl.pathname.split('/').pop();
+    const postId = Number(postIdStr);
+
     if (Number.isNaN(postId)) {
-      return NextResponse.json(
-        { ok: false, error: 'postId inválido' },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: 'postId inválido' }, { status: 400 });
     }
 
     const comments = await prisma.comment.findMany({
@@ -29,51 +26,37 @@ export async function GET(
     return NextResponse.json({ ok: true, comments });
   } catch (err) {
     console.error('GET /api/posts/[id]/comments error:', err);
-    return NextResponse.json(
-      { ok: false, error: 'Erro ao buscar comentários' },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: 'Erro ao buscar comentários' }, { status: 500 });
   }
 }
 
-export async function POST(
-  req: Request,
-  context: { params: { id: string } }
-) {
+export async function POST(req: NextRequest) {
   try {
-    const postId = Number(context.params.id);
+    // Pega o ID do post diretamente da URL
+    const postIdStr = req.nextUrl.pathname.split('/').pop();
+    const postId = Number(postIdStr);
+
     if (Number.isNaN(postId)) {
-      return NextResponse.json(
-        { ok: false, error: 'postId inválido' },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: 'postId inválido' }, { status: 400 });
     }
 
     const body = await req.json();
     const content = typeof body.content === 'string' ? body.content.trim() : '';
-    const anonName =
-      typeof body.anonName === 'string' ? body.anonName.trim() : undefined;
+    const anonName = typeof body.anonName === 'string' ? body.anonName.trim() : undefined;
 
     if (!content) {
-      return NextResponse.json(
-        { ok: false, error: 'Conteúdo obrigatório' },
-        { status: 400 }
-      );
+      return NextResponse.json({ ok: false, error: 'Conteúdo obrigatório' }, { status: 400 });
     }
 
     const session = (await getServerSession(authOptions as any)) as Session | null;
 
     let userId: number | null = null;
-    try {
-      if (session?.user?.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: session.user.email },
-          select: { id: true },
-        });
-        if (dbUser) userId = dbUser.id;
-      }
-    } catch (e) {
-      console.warn('Erro ao buscar user pelo email da sessão', e);
+    if (session?.user?.email) {
+      const dbUser = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: { id: true },
+      });
+      if (dbUser) userId = dbUser.id;
     }
 
     const created = await prisma.comment.create({
@@ -91,9 +74,6 @@ export async function POST(
     return NextResponse.json({ ok: true, comment: created }, { status: 201 });
   } catch (err) {
     console.error('POST /api/posts/[id]/comments error:', err);
-    return NextResponse.json(
-      { ok: false, error: 'Erro ao criar comentário' },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: false, error: 'Erro ao criar comentário' }, { status: 500 });
   }
 }
