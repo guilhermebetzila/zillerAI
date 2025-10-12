@@ -14,29 +14,16 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-
-    // 🔍 Define o diretório base
     "baseUrl": ".",
-
-    // 🚀 Mapeia os atalhos (aliases) para facilitar imports
     "paths": {
       "@/*": ["./*"],
+      "@app/*": ["app/*"],
       "@components/*": ["app/components/*"],
       "@hooks/*": ["app/hooks/*"],
-      "@ui/*": ["app/components/ui/*"],
-      "@lib/*": ["app/lib/*", "lib/*"],
+      "@context/*": ["app/hooks/context/*"],
       "@api/*": ["app/api/*"]
     }
   },
-
-  // 🧩 Inclui todos os arquivos relevantes do projeto
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts"
-  ],
-
-  // 🚫 Ignora dependências externas
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
 }

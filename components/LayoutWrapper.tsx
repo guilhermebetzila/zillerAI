@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import { SidebarProvider } from '@/hooks/context/sidebar-context';
+import { SidebarProvider } from '@/app/hooks/context/sidebar-context'
 
 interface LayoutWrapperProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export default function LayoutWrapper({ children }: LayoutWrapperProps) {
@@ -11,5 +11,5 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
     <SidebarProvider>
       {children}
     </SidebarProvider>
-  );
+  )
 }
