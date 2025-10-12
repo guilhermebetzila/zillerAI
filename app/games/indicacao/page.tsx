@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@ui/button'; // corrigido
-import { useAuth } from '@/hooks/context/AuthContext';
+import { useAuth } from 'app/hooks/context/AuthContext'; // caminho corrigido
 import { useEffect, useState } from 'react';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
