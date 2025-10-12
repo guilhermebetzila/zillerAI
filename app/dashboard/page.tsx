@@ -208,9 +208,18 @@ export default function DashboardPage() {
             </div>
 
             {/* 👇 Novo bloco com quantidade de Zillers */}
-            <div className="bg-white/10 rounded-xl p-4 shadow-md text-center">
+            <div className="bg-white/10 rounded-xl p-4 shadow-md text-center mb-3">
               <p className="text-sm text-gray-300">Quantidade de Zillers:</p>
               <p className="text-3xl font-bold text-green-400 mt-1">{quantidadeZiller.toFixed(2)}</p>
+            </div>
+
+            {/* 👇 Adicionando os lotes de Ziller */}
+            <div className="bg-white/10 rounded-xl p-4 shadow-md text-center mb-3">
+              <p className="text-sm text-gray-300 font-medium mb-2">💎 Lotes de Ziller</p>
+              <div className="flex justify-around text-sm">
+                <div className="bg-green-600/20 rounded-xl px-4 py-2">1º Lote: $0.10</div>
+                <div className="bg-green-600/20 rounded-xl px-4 py-2">2º Lote: $0.20</div>
+              </div>
             </div>
           </div>
 
