@@ -5,9 +5,12 @@ import { getServerSession } from 'next-auth/next';
 import type { Session } from 'next-auth';
 import { authOptions } from '@lib/auth';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  req: Request,
+  context: { params: { id: string } }
+) {
   try {
-    const postId = Number(params.id);
+    const postId = Number(context.params.id);
     if (Number.isNaN(postId)) {
       return NextResponse.json(
         { ok: false, error: 'postId inválido' },
@@ -33,9 +36,12 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  req: Request,
+  context: { params: { id: string } }
+) {
   try {
-    const postId = Number(params.id);
+    const postId = Number(context.params.id);
     if (Number.isNaN(postId)) {
       return NextResponse.json(
         { ok: false, error: 'postId inválido' },
@@ -55,10 +61,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       );
     }
 
-    // tenta pegar sessão (se houver). Faz cast para Session|null pra evitar erro de typing
     const session = (await getServerSession(authOptions as any)) as Session | null;
 
-    // Se tiver sessão, procuramos o user no banco via email (se o id não estiver presente)
     let userId: number | null = null;
     try {
       if (session?.user?.email) {
