@@ -1,22 +1,26 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/api/auth/[...nextauth]/authOptions";
-import prisma from "@/lib/prisma";
+import prisma from "@lib/prisma";
 import { Decimal } from "decimal.js";
 
+/**
+ * Endpoint: /api/usuario
+ * Retorna dados completos do usuário logado + rendimento diário.
+ */
 export async function GET() {
   try {
-    // Obtém a sessão do usuário autenticado
+    // 🔒 Obtém a sessão do usuário logado
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json(
-        { error: "Acesso não autorizado." },
+        { error: "Não autorizado. Faça login para continuar." },
         { status: 401 }
       );
     }
 
-    // Busca os dados do usuário logado
+    // 🔍 Busca o usuário no banco de dados
     const usuario = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: {
@@ -28,40 +32,40 @@ export async function GET() {
         bonusResidual: true,
         pontos: true,
         photoUrl: true,
-        indicados: { select: { id: true } },
+        indicados: {
+          select: { id: true },
+        },
       },
     });
 
     if (!usuario) {
       return NextResponse.json(
-        { error: "Usuário não encontrado." },
+        { error: "Usuário não encontrado no banco de dados." },
         { status: 404 }
       );
     }
 
-    // Converte valores numéricos para Decimal e calcula rendimento diário (1.5%)
-    const valorInvestido = new Decimal(usuario.valorInvestido || 0);
-    const rendimentoDiario = valorInvestido.mul(0.015); // 1.5% de rendimento
+    // 💰 Cálculo do rendimento diário: 1.5% do valor investido
+    const valorInvestidoDecimal = new Decimal(usuario.valorInvestido || 0);
+    const rendimentoDiario = valorInvestidoDecimal.mul(0.015).toNumber();
 
-    // Monta a resposta formatada
-    const dadosFormatados = {
+    // 🧾 Retorno padronizado
+    return NextResponse.json({
       id: usuario.id,
       nome: usuario.nome,
       email: usuario.email,
       saldo: Number(usuario.saldo) || 0,
       valorInvestido: Number(usuario.valorInvestido) || 0,
-      rendimentoDiario: rendimentoDiario.toNumber(),
+      rendimentoDiario,
       bonusResidual: Number(usuario.bonusResidual) || 0,
       totalIndicados: usuario.indicados.length,
       pontos: Number(usuario.pontos) || 0,
       photoUrl: usuario.photoUrl || null,
-    };
-
-    return NextResponse.json(dadosFormatados, { status: 200 });
+    });
   } catch (error) {
-    console.error("Erro ao buscar dados do usuário:", error);
+    console.error("❌ Erro ao buscar dados do usuário:", error);
     return NextResponse.json(
-      { error: "Erro interno no servidor. Tente novamente mais tarde." },
+      { error: "Erro interno do servidor. Tente novamente mais tarde." },
       { status: 500 }
     );
   }
