@@ -1,8 +1,8 @@
 // app/api/investir/historico/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@lib/prisma"; 
+import { prisma } from "@lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/api/auth/[...nextauth]/authOptions";
+import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions"; // ✅ caminho corrigido
 
 export async function GET() {
   try {
