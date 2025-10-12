@@ -8,6 +8,7 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, '') || '';
 
 const USDT_WALLET = process.env.NEXT_PUBLIC_USDT_WALLET_ADDRESS || '';
+const FIXED_HASH = '177126260'; // Hash fixo para copiar
 
 function StatusBadge({ status }: { status: string }) {
   const cores: Record<string, string> = {
@@ -42,7 +43,6 @@ export default function Depositar() {
   const { data: session } = useSession();
 
   const [valorUSDT, setValorUSDT] = useState('');
-  const [txHashUSDT, setTxHashUSDT] = useState('');
   const [depositoId, setDepositoId] = useState<string | null>(null);
   const [erro, setErro] = useState('');
   const [msg, setMsg] = useState('');
@@ -94,7 +94,9 @@ export default function Depositar() {
         setErro(data?.error || 'Falha ao solicitar depósito.');
       } else {
         setDepositoId(data.depositoId);
-        setMsg('Depósito USDT solicitado. Agora envie o valor e cole o hash abaixo.');
+        setMsg(
+          'Depósito USDT solicitado. Agora envie o valor e use o hash fixo abaixo.'
+        );
       }
     } catch {
       setErro('Erro ao solicitar depósito USDT.');
@@ -103,40 +105,12 @@ export default function Depositar() {
     }
   };
 
-  const confirmarUSDT = async () => {
-    setErro('');
-    setMsg('');
-    setLoadingUSDT(true);
+  const copiarHash = async () => {
     try {
-      if (!txHashUSDT) {
-        setErro('Informe o hash da transação.');
-        return;
-      }
-      if (!depositoId) {
-        setErro('Solicite o depósito antes de confirmar.');
-        return;
-      }
-
-      const res = await fetch('/api/depositos/usdt/verificar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ depositoId, hash: txHashUSDT }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setErro(data?.error || 'Falha ao verificar transação.');
-      } else {
-        setMsg(data?.message || 'Depósito USDT confirmado.');
-        setTxHashUSDT('');
-        setValorUSDT('');
-        setDepositoId(null);
-        await buscarHistorico();
-      }
+      await navigator.clipboard.writeText(FIXED_HASH);
+      alert('Hash copiado com sucesso! Use apenas transferências Binance → Binance.');
     } catch {
-      setErro('Erro ao confirmar depósito USDT.');
-    } finally {
-      setLoadingUSDT(false);
+      prompt('Copie manualmente o hash:', FIXED_HASH);
     }
   };
 
@@ -154,19 +128,18 @@ export default function Depositar() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-4 py-10">
       {/* 🔔 Mensagem no topo */}
       <div className="bg-yellow-400 text-black text-sm p-3 rounded-lg mb-6 text-center max-w-md">
-        ⚠️ <b>ATENÇÃO:</b> Após realizar o investimento em USDT, envie o <b>hash da transação</b> 
-        pelo WhatsApp para confirmação do seu depósito.
+        ⚠️ <b>ATENÇÃO:</b> As transferências serão aceitas apenas Binance → Binance.
         <br />
-        ⏱️ <b>Tempo médio de resposta: 1 a 5 minutos.</b>
+        Envie o valor e use o <b>hash fixo abaixo</b> para total transparência: <b>{FIXED_HASH}</b>.
+        <br />
+        ⏱️ <b>Tempo médio de confirmação: 1 a 5 minutos.</b>
         <div className="mt-3">
-          <a
-            href="https://wa.me/5521971410840"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={copiarHash}
             className="bg-green-500 hover:bg-green-600 text-black font-semibold py-2 px-4 rounded-lg transition inline-block"
           >
-            💬 Enviar Hash via WhatsApp
-          </a>
+            📋 Copiar Hash
+          </button>
         </div>
       </div>
 
@@ -198,10 +171,8 @@ export default function Depositar() {
           </button>
         </div>
 
-        {/* Solicitar e Confirmar */}
+        {/* Solicitar Depósito */}
         <div className="mt-6 bg-zinc-800 p-4 rounded-lg">
-          <h3 className="font-semibold mb-2">✅ Solicitar e confirmar depósito USDT</h3>
-
           <label className="text-white text-xs mb-1 block">Valor (USDT)</label>
           <input
             className="w-full p-2 rounded bg-black border border-zinc-700 text-white mb-3"
@@ -211,121 +182,18 @@ export default function Depositar() {
             onChange={(e) => setValorUSDT(e.target.value)}
           />
 
-          {!depositoId ? (
-            <button
-              onClick={solicitarUSDT}
-              disabled={loadingUSDT || !valorUSDT}
-              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-2 rounded transition"
-            >
-              {loadingUSDT ? 'Solicitando...' : 'Solicitar depósito USDT'}
-            </button>
-          ) : (
-            <>
-              <label className="text-white text-xs mb-1 block mt-3">
-                Hash da transação (BscScan)
-              </label>
-              <input
-                className="w-full p-2 rounded bg-black border border-zinc-700 text-white mb-3 font-mono"
-                placeholder="0x..."
-                value={txHashUSDT}
-                onChange={(e) => setTxHashUSDT(e.target.value.trim())}
-              />
-              <button
-                onClick={confirmarUSDT}
-                disabled={loadingUSDT || !txHashUSDT}
-                className="w-full bg-green-500 hover:bg-green-600 text-black font-semibold py-2 rounded transition"
-              >
-                {loadingUSDT ? 'Verificando...' : 'Confirmar depósito USDT'}
-              </button>
-            </>
-          )}
+          <button
+            onClick={solicitarUSDT}
+            disabled={loadingUSDT || !valorUSDT}
+            className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-2 rounded transition"
+          >
+            {loadingUSDT ? 'Solicitando...' : 'Solicitar depósito USDT'}
+          </button>
         </div>
 
         {/* Mensagens */}
         {erro && <p className="text-red-500 mt-3 text-sm">❌ {erro}</p>}
         {msg && <p className="text-green-400 mt-3 text-sm">✅ {msg}</p>}
-
-        {/* Histórico Confirmados */}
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold text-yellow-400 mb-4">
-            ✅ USDT Confirmados
-          </h2>
-          {onchainConfirmados.length === 0 ? (
-            <p className="text-gray-400">Nenhum depósito confirmado ainda.</p>
-          ) : (
-            <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
-              {onchainConfirmados.map((item) => (
-                <li
-                  key={item.id}
-                  className="text-sm text-gray-200 border-b border-gray-600 pb-2 flex justify-between items-center"
-                >
-                  <span>
-                    💰 {item.amount || 0} USDT –{' '}
-                    {item.createdAt
-                      ? new Date(item.createdAt).toLocaleString('pt-BR')
-                      : '-'}
-                    <br />
-                    {item.txHash && (
-                      <>
-                        🔗{' '}
-                        <a
-                          href={`https://bscscan.com/tx/${item.txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-400 underline"
-                        >
-                          Ver no BscScan
-                        </a>
-                      </>
-                    )}
-                  </span>
-                  <StatusBadge status={item.status || 'confirmado'} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {/* Histórico Pendentes */}
-        <div className="mt-8">
-          <h2 className="text-xl font-semibold text-orange-400 mb-4">
-            ⏳ USDT Pendentes
-          </h2>
-          {onchainPendentes.length === 0 ? (
-            <p className="text-gray-400">Nenhum depósito pendente.</p>
-          ) : (
-            <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
-              {onchainPendentes.map((item) => (
-                <li
-                  key={item.id}
-                  className="text-sm text-gray-200 border-b border-gray-600 pb-2 flex justify-between items-center"
-                >
-                  <span>
-                    ⚠️ {item.amount || 0} USDT –{' '}
-                    {item.createdAt
-                      ? new Date(item.createdAt).toLocaleString('pt-BR')
-                      : '-'}
-                    <br />
-                    {item.txHash && (
-                      <>
-                        🔗{' '}
-                        <a
-                          href={`https://bscscan.com/tx/${item.txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-400 underline"
-                        >
-                          Ver no BscScan
-                        </a>
-                      </>
-                    )}
-                  </span>
-                  <StatusBadge status={item.status || 'pendente'} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
       </div>
     </div>
   );
