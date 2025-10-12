@@ -47,7 +47,7 @@ export default function DashboardPage() {
   const [saldo, setSaldo] = useState<number>(0);
   const [valorInvestido, setValorInvestido] = useState<number>(0);
   const [rendimentoDiario, setRendimentoDiario] = useState<number>(0);
-  const [bonusResidual, setBonusResidual] = useState<number>(0);
+  const [bonusIndicacao, setBonusIndicacao] = useState<number>(0); // ✅ renomeado
   const [totalIndicados, setTotalIndicados] = useState<number>(0);
   const [pontos, setPontos] = useState<number>(0);
   const [pontosDiretos, setPontosDiretos] = useState<number>(0);
@@ -55,7 +55,7 @@ export default function DashboardPage() {
   const [qtdDiretos, setQtdDiretos] = useState<number>(0);
   const [qtdIndiretos, setQtdIndiretos] = useState<number>(0);
   const [userPhotoUrl, setUserPhotoUrl] = useState<string>('');
-  const [quantidadeZiller, setQuantidadeZiller] = useState<number>(0); // 👈 novo estado
+  const [quantidadeZiller, setQuantidadeZiller] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [mostrarSaldo, setMostrarSaldo] = useState<boolean>(true);
   const [ultimasAtividades, setUltimasAtividades] = useState<Atividade[]>([]);
@@ -77,11 +77,11 @@ export default function DashboardPage() {
       setSaldo(Number(dataUsuario.saldo ?? 0));
       setValorInvestido(Number(dataUsuario.valorInvestido ?? 0));
       setRendimentoDiario(Number(dataUsuario.rendimentoDiario ?? 0));
-      setBonusResidual(Number(dataUsuario.bonusResidual ?? 0));
+      setBonusIndicacao(Number(dataUsuario.bonusResidual ?? 0)); // ✅ atualizado
       setTotalIndicados(Number(dataUsuario.totalIndicados ?? 0));
       setPontos(Number(dataUsuario.pontos ?? 0));
       setUserPhotoUrl(dataUsuario.photoUrl || '');
-      setQuantidadeZiller(Number(dataUsuario.quantidadeZiller ?? 0)); // 👈 busca quantidade Ziller
+      setQuantidadeZiller(Number(dataUsuario.quantidadeZiller ?? 0));
 
       setPontosDiretos(Number(dataRede.pontosDiretos ?? 0));
       setPontosIndiretos(Number(dataRede.pontosIndiretos ?? 0));
@@ -116,9 +116,7 @@ export default function DashboardPage() {
   }, []);
 
   const abrirNotificacoes = () => {
-    try {
-      localStorage.setItem('notificacoes_nao_lidas', '0');
-    } catch { }
+    try { localStorage.setItem('notificacoes_nao_lidas', '0'); } catch {}
     setQtdAvisos(0);
     router.push('/notificacoes');
   };
@@ -194,25 +192,22 @@ export default function DashboardPage() {
             </h1>
             <p className="text-xs mt-2">Investido: {mostrarSaldo ? `$ ${valorInvestido.toFixed(2)}` : '••••'}</p>
             <p className="text-xs mt-1">Rendimento diário: {rendimentoDiario.toFixed(2)} USDT</p>
-            <p className="text-xs">Bônus residual: {bonusResidual.toFixed(2)} USDT</p>
+            <p className="text-xs">Bônus por indicação: {bonusIndicacao.toFixed(2)} USDT</p>
           </div>
 
           {/* CRIPTOMOEDAS */}
           <div className="p-4 w-full max-w-md">
             <h3 className="font-semibold mb-2">💎 Minhas Criptomoedas</h3>
 
-            {/* Bloco principal */}
             <div className="bg-white/10 rounded-xl p-4 shadow-md text-center mb-3">
               <p className="font-medium">Criptomoeda Ziller</p>
             </div>
 
-            {/* 👇 Novo bloco com quantidade de Zillers */}
             <div className="bg-white/10 rounded-xl p-4 shadow-md text-center mb-3">
               <p className="text-sm text-gray-300">Quantidade de Zillers:</p>
               <p className="text-3xl font-bold text-green-400 mt-1">{quantidadeZiller.toFixed(2)}</p>
             </div>
 
-            {/* 👇 Adicionando os lotes de Ziller */}
             <div className="bg-white/10 rounded-xl p-4 shadow-md text-center mb-3">
               <p className="text-sm text-gray-300 font-medium mb-2">💎 Lotes de Ziller</p>
               <div className="flex justify-around text-sm">
