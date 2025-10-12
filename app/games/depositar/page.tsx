@@ -5,50 +5,15 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 const BINANCE_ID = '177126260'; // ID fixo para copiar
+const WHATSAPP_LINK = 'https://wa.me/5521991146984';
 
 export default function Depositar() {
   const router = useRouter();
   const { data: session } = useSession();
 
   const [valorUSDT, setValorUSDT] = useState('');
-  const [depositoId, setDepositoId] = useState<string | null>(null);
   const [erro, setErro] = useState('');
   const [msg, setMsg] = useState('');
-  const [loadingUSDT, setLoadingUSDT] = useState(false);
-
-  const solicitarUSDT = async () => {
-    setErro('');
-    setMsg('');
-    setLoadingUSDT(true);
-    try {
-      if (!session?.user?.email) {
-        setErro('Você precisa estar logado para solicitar depósito.');
-        return;
-      }
-      if (!valorUSDT) {
-        setErro('Informe o valor do depósito em USDT.');
-        return;
-      }
-
-      const res = await fetch('/api/depositos/usdt/solicitar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ valor: Number(valorUSDT) }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setErro(data?.error || 'Falha ao solicitar depósito.');
-      } else {
-        setDepositoId(data.depositoId);
-        setMsg('Depósito USDT solicitado. Use o ID fixo abaixo para total transparência.');
-      }
-    } catch {
-      setErro('Erro ao solicitar depósito USDT.');
-    } finally {
-      setLoadingUSDT(false);
-    }
-  };
 
   const copiarId = async () => {
     try {
@@ -57,6 +22,28 @@ export default function Depositar() {
     } catch {
       prompt('Copie manualmente o ID:', BINANCE_ID);
     }
+  };
+
+  const enviarComprovante = () => {
+    setErro('');
+    setMsg('');
+    if (!valorUSDT || Number(valorUSDT) <= 0) {
+      setErro('Informe um valor válido em USDT.');
+      return;
+    }
+
+    // Criar link para WhatsApp com mensagem pré-definida
+    const mensagem = encodeURIComponent(
+      `Olá, enviei ${valorUSDT} USDT para o ID Binance ${BINANCE_ID}. Segue comprovante da transferência.`
+    );
+    const url = `${WHATSAPP_LINK}?text=${mensagem}`;
+
+    // Abrir WhatsApp
+    window.open(url, '_blank');
+
+    // Limpar valor
+    setValorUSDT('');
+    setMsg('💬 WhatsApp aberto para envio do comprovante.');
   };
 
   return (
@@ -104,11 +91,11 @@ export default function Depositar() {
             />
 
             <button
-              onClick={solicitarUSDT}
-              disabled={loadingUSDT || !valorUSDT}
-              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-2 rounded transition"
+              onClick={enviarComprovante}
+              disabled={!valorUSDT || Number(valorUSDT) <= 0}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-black font-semibold py-2 rounded transition"
             >
-              {loadingUSDT ? 'Solicitando...' : 'Solicitar depósito USDT'}
+              💬 Enviar comprovante de transferência via WhatsApp
             </button>
           </div>
 
