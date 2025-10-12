@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -16,18 +20,50 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@app/*": ["app/*"],
-      "@components/*": ["components/*"],
-      "@hooks/*": ["hooks/*"],
-      "@context/*": ["hooks/context/*"],
-      "@hooks/context/*": ["hooks/context/*"],
-      "@ui/*": ["components/ui/*"],
-      "@lib/*": ["lib/*"],
-      "@api/*": ["app/api/*"],
-      "@/api/*": ["app/api/*"]
-    }
+      "@/*": [
+        "./*"
+      ],
+      "@app/*": [
+        "app/*"
+      ],
+      "@components/*": [
+        "components/*"
+      ],
+      "@hooks/*": [
+        "hooks/*"
+      ],
+      "@context/*": [
+        "hooks/context/*"
+      ],
+      "@hooks/context/*": [
+        "hooks/context/*"
+      ],
+      "@ui/*": [
+        "components/ui/*"
+      ],
+      "@lib/*": [
+        "lib/*"
+      ],
+      "@api/*": [
+        "app/api/*"
+      ],
+      "@/api/*": [
+        "app/api/*"
+      ]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
