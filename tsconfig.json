@@ -23,6 +23,7 @@
       "@context/*": ["hooks/context/*"],
       "@hooks/context/*": ["hooks/context/*"],
       "@ui/*": ["components/ui/*"],
+      "@lib/*": ["lib/*"],
       "@api/*": ["app/api/*"]
     }
   },
