@@ -56,11 +56,11 @@ async function main() {
 
   // ---- Instrumentos demo ----
   const instruments = [
-    { symbol: "WIN", venue: "B3_SIM", tickSize: 5.0 },     // Mini-índice B3
-    { symbol: "WDO", venue: "B3_SIM", tickSize: 0.5 },     // Mini-dólar B3
-    { symbol: "ES", venue: "ALPACA", tickSize: 0.25 },     // S&P 500 future (simulação)
-    { symbol: "NQ", venue: "ALPACA", tickSize: 0.25 },     // Nasdaq future
-    { symbol: "USDJPY", venue: "OANDA", tickSize: 0.001 }, // Forex par
+    { symbol: "WIN", venue: "B3_SIM", tickSize: 5.0 },
+    { symbol: "WDO", venue: "B3_SIM", tickSize: 0.5 },
+    { symbol: "ES", venue: "ALPACA", tickSize: 0.25 },
+    { symbol: "NQ", venue: "ALPACA", tickSize: 0.25 },
+    { symbol: "USDJPY", venue: "OANDA", tickSize: 0.001 },
   ];
 
   for (const inst of instruments) {

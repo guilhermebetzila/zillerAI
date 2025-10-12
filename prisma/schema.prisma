@@ -50,6 +50,16 @@ model User {
   @@map("users")
 }
 
+model Instrument {
+  id       Int     @id @default(autoincrement())
+  symbol   String
+  venue    String
+  tickSize Float
+
+  @@unique([symbol, venue])
+  @@map("instruments")
+}
+
 model PasswordResetToken {
   id        Int      @id @default(autoincrement())
   token     String   @unique
