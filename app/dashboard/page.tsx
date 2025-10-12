@@ -20,7 +20,6 @@ const menuItems: MenuItem[] = [
   { label: '📥 Depositar', action: '/games/depositar' },
   { label: '📤 Saque', action: '/games/saque' },
   { label: '📄 Cadastrar CPF', action: '/games/cadastrar-cpf' },
-  { label: '💰 Ico', action: '/games/bolsao' },
   { label: '🎓 Mentoria', action: '/games/mentoria' },
   { label: '🕹️ Ziller Hub', action: '/games/ziller' },
   { label: '🪐 Zillerverse', action: '/games/zillerverse' },
