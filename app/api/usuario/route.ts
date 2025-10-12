@@ -4,23 +4,16 @@ import { authOptions } from "@/api/auth/[...nextauth]/authOptions";
 import prisma from "@lib/prisma";
 import { Decimal } from "decimal.js";
 
-/**
- * Endpoint: /api/usuario
- * Retorna dados completos do usuário logado + rendimento diário.
- */
 export async function GET() {
   try {
-    // 🔒 Obtém a sessão do usuário logado
     const session = await getServerSession(authOptions);
 
+    // 🔒 Verifica se o usuário está autenticado
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Não autorizado. Faça login para continuar." },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    // 🔍 Busca o usuário no banco de dados
+    // 🔍 Busca usuário completo no banco
     const usuario = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: {
@@ -32,24 +25,19 @@ export async function GET() {
         bonusResidual: true,
         pontos: true,
         photoUrl: true,
-        indicados: {
-          select: { id: true },
-        },
+        indicados: { select: { id: true } },
       },
     });
 
     if (!usuario) {
-      return NextResponse.json(
-        { error: "Usuário não encontrado no banco de dados." },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
     }
 
-    // 💰 Cálculo do rendimento diário: 1.5% do valor investido
+    // 💰 Calcula o rendimento diário (1.5%)
     const valorInvestidoDecimal = new Decimal(usuario.valorInvestido || 0);
     const rendimentoDiario = valorInvestidoDecimal.mul(0.015).toNumber();
 
-    // 🧾 Retorno padronizado
+    // ✅ Retorna todos os dados formatados
     return NextResponse.json({
       id: usuario.id,
       nome: usuario.nome,
@@ -58,15 +46,11 @@ export async function GET() {
       valorInvestido: Number(usuario.valorInvestido) || 0,
       rendimentoDiario,
       bonusResidual: Number(usuario.bonusResidual) || 0,
-      totalIndicados: usuario.indicados.length,
       pontos: Number(usuario.pontos) || 0,
-      photoUrl: usuario.photoUrl || null,
+      totalIndicados: usuario.indicados.length,
     });
   } catch (error) {
     console.error("❌ Erro ao buscar dados do usuário:", error);
-    return NextResponse.json(
-      { error: "Erro interno do servidor. Tente novamente mais tarde." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Erro interno do servidor" }, { status: 500 });
   }
 }
