@@ -1,109 +1,111 @@
 'use client';
 
-import { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import LayoutWrapper from "../../../components/LayoutWrapper";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
-const BINANCE_ID = '177126260'; // ID fixo para copiar
-const WHATSAPP_LINK = 'https://wa.me/5521991146984';
-
-export default function Depositar() {
+export default function SaquePage() {
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const { data: session } = useSession();
 
-  const [valorUSDT, setValorUSDT] = useState('');
-  const [erro, setErro] = useState('');
-  const [msg, setMsg] = useState('');
+  const [valor, setValor] = useState("");
+  const [usdtId, setUsdtId] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const copiarId = async () => {
-    try {
-      await navigator.clipboard.writeText(BINANCE_ID);
-      alert('ID da Binance copiado com sucesso! Use apenas transferências Binance → Binance.');
-    } catch {
-      prompt('Copie manualmente o ID:', BINANCE_ID);
+  // Redirecionar se não estiver autenticado
+  if (status === "unauthenticated") {
+    router.push("/auth/login");
+    return null;
+  }
+
+  // Loading enquanto autentica
+  if (status === "loading") {
+    return (
+      <LayoutWrapper>
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </LayoutWrapper>
+    );
+  }
+
+  // Solicitar saque via WhatsApp
+  const handleSaque = () => {
+    setError(null);
+
+    const valorNumber = Number(valor);
+    if (!usdtId) {
+      setError("Digite seu ID da Binance.");
+      return;
     }
-  };
-
-  const enviarComprovante = () => {
-    setErro('');
-    setMsg('');
-    if (!valorUSDT || Number(valorUSDT) <= 0) {
-      setErro('Informe um valor válido em USDT.');
+    if (!valor || isNaN(valorNumber) || valorNumber <= 0) {
+      setError("Digite um valor válido para saque.");
       return;
     }
 
-    // Criar link para WhatsApp com mensagem pré-definida
-    const mensagem = encodeURIComponent(
-      `Olá, enviei ${valorUSDT} USDT para o ID Binance ${BINANCE_ID}. Segue comprovante da transferência.`
-    );
-    const url = `${WHATSAPP_LINK}?text=${mensagem}`;
+    const userId = session?.user?.id || "N/A";
+    const nome = session?.user?.name || "Usuário";
+    const horario = new Date().toLocaleString("pt-BR");
 
-    // Abrir WhatsApp
-    window.open(url, '_blank');
+    const mensagem = `Olá, gostaria de solicitar um saque:%0A%0A🆔 ID: ${userId}%0A👤 Nome: ${nome}%0A💰 Valor: $${valorNumber.toFixed(
+      2
+    )}%0A🔑 ID Binance: ${usdtId}%0A⏰ Horário: ${horario}`;
 
-    // Limpar valor
-    setValorUSDT('');
-    setMsg('💬 WhatsApp aberto para envio do comprovante.');
+    const whatsappUrl = `https://wa.me/5521991146984?text=${mensagem}`;
+    window.open(whatsappUrl, "_blank");
   };
 
   return (
-    <div className="h-screen w-full overflow-y-auto bg-black text-white px-4 py-10">
-      <div className="flex flex-col items-center justify-start min-h-full">
-        {/* 🔔 Mensagem no topo */}
-        <div className="bg-yellow-400 text-black text-sm p-3 rounded-lg mb-6 text-center max-w-md">
-          ⚠️ <b>ATENÇÃO:</b> As transferências serão aceitas apenas Binance → Binance.
-          <br />
-          Use o <b>ID fixo abaixo</b> para total transparência: <b>{BINANCE_ID}</b>.
-          <br />
-          ⏱️ <b>Tempo médio de confirmação: 1 a 5 minutos.</b>
-          <div className="mt-3">
-            <button
-              onClick={copiarId}
-              className="bg-green-500 hover:bg-green-600 text-black font-semibold py-2 px-4 rounded-lg transition inline-block"
-            >
-              📋 Copiar ID
-            </button>
+    <LayoutWrapper>
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-2xl shadow-md text-black">
+        <h1 className="text-2xl font-bold mb-4">💵 Saque via USDT</h1>
+
+        {error && (
+          <div className="bg-red-100 border border-red-300 text-red-800 p-3 rounded mb-4 text-sm">
+            ⚠️ {error}
           </div>
+        )}
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            ID da Binance
+          </label>
+          <input
+            type="text"
+            value={usdtId}
+            onChange={(e) => setUsdtId(e.target.value)}
+            placeholder="Digite seu ID da Binance"
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Valor do Saque (USDT)
+          </label>
+          <input
+            type="number"
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            placeholder="Digite o valor do saque"
+            className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            min="0"
+            step="0.01"
+          />
         </div>
 
         <button
-          onClick={() => router.back()}
-          className="mb-6 bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg"
+          onClick={handleSaque}
+          className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition"
         >
-          ⬅️ Voltar
+          Solicitar via WhatsApp
         </button>
 
-        <h1 className="text-2xl font-bold mb-2">💰 Depósito via USDT</h1>
-        <p className="mb-6 text-sm text-gray-300">
-          Adicione saldo enviando USDT (rede BEP-20 / BSC) usando o ID da Binance acima.
+        <p className="text-xs text-gray-500 mt-3">
+          ⚠️ Tempo médio de processamento: até 60 minutos.
         </p>
-
-        <div className="bg-zinc-900 p-6 rounded-xl w-full max-w-md">
-          {/* Solicitar Depósito */}
-          <div className="mt-6 bg-zinc-800 p-4 rounded-lg">
-            <label className="text-white text-xs mb-1 block">Valor (USDT)</label>
-            <input
-              className="w-full p-2 rounded bg-black border border-zinc-700 text-white mb-3"
-              type="number"
-              placeholder="Ex: 10"
-              value={valorUSDT}
-              onChange={(e) => setValorUSDT(e.target.value)}
-            />
-
-            <button
-              onClick={enviarComprovante}
-              disabled={!valorUSDT || Number(valorUSDT) <= 0}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-black font-semibold py-2 rounded transition"
-            >
-              💬 Enviar comprovante de transferência via WhatsApp
-            </button>
-          </div>
-
-          {/* Mensagens */}
-          {erro && <p className="text-red-500 mt-3 text-sm">❌ {erro}</p>}
-          {msg && <p className="text-green-400 mt-3 text-sm">✅ {msg}</p>}
-        </div>
       </div>
-    </div>
+    </LayoutWrapper>
   );
 }

@@ -18,7 +18,7 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { label: '🤖 Rede', action: '/games/ia' },
   { label: '📥 Depositar', action: '/games/depositar' },
-  { label: '📤 Saque via Pix', action: '/games/saque' },
+  { label: '📤 Saque', action: '/games/saque' },
   { label: '📄 Cadastrar CPF', action: '/games/cadastrar-cpf' },
   { label: '💰 Ico', action: '/games/bolsao' },
   { label: '🎓 Mentoria', action: '/games/mentoria' },
