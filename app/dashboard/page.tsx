@@ -260,14 +260,17 @@ export default function DashboardPage() {
               <p>
                 Pontos Diretos: {pontosDiretos} | Pontos Indiretos: {pontosIndiretos}
               </p>
-              <div className="w-full bg-white/20 rounded-xl h-4 mt-2">
+
+              {/* Barra de progresso animada */}
+              <div className="w-full bg-white/20 rounded-xl h-4 mt-2 overflow-hidden">
                 <div
                   className="bg-green-500 h-4 rounded-xl transition-all duration-500"
-                  style={{ width: `${(pontos / PONTOS_OBJETIVO) * 100}%` }}
+                  style={{ width: `${Math.min((pontos / PONTOS_OBJETIVO) * 100, 100)}%` }}
                 ></div>
               </div>
+
               <p className="mt-1">
-                Faltam {PONTOS_OBJETIVO - pontos} pontos para desbloquear o próximo prêmio.
+                Faltam {Math.max(PONTOS_OBJETIVO - pontos, 0)} pontos para desbloquear o próximo prêmio.
               </p>
             </div>
 
@@ -291,14 +294,15 @@ export default function DashboardPage() {
                 </button>
               </div>
             </div>
+
             {/* NOVO BANNER YOUTUBE */}
-          <div className="p-4 w-full max-w-md">
-            <img
-              src="/img/youtube.png"
-              alt="Banner YouTube"
-              className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
-            />
-          </div>
+            <div className="p-4 w-full max-w-md">
+              <img
+                src="/img/youtube.png"
+                alt="Banner YouTube"
+                className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
+              />
+            </div>
 
             {/* INFO */}
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
@@ -341,7 +345,7 @@ export default function DashboardPage() {
 
             {/* FEEDBACK */}
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
-              <h3 className="font-semibold mb-2">💡 Como foi sua experiência com a tela inicial?</h3>
+              <h3 className="font-semibold text-center mb-2">💡 Como foi sua experiência com a tela inicial?</h3>
               <div className="flex gap-2">
                 <button className="flex-1 bg-green-600 hover:bg-green-700 px-3 py-2 rounded-xl text-sm">
                   Boa
