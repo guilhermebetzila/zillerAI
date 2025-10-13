@@ -1,6 +1,6 @@
-import type { Config } from "tailwindcss"
-import tailwindAnimate from "tailwindcss-animate"
-import scrollbarHide from "tailwind-scrollbar-hide"
+import type { Config } from "tailwindcss";
+import tailwindAnimate from "tailwindcss-animate";
+import scrollbarHide from "tailwind-scrollbar-hide";
 
 const config: Config = {
   darkMode: "class",
@@ -14,6 +14,10 @@ const config: Config = {
   safelist: [
     "bg-[hsl(var(--background))]",
     "text-[hsl(var(--foreground))]",
+    "bg-white/20",
+    "bg-green-500",
+    "bg-green-400",
+    "bg-gray-700",
   ],
   theme: {
     container: {
@@ -87,6 +91,6 @@ const config: Config = {
     },
   },
   plugins: [tailwindAnimate, scrollbarHide],
-}
+};
 
-export default config
+export default config;
