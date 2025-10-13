@@ -297,11 +297,17 @@ export default function DashboardPage() {
 
             {/* NOVO BANNER YOUTUBE */}
             <div className="p-4 w-full max-w-md">
-              <img
-                src="/img/youtube.png"
-                alt="Banner YouTube"
-                className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
-              />
+              <a
+                href="https://youtube.com/@ziller-ibovespa?si=dJxQ8zAbD3cxOjwu"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  src="/img/youtube.png"
+                  alt="Banner YouTube"
+                  className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
+                />
+              </a>
             </div>
 
             {/* INFO */}
