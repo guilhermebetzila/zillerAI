@@ -32,7 +32,7 @@ export async function POST() {
 
       if (rendimento <= 0) continue;
 
-      // 1️⃣ Registra o rendimento (modelo correto: rendimentoDiario)
+      // 1️⃣ Registra o rendimento diário
       await prisma.rendimentoDiario.create({
         data: {
           userId: usuario.id,
@@ -56,7 +56,7 @@ export async function POST() {
       totalRendimentoGerado += rendimento;
     }
 
-    // 3️⃣ Atualiza o saldo total do usuário com a soma dos rendimentos de todos os investimentos
+    // 3️⃣ Atualiza o saldo total do usuário com os rendimentos
     if (totalRendimentoGerado > 0) {
       const saldoAtual = Number(usuario.saldo) || 0;
       await prisma.user.update({
@@ -64,6 +64,46 @@ export async function POST() {
         data: {
           saldo: (saldoAtual + totalRendimentoGerado).toFixed(2),
         },
+      });
+    }
+
+    // 4️⃣ Calcula bônus de indicação em 3 níveis
+    const valorInvestidoTotal = usuario.investimentos.reduce(
+      (acc, inv) => acc + Number(inv.valor || 0),
+      0
+    );
+
+    // Nível 1
+    const nivel1 = usuario.indicadoPorId
+      ? await prisma.user.findUnique({ where: { id: usuario.indicadoPorId } })
+      : null;
+
+    // Nível 2
+    const nivel2 = nivel1?.indicadoPorId
+      ? await prisma.user.findUnique({ where: { id: nivel1.indicadoPorId } })
+      : null;
+
+    // Nível 3
+    const nivel3 = nivel2?.indicadoPorId
+      ? await prisma.user.findUnique({ where: { id: nivel2.indicadoPorId } })
+      : null;
+
+    if (nivel1) {
+      await prisma.user.update({
+        where: { id: nivel1.id },
+        data: { bonusResidual: { increment: valorInvestidoTotal * 0.10 } },
+      });
+    }
+    if (nivel2) {
+      await prisma.user.update({
+        where: { id: nivel2.id },
+        data: { bonusResidual: { increment: valorInvestidoTotal * 0.05 } },
+      });
+    }
+    if (nivel3) {
+      await prisma.user.update({
+        where: { id: nivel3.id },
+        data: { bonusResidual: { increment: valorInvestidoTotal * 0.02 } },
       });
     }
 
