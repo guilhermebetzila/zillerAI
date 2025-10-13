@@ -47,7 +47,7 @@ export default function DashboardPage() {
   const [saldo, setSaldo] = useState<number>(0);
   const [valorInvestido, setValorInvestido] = useState<number>(0);
   const [rendimentoDiario, setRendimentoDiario] = useState<number>(0);
-  const [bonusIndicacao, setBonusIndicacao] = useState<number>(0); // ✅ renomeado
+  const [bonusIndicacao, setBonusIndicacao] = useState<number>(0);
   const [totalIndicados, setTotalIndicados] = useState<number>(0);
   const [pontos, setPontos] = useState<number>(0);
   const [pontosDiretos, setPontosDiretos] = useState<number>(0);
@@ -77,7 +77,7 @@ export default function DashboardPage() {
       setSaldo(Number(dataUsuario.saldo ?? 0));
       setValorInvestido(Number(dataUsuario.valorInvestido ?? 0));
       setRendimentoDiario(Number(dataUsuario.rendimentoDiario ?? 0));
-      setBonusIndicacao(Number(dataUsuario.bonusResidual ?? 0)); // ✅ atualizado
+      setBonusIndicacao(Number(dataUsuario.bonusResidual ?? 0));
       setTotalIndicados(Number(dataUsuario.totalIndicados ?? 0));
       setPontos(Number(dataUsuario.pontos ?? 0));
       setUserPhotoUrl(dataUsuario.photoUrl || '');
@@ -225,16 +225,13 @@ export default function DashboardPage() {
             <img src="/img/banneroficial1.png" alt="Banner Oficial" className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition" />
           </div>
 
-          {/* MENU RÁPIDO */}
-          <div className="grid grid-cols-4 gap-4 p-4 w-full max-w-md">
-            {menuItems.map((item, index) => (
-              <button key={index} onClick={() => router.push(item.action)} className="flex flex-col items-center justify-center">
-                <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center mb-1 shadow-md hover:bg-white/20 transition">
-                  <span className="text-lg">{item.label.split(" ")[0]}</span>
-                </div>
-                <span className="text-xs text-center">{item.label.replace(/^[^\s]+\s/, "")}</span>
-              </button>
-            ))}
+          {/* NOVO BANNER YOUTUBE */}
+          <div className="p-4 w-full max-w-md">
+            <img
+              src="/img/youtube.png"
+              alt="Banner YouTube"
+              className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
+            />
           </div>
 
           {/* PONTUAÇÃO */}
