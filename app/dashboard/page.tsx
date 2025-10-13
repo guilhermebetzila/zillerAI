@@ -1,13 +1,9 @@
 'use client';
-
 import React, { useEffect, useState } from 'react';
 import LayoutWrapper from '@components/LayoutWrapper';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import {
-  Bell, Home, User, Wallet, Settings, LogOut,
-  Eye, EyeOff, MessageCircle
-} from "lucide-react";
+import { Bell, Home, User, Wallet, Settings, LogOut, Eye, EyeOff, MessageCircle } from "lucide-react";
 
 interface MenuItem {
   label: string;
@@ -39,6 +35,7 @@ interface Atividade {
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+
   const user = session?.user as any;
   const displayName = user?.name || user?.email?.split('@')[0] || 'Usuário';
   const codigoIndicacao = user?.id || user?.email || '';
@@ -82,12 +79,10 @@ export default function DashboardPage() {
       setPontos(Number(dataUsuario.pontos ?? 0));
       setUserPhotoUrl(dataUsuario.photoUrl || '');
       setQuantidadeZiller(Number(dataUsuario.quantidadeZiller ?? 0));
-
       setPontosDiretos(Number(dataRede.pontosDiretos ?? 0));
       setPontosIndiretos(Number(dataRede.pontosIndiretos ?? 0));
       setQtdDiretos(Number(dataRede.diretos ?? 0));
       setQtdIndiretos(Number(dataRede.indiretos ?? 0));
-
       setUltimasAtividades([]);
     } catch (error) {
       console.error('Erro ao carregar dados do dashboard:', error);
@@ -116,7 +111,9 @@ export default function DashboardPage() {
   }, []);
 
   const abrirNotificacoes = () => {
-    try { localStorage.setItem('notificacoes_nao_lidas', '0'); } catch {}
+    try {
+      localStorage.setItem('notificacoes_nao_lidas', '0');
+    } catch {}
     setQtdAvisos(0);
     router.push('/notificacoes');
   };
@@ -152,6 +149,7 @@ export default function DashboardPage() {
               <p className="text-xs text-gray-400">{user?.email}</p>
             </div>
           </div>
+
           <div className="flex items-center gap-4">
             <a
               href="https://wa.me/5521991146984"
@@ -190,7 +188,9 @@ export default function DashboardPage() {
             <h1 className="text-4xl font-bold mt-1">
               {mostrarSaldo ? `$ ${saldo.toFixed(2)}` : '••••••'}
             </h1>
-            <p className="text-xs mt-2">Investido: {mostrarSaldo ? `$ ${valorInvestido.toFixed(2)}` : '••••'}</p>
+            <p className="text-xs mt-2">
+              Investido: {mostrarSaldo ? `$ ${valorInvestido.toFixed(2)}` : '••••'}
+            </p>
             <p className="text-xs mt-1">Rendimento diário: {rendimentoDiario.toFixed(2)} USDT</p>
             <p className="text-xs">Bônus por indicação: {bonusIndicacao.toFixed(2)} USDT</p>
           </div>
@@ -198,16 +198,13 @@ export default function DashboardPage() {
           {/* CRIPTOMOEDAS */}
           <div className="p-4 w-full max-w-md">
             <h3 className="font-semibold mb-2">💎 Minhas Criptomoedas</h3>
-
             <div className="bg-white/10 rounded-xl p-4 shadow-md text-center mb-3">
               <p className="font-medium">Criptomoeda Ziller</p>
             </div>
-
             <div className="bg-white/10 rounded-xl p-4 shadow-md text-center mb-3">
               <p className="text-sm text-gray-300">Quantidade de Zillers:</p>
               <p className="text-3xl font-bold text-green-400 mt-1">{quantidadeZiller.toFixed(2)}</p>
             </div>
-
             <div className="bg-white/10 rounded-xl p-4 shadow-md text-center mb-3">
               <p className="text-sm text-gray-300 font-medium mb-2">💎 Lotes de Ziller</p>
               <div className="flex justify-around text-sm">
@@ -219,19 +216,36 @@ export default function DashboardPage() {
 
           {/* BANNERS */}
           <div className="p-4 w-full max-w-md">
-            <img src="/img/banneroficial.png" alt="Banner Oficial" className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition" />
-          </div>
-          <div className="p-4 w-full max-w-md">
-            <img src="/img/banneroficial1.png" alt="Banner Oficial" className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition" />
-          </div>
-
-          {/* NOVO BANNER YOUTUBE */}
-          <div className="p-4 w-full max-w-md">
             <img
-              src="/img/youtube.png"
-              alt="Banner YouTube"
+              src="/img/banneroficial.png"
+              alt="Banner Oficial"
               className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
             />
+          </div>
+          <div className="p-4 w-full max-w-md">
+            <img
+              src="/img/banneroficial1.png"
+              alt="Banner Oficial"
+              className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
+            />
+          </div>
+
+          {/* MENU RÁPIDO */}
+          <div className="grid grid-cols-4 gap-4 p-4 w-full max-w-md">
+            {menuItems.map((item, index) => (
+              <button
+                key={index}
+                onClick={() => router.push(item.action)}
+                className="flex flex-col items-center justify-center"
+              >
+                <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center mb-1 shadow-md hover:bg-white/20 transition">
+                  <span className="text-lg">{item.label.split(' ')[0]}</span>
+                </div>
+                <span className="text-xs text-center">
+                  {item.label.replace(/^[^\s]+\s/, '')}
+                </span>
+              </button>
+            ))}
           </div>
 
           {/* PONTUAÇÃO */}
@@ -239,29 +253,52 @@ export default function DashboardPage() {
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
               <h3 className="font-semibold text-center mb-2">📊 Pontuação & Indicação</h3>
               <p>
-                Você já indicou <strong>{qtdDiretos}</strong> pessoa(s) diretas e{" "}
+                Você já indicou <strong>{qtdDiretos}</strong> pessoa(s) diretas e{' '}
                 <strong>{qtdIndiretos}</strong> indiretas!
               </p>
               <p>Pontos acumulados: {pontos}</p>
-              <p>Pontos Diretos: {pontosDiretos} | Pontos Indiretos: {pontosIndiretos}</p>
+              <p>
+                Pontos Diretos: {pontosDiretos} | Pontos Indiretos: {pontosIndiretos}
+              </p>
               <div className="w-full bg-white/20 rounded-xl h-4 mt-2">
-                <div className="bg-green-500 h-4 rounded-xl transition-all duration-500" style={{ width: `${(pontos / PONTOS_OBJETIVO) * 100}%` }}></div>
+                <div
+                  className="bg-green-500 h-4 rounded-xl transition-all duration-500"
+                  style={{ width: `${(pontos / PONTOS_OBJETIVO) * 100}%` }}
+                ></div>
               </div>
-              <p className="mt-1">Faltam {PONTOS_OBJETIVO - pontos} pontos para desbloquear o próximo prêmio.</p>
+              <p className="mt-1">
+                Faltam {PONTOS_OBJETIVO - pontos} pontos para desbloquear o próximo prêmio.
+              </p>
             </div>
 
             {/* INDICAÇÃO */}
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
               <h3 className="font-semibold text-center mb-2">🎁 Seu Código de Indicação</h3>
               <div className="flex items-center justify-between bg-black/20 px-3 py-2 rounded-xl">
-                <a href={linkIndicacao} target="_blank" rel="noopener noreferrer" className="truncate underline">
+                <a
+                  href={linkIndicacao}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="truncate underline"
+                >
                   {linkIndicacao}
                 </a>
-                <button onClick={() => navigator.clipboard.writeText(linkIndicacao)} className="ml-2 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-xl text-sm">
+                <button
+                  onClick={() => navigator.clipboard.writeText(linkIndicacao)}
+                  className="ml-2 bg-white/10 hover:bg-white/20 px-3 py-1 rounded-xl text-sm"
+                >
                   Copiar
                 </button>
               </div>
             </div>
+            {/* NOVO BANNER YOUTUBE */}
+          <div className="p-4 w-full max-w-md">
+            <img
+              src="/img/youtube.png"
+              alt="Banner YouTube"
+              className="rounded-2xl shadow-lg cursor-pointer hover:opacity-90 transition"
+            />
+          </div>
 
             {/* INFO */}
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
@@ -287,8 +324,14 @@ export default function DashboardPage() {
                   {ultimasAtividades.map((atividade, index) => (
                     <li key={index} className="flex justify-between bg-gray-800 p-2 rounded-xl">
                       <span className="text-sm">{atividade.descricao}</span>
-                      <span className={`text-sm ${atividade.valor >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {atividade.valor >= 0 ? `+ R$ ${atividade.valor.toFixed(2)}` : `- R$ ${Math.abs(atividade.valor).toFixed(2)}`}
+                      <span
+                        className={`text-sm ${
+                          atividade.valor >= 0 ? 'text-green-400' : 'text-red-400'
+                        }`}
+                      >
+                        {atividade.valor >= 0
+                          ? `+ R$ ${atividade.valor.toFixed(2)}`
+                          : `- R$ ${Math.abs(atividade.valor).toFixed(2)}`}
                       </span>
                     </li>
                   ))}
@@ -300,9 +343,15 @@ export default function DashboardPage() {
             <div className="bg-white/10 rounded-2xl p-4 shadow-md">
               <h3 className="font-semibold mb-2">💡 Como foi sua experiência com a tela inicial?</h3>
               <div className="flex gap-2">
-                <button className="flex-1 bg-green-600 hover:bg-green-700 px-3 py-2 rounded-xl text-sm">Boa</button>
-                <button className="flex-1 bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded-xl text-sm">Neutra</button>
-                <button className="flex-1 bg-red-500 hover:bg-red-600 px-3 py-2 rounded-xl text-sm">Ruim</button>
+                <button className="flex-1 bg-green-600 hover:bg-green-700 px-3 py-2 rounded-xl text-sm">
+                  Boa
+                </button>
+                <button className="flex-1 bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded-xl text-sm">
+                  Neutra
+                </button>
+                <button className="flex-1 bg-red-500 hover:bg-red-600 px-3 py-2 rounded-xl text-sm">
+                  Ruim
+                </button>
               </div>
             </div>
           </div>
@@ -311,16 +360,20 @@ export default function DashboardPage() {
         {/* FOOTER */}
         <footer className="sticky bottom-0 w-full bg-gray-950 text-white py-2 px-6 flex justify-between items-center shadow-lg">
           <button onClick={() => router.push('/dashboard')} className="flex flex-col items-center">
-            <Home className="w-6 h-6" /> <span className="text-xs">Início</span>
+            <Home className="w-6 h-6" />
+            <span className="text-xs">Início</span>
           </button>
           <button onClick={() => router.push('/carteira')} className="flex flex-col items-center">
-            <Wallet className="w-6 h-6" /> <span className="text-xs">Carteira</span>
+            <Wallet className="w-6 h-6" />
+            <span className="text-xs">Carteira</span>
           </button>
           <button onClick={() => router.push('/perfil')} className="flex flex-col items-center">
-            <User className="w-6 h-6" /> <span className="text-xs">Perfil</span>
+            <User className="w-6 h-6" />
+            <span className="text-xs">Perfil</span>
           </button>
           <button onClick={() => router.push('/config')} className="flex flex-col items-center">
-            <Settings className="w-6 h-6" /> <span className="text-xs">Config</span>
+            <Settings className="w-6 h-6" />
+            <span className="text-xs">Config</span>
           </button>
         </footer>
       </div>
