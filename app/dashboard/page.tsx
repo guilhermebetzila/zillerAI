@@ -58,6 +58,9 @@ export default function DashboardPage() {
   const [ultimasAtividades, setUltimasAtividades] = useState<Atividade[]>([]);
   const [qtdAvisos, setQtdAvisos] = useState<number>(0);
 
+  // NOVO: largura animada da barra
+  const [barraWidth, setBarraWidth] = useState(0);
+
   const fetchUsuarioDados = async () => {
     try {
       const [resUsuario, resRede] = await Promise.all([
@@ -117,6 +120,22 @@ export default function DashboardPage() {
     setQtdAvisos(0);
     router.push('/notificacoes');
   };
+
+  // NOVO: efeito animado da barra
+  useEffect(() => {
+    const larguraAlvo = Math.min((pontos / PONTOS_OBJETIVO) * 100, 100);
+    let start = barraWidth;
+    const step = () => {
+      start += (larguraAlvo - start) * 0.1; // animação suave
+      setBarraWidth(start);
+      if (Math.abs(start - larguraAlvo) > 0.5) {
+        requestAnimationFrame(step);
+      } else {
+        setBarraWidth(larguraAlvo);
+      }
+    };
+    requestAnimationFrame(step);
+  }, [pontos]);
 
   if (status === 'loading' || loading) {
     return (
@@ -265,7 +284,7 @@ export default function DashboardPage() {
               <div className="w-full bg-white/20 rounded-xl h-4 mt-2 overflow-hidden">
                 <div
                   className="bg-green-500 h-4 rounded-xl transition-all duration-500"
-                  style={{ width: `${Math.min((pontos / PONTOS_OBJETIVO) * 100, 100)}%` }}
+                  style={{ width: `${barraWidth}%` }}
                 ></div>
               </div>
 
