@@ -13,14 +13,35 @@ export default function MentoriaPage() {
         </h1>
       </header>
 
+      {/* Seção do Vídeo */}
+      <div className="w-full max-w-3xl flex flex-col items-center space-y-6">
+        <a
+          href="https://youtu.be/CpzZGzV0QTA?feature=shared"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full flex flex-col items-center hover:scale-105 transition-transform"
+        >
+          <img
+            src="/img/mercado.png"
+            alt="Thumbnail da Aula"
+            className="rounded-lg border border-white shadow-lg w-full"
+          />
+          <p className="mt-4 text-xl font-semibold text-white text-center">
+            ▶ Análise macro que você não aprende na escola
+          </p>
+        </a>
+      </div>
+
       {/* Quadrados das Aulas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl mt-8">
         {/* Aula 1 */}
         <div className="bg-black border border-white rounded-lg shadow-md p-6 flex flex-col items-center justify-center hover:scale-105 cursor-pointer transition-transform">
           <div className="w-32 h-32 bg-black border border-white rounded-lg flex items-center justify-center mb-4">
             <span className="text-white text-xl font-bold">Aula 1</span>
           </div>
-          <p className="text-center font-semibold text-lg text-white">Introdução ao Controle Financeiro</p>
+          <p className="text-center font-semibold text-lg text-white">
+            Introdução ao Controle Financeiro
+          </p>
         </div>
 
         {/* Aula 2 */}
@@ -28,7 +49,9 @@ export default function MentoriaPage() {
           <div className="w-32 h-32 bg-black border border-white rounded-lg flex items-center justify-center mb-4">
             <span className="text-white text-xl font-bold">Aula 2</span>
           </div>
-          <p className="text-center font-semibold text-lg text-white">Desenvolvendo sua Saúde Emocional</p>
+          <p className="text-center font-semibold text-lg text-white">
+            Desenvolvendo sua Saúde Emocional
+          </p>
         </div>
 
         {/* Aula 3 */}
@@ -36,7 +59,9 @@ export default function MentoriaPage() {
           <div className="w-32 h-32 bg-black border border-white rounded-lg flex items-center justify-center mb-4">
             <span className="text-white text-xl font-bold">Aula 3</span>
           </div>
-          <p className="text-center font-semibold text-lg text-white">Tomando Controle da Sua Vida</p>
+          <p className="text-center font-semibold text-lg text-white">
+            Tomando Controle da Sua Vida
+          </p>
         </div>
       </div>
 
