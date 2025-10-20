@@ -3,14 +3,13 @@ import React, { useEffect, useState } from 'react';
 import LayoutWrapper from '@components/LayoutWrapper';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
-import { Bell, Home, User, Wallet, Settings, LogOut, Eye, EyeOff, MessageCircle } from "lucide-react";
+import { Bell, Home, User, Wallet, Settings, LogOut, Eye, EyeOff, MessageCircle, Phone } from "lucide-react";
 
 interface MenuItem {
   label: string;
   action: string;
 }
 
-// ✅ Botões do menu
 const menuItems: MenuItem[] = [
   { label: '🤖 Rede', action: '/games/ia' },
   { label: '📥 Depositar', action: '/games/depositar' },
@@ -35,31 +34,32 @@ interface Atividade {
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-
   const user = session?.user as any;
+
   const displayName = user?.name || user?.email?.split('@')[0] || 'Usuário';
   const codigoIndicacao = user?.id || user?.email || '';
   const linkIndicacao = `https://www.ziller.club/register?indicador=${encodeURIComponent(codigoIndicacao)}`;
 
-  const [saldo, setSaldo] = useState<number>(0);
-  const [valorInvestido, setValorInvestido] = useState<number>(0);
-  const [rendimentoDiario, setRendimentoDiario] = useState<number>(0);
-  const [bonusIndicacao, setBonusIndicacao] = useState<number>(0);
-  const [totalIndicados, setTotalIndicados] = useState<number>(0);
-  const [pontos, setPontos] = useState<number>(0);
-  const [pontosDiretos, setPontosDiretos] = useState<number>(0);
-  const [pontosIndiretos, setPontosIndiretos] = useState<number>(0);
-  const [qtdDiretos, setQtdDiretos] = useState<number>(0);
-  const [qtdIndiretos, setQtdIndiretos] = useState<number>(0);
-  const [userPhotoUrl, setUserPhotoUrl] = useState<string>('');
-  const [quantidadeZiller, setQuantidadeZiller] = useState<number>(0);
+  const [saldo, setSaldo] = useState(0);
+  const [valorInvestido, setValorInvestido] = useState(0);
+  const [rendimentoDiario, setRendimentoDiario] = useState(0);
+  const [bonusIndicacao, setBonusIndicacao] = useState(0);
+  const [totalIndicados, setTotalIndicados] = useState(0);
+  const [pontos, setPontos] = useState(0);
+  const [pontosDiretos, setPontosDiretos] = useState(0);
+  const [pontosIndiretos, setPontosIndiretos] = useState(0);
+  const [qtdDiretos, setQtdDiretos] = useState(0);
+  const [qtdIndiretos, setQtdIndiretos] = useState(0);
+  const [userPhotoUrl, setUserPhotoUrl] = useState('');
+  const [quantidadeZiller, setQuantidadeZiller] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [mostrarSaldo, setMostrarSaldo] = useState<boolean>(true);
+  const [mostrarSaldo, setMostrarSaldo] = useState(true);
   const [ultimasAtividades, setUltimasAtividades] = useState<Atividade[]>([]);
-  const [qtdAvisos, setQtdAvisos] = useState<number>(0);
-
-  // NOVO: largura animada da barra
+  const [qtdAvisos, setQtdAvisos] = useState(0);
   const [barraWidth, setBarraWidth] = useState(0);
+
+  // NOVO: campo WhatsApp obrigatório
+  const [whatsapp, setWhatsapp] = useState('');
 
   const fetchUsuarioDados = async () => {
     try {
@@ -104,9 +104,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     try {
-      const naoLidas = typeof window !== 'undefined'
-        ? parseInt(localStorage.getItem('notificacoes_nao_lidas') || '0')
-        : 0;
+      const naoLidas = parseInt(localStorage.getItem('notificacoes_nao_lidas') || '0');
       setQtdAvisos(naoLidas);
     } catch {
       setQtdAvisos(0);
@@ -121,21 +119,27 @@ export default function DashboardPage() {
     router.push('/notificacoes');
   };
 
-  // NOVO: efeito animado da barra
+  // Barra animada
   useEffect(() => {
     const larguraAlvo = Math.min((pontos / PONTOS_OBJETIVO) * 100, 100);
     let start = barraWidth;
     const step = () => {
-      start += (larguraAlvo - start) * 0.1; // animação suave
+      start += (larguraAlvo - start) * 0.1;
       setBarraWidth(start);
-      if (Math.abs(start - larguraAlvo) > 0.5) {
-        requestAnimationFrame(step);
-      } else {
-        setBarraWidth(larguraAlvo);
-      }
+      if (Math.abs(start - larguraAlvo) > 0.5) requestAnimationFrame(step);
+      else setBarraWidth(larguraAlvo);
     };
     requestAnimationFrame(step);
   }, [pontos]);
+
+  const handleSalvarWhatsApp = () => {
+    const numero = whatsapp.replace(/\D/g, '');
+    if (!numero || numero.length < 10) {
+      alert('Por favor, insira um número de WhatsApp válido.');
+      return;
+    }
+    window.open(`https://wa.me/5521991146984?text=Olá! Meu número é ${numero}. Preciso de suporte.`, '_blank');
+  };
 
   if (status === 'loading' || loading) {
     return (
@@ -155,6 +159,7 @@ export default function DashboardPage() {
   return (
     <LayoutWrapper>
       <div className="h-screen flex flex-col bg-gray-900 text-white">
+
         {/* HEADER */}
         <header className="flex items-center justify-between px-4 py-3 bg-gray-950 shadow-md sticky top-0 z-20">
           <div className="flex items-center gap-3">
@@ -170,16 +175,10 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <a
-              href="https://wa.me/5521991146984"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-green-400 transition"
-              title="Suporte no WhatsApp"
-            >
+            <a href="https://wa.me/5521991146984" target="_blank" rel="noopener noreferrer" className="hover:text-green-400 transition">
               <MessageCircle className="w-6 h-6 cursor-pointer" />
             </a>
-            <div className="relative cursor-pointer" onClick={abrirNotificacoes} title="Notificações">
+            <div className="relative cursor-pointer" onClick={abrirNotificacoes}>
               <Bell className="w-6 h-6 hover:text-green-400 transition" />
               {qtdAvisos > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
@@ -187,15 +186,13 @@ export default function DashboardPage() {
                 </span>
               )}
             </div>
-            <LogOut
-              onClick={() => signOut({ callbackUrl: '/login' })}
-              className="w-6 h-6 cursor-pointer hover:text-red-400 transition"
-            />
+            <LogOut onClick={() => signOut({ callbackUrl: '/login' })} className="w-6 h-6 cursor-pointer hover:text-red-400 transition" />
           </div>
         </header>
 
         {/* CONTEÚDO */}
         <main className="flex-1 overflow-y-auto pb-24 flex flex-col items-center">
+
           {/* SALDO */}
           <div className="p-6 text-center bg-gradient-to-r from-green-600 to-green-500 rounded-b-3xl shadow-lg flex flex-col items-center w-full max-w-md">
             <div className="flex items-center justify-center gap-2">
@@ -204,14 +201,35 @@ export default function DashboardPage() {
                 {mostrarSaldo ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
               </button>
             </div>
-            <h1 className="text-4xl font-bold mt-1">
-              {mostrarSaldo ? `$ ${saldo.toFixed(2)}` : '••••••'}
-            </h1>
-            <p className="text-xs mt-2">
-              Investido: {mostrarSaldo ? `$ ${valorInvestido.toFixed(2)}` : '••••'}
-            </p>
+            <h1 className="text-4xl font-bold mt-1">{mostrarSaldo ? `$ ${saldo.toFixed(2)}` : '••••••'}</h1>
+            <p className="text-xs mt-2">Investido: {mostrarSaldo ? `$ ${valorInvestido.toFixed(2)}` : '••••'}</p>
             <p className="text-xs mt-1">Rendimento diário: {rendimentoDiario.toFixed(2)} USDT</p>
             <p className="text-xs">Bônus por indicação: {bonusIndicacao.toFixed(2)} USDT</p>
+          </div>
+
+          {/* 🔹 CAMPO WHATSAPP OBRIGATÓRIO */}
+          <div className="p-4 w-full max-w-md bg-white/10 rounded-2xl shadow-md mt-4">
+            <h3 className="font-semibold text-center mb-2">📱 Cadastro de WhatsApp (Obrigatório)</h3>
+            <p className="text-xs text-gray-300 text-center mb-3">
+              Informe seu número de WhatsApp para contato direto com o suporte.
+            </p>
+            <div className="flex items-center gap-2">
+              <Phone className="w-5 h-5 text-green-400" />
+              <input
+                type="tel"
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                placeholder="Ex: (21) 99999-9999"
+                className="flex-1 px-3 py-2 rounded-xl text-black"
+                required
+              />
+            </div>
+            <button
+              onClick={handleSalvarWhatsApp}
+              className="mt-3 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-xl"
+            >
+              Salvar e Falar com Suporte
+            </button>
           </div>
 
           {/* CRIPTOMOEDAS */}
